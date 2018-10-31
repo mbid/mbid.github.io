@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+</head>
+<body>
+<p>Here's a possibly more conceptual prove for why uniform fibrant replacement preserves property <span class="math inline">\(P\)</span> in Thierry's notes: Unfolding the small object argument, it suffices to check that the property is preserved under gluing all not already defined fillers to open boxes <span class="math inline">\(f : \sqcap^n_{i, e} \rightarrow Q\)</span> onto a cubical set <span class="math inline">\(Q\)</span>. Here, <span class="math inline">\(\sqcap^n_{i, e}\)</span> is the <span class="math inline">\(n\)</span>-dimensional box open in dimension i and direction <span class="math inline">\(e \in \{0, 1\}\)</span>.</p>
+<p>For 2-cubes in <span class="math inline">\(Q\)</span> we use the hypothesis <span class="math inline">\(P(Q)\)</span>. We will only get additional 2-simplices in dimensions <span class="math inline">\(n \le 3\)</span>. 2-boxes arising from fillings of 2- and 1-open boxes will never be symmetric, so there is nothing to show in these cases.</p>
+<p>Let <span class="math inline">\(n = 3\)</span> and fix the variable set <span class="math inline">\(\{i, j, k\}\)</span>; <span class="math inline">\(f\)</span> is an open in dimension <span class="math inline">\(i\)</span> and direction <span class="math inline">\(e\)</span>. The 2-simplices arising from fillings of 3-open boxes are of the form <span class="math display">\[
+x = \operatorname{fill}^n_{i, e}(f) (i = e)
+\]</span> Denote by <span class="math inline">\(j \leftrightarrow k : \{i, j, k\} \rightarrow \{i, k , j\}\)</span> the obvious exchange of dimensions. Then <span class="math display">\[
+\begin{aligned}
+&amp; x (j \leftrightarrow k) = x \\
+\iff &amp; f (j \leftrightarrow k) = f \\
+\iff &amp; \operatorname{fill}^n_{i, e}(f) (j \leftrightarrow k) = \operatorname{fill}^n_{i, e}(f)
+\end{aligned}
+\]</span></p>
+<p>by uniformity. The first <span class="math inline">\(\Rightarrow\)</span> and the second <span class="math inline">\(\Leftarrow\)</span> are because we glued the fillers to <span class="math inline">\(Q\)</span> /freely/. Thus, the filler provides a homotopy <span class="math display">\[
+x \sim \operatorname{fill}^n_{i, e}(f) (i = 1 - e) =: y,
+\]</span> and we already have a chain of homotopies <span class="math inline">\(y \sim \dots \sim \text{pt}\)</span> that is invariant under <span class="math inline">\(j \leftrightarrow k\)</span> because <span class="math inline">\(y \in Q\)</span>.</p>
+<p>Note that the proof will also work for general (possibly non-uniform) fibrations; there the 2-simplices arising from fillers will simply never be symmetric. I don't think this is a problem though because if I interpret the thread above correctly, uniformly fibrant <span class="math inline">\(\iff\)</span> fibrant for cartesian cubical sets.</p>
+</body>
+</html>

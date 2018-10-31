@@ -1,0 +1,56 @@
+html {
+    padding: 0.5em;
+}
+body {
+    font-family: "Computer Modern Serif", serif;
+    max-width: 600px;
+    margin: auto;
+}
+
+h4 {
+    display: inline;
+}
+
+.theorem-like {
+    margin-top: 0.5em;
+}
+
+.proof {
+    margin-top: 0.5em;
+}
+
+.inline-math {
+    vertical-align: baseline;
+    position: relative;
+}
+
+.display-math-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.display-math-row > span {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    flex-grow: 1;
+}
+
+.display-math-row > span:first-child {
+    visibility: hidden;
+}
+
+.bibliography {
+  counter-reset: list;
+}
+
+.bibliography > li {
+  counter-increment: list;
+}
+
+.bibliography > li::marker {
+  content: "["counter(list)"] ";
+}
