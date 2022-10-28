@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Relational and Partial Horn Logic</title>
+<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="img-math/geometry.css">
+</head>
+
+<body>
+<h1>Relational and Partial Horn Logic</h1>
+<h2>Abstract</h2>
+<div class="paragraph">
+We discuss the syntax and semantics of relational Horn logic and partial Horn logic.
+Relational Horn logic is an extension of the Datalog programming language that allows introducing and equating elements.
+Partial Horn logic, originally introduced by Palmgren and Vickers, is an extension of relational Horn logic by partial functions.
+Partial Horn logic is the theoretical description of the <em>eqlog</em> programming language, the implementation of which will be discussed in the forthcoming article.</div>
+<div class="paragraph">
+In this treatise, we treat relational and partial Horn logic as a method of presenting morphisms of relational or algebraic structures.
+Semantics can then be expressed in terms of lifting properties against the morphisms corresponding to the axioms.
+The orthogonal-reflection construction shows the existence of free models, and directly inspires the algorithm used in the evaluation of eqlog programs.</div>
+<h2>
+1 Introduction</h2>
+<div class="paragraph">
+
+In this section we recall the notion of <em>(finite) essentially algebraic theory</em> and give a brief proof sketch of the existence of free models.
+Our proof proceeds by associating to each axiom <img src="img-math/efa61f399adfb32c78c025687a0d5a5ee8a5d6ca708f5c0ca1490a1b631afcd8.svg" class="inline-math"> of an essentially algebraic theory an epimorphic morphism <img src="img-math/11a31e63f8d2874cbf09f8a7519304b1dee5fb98845173fd917f00751c7d7885.svg" class="inline-math"> in the category of structures for the signature of the theory.
+We show that the models of the theory are precisely the orthogonal structures.
+From this it follows via the orthogonal-reflection construction that a free model exists over every structure.</div>
+<div class="paragraph">
+We then discuss relational signatures and theories.
+Relational signatures do not have function symbols.
+Every algebraic signature induces a relational signature by associating to every function symbol a relation symbol representing the graph.
+The algebraic structures can then again be obtained as an orthogonality class in the category of relational structures.</div>
+<div class="paragraph">
+We then introduce relational theories.
+We again associate morphism <img src="img-math/11a31e63f8d2874cbf09f8a7519304b1dee5fb98845173fd917f00751c7d7885.svg" class="inline-math"> of relational structures to every relational axiom <img src="img-math/efa61f399adfb32c78c025687a0d5a5ee8a5d6ca708f5c0ca1490a1b631afcd8.svg" class="inline-math">.
+In contrast to the algebraic case, <img src="img-math/11a31e63f8d2874cbf09f8a7519304b1dee5fb98845173fd917f00751c7d7885.svg" class="inline-math"> need not always be an epimorphism, so the orthogonal-reflection construction does not directly apply.
+However, we show how algebraic theories can be encoded as relational theories, for which an adaptation of the orthogonal-reflection reaches a fixed point.
+This construction is the basis of the eqlog algorithm.</div>
+<h2 id="subsec-orthogonal-reflection">
+2 The orthogonal-reflection construction</h2>
+<div class="paragraph">
+Fix a cocomplete category <img src="img-math/7f15748a64cbe3109d32be49234ca8ec81610a525584a866138e37b5176f186b.svg" class="inline-math">.</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 1.
+</h4>
+Let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> be a morphism and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be an object.
+We write <img src="img-math/3877c80b1b7b5777d9a905e193860777792c3e5c714538ec8bf8a899770cb188.svg" class="inline-math"> and say that <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is <em>injective</em> to <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> if for all maps <img src="img-math/3a2cf8b2a0dd9eac3568cc10c1c40a5e1aba7987f8820f3a0c2d12d9ef6c8a00.svg" class="inline-math">, there exists a map <img src="img-math/12c59f7f1d8e421d49a81aacbc7c5ca1a57a6357c437d58a05fb2791336ba387.svg" class="inline-math"> such that
+<div class="display-math-row">
+<img src="img-math/6f2ce7e3800fd638b5061856dacb81b99525a499a81da3e98bf43c6a2d9ab75a.svg">
+</div>
+commutes.
+If furthermore <img src="img-math/aecc659c512a5e97924b98a4c247312496a1ffd572b50e65866b9f8ebb3c8d93.svg" class="inline-math"> is unique for all <img src="img-math/5bbc33248d7fae0923c9d82cb7eebc0609dcc4c6f04af1cfab46917781508f73.svg" class="inline-math">, then we write <img src="img-math/89350dc54affc8026cebca7e5a8f3b27479b56de5135c3a4531f727fa8f8ded1.svg" class="inline-math"> and say that <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is <em>orthogonal</em> to <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math">.</div>
+<div class="paragraph">
+If <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is a class of morphisms, then we write <img src="img-math/0daa9b0f4ded84582f17163dffd004f8f07390c46299fb65c3e2fc6147db560f.svg" class="inline-math"> if <img src="img-math/3877c80b1b7b5777d9a905e193860777792c3e5c714538ec8bf8a899770cb188.svg" class="inline-math"> for all <img src="img-math/84d89e59335310b8e52831e028a69fd472b33efec66067e82ca46ca659daa72e.svg" class="inline-math">, and <img src="img-math/dc4b70c96bf13b8973222b1d9ba11c664ec57eace235c2fe146a26ddebaa2c8d.svg" class="inline-math"> if <img src="img-math/89350dc54affc8026cebca7e5a8f3b27479b56de5135c3a4531f727fa8f8ded1.svg" class="inline-math"> for all <img src="img-math/84d89e59335310b8e52831e028a69fd472b33efec66067e82ca46ca659daa72e.svg" class="inline-math">.
+The full subcategories given by the injective and orthogonal objects, respectively, are denoted by <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math"> and <img src="img-math/3fdc4e856fb681fbe7c135d05cb07377d2b3460fefe36d4bf0ad1728cfd9ce22.svg" class="inline-math">.</div>
+</div>
+<div id="def-flub" class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 2.
+</h4>
+A class <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> of morphisms is called <em>flub</em>  if <img src="img-math/b708339cfd5cb139e9e06bbfb3f60766ff15fffc6757363e9f8b2c46a7fb433a.svg" class="inline-math">.</div>
+</div>
+<div class="paragraph">
+One of the main sources of flub sets is the following lemma:</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 3.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a class of epimorphisms.
+Then <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is flub.
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+This follows immediately from right-cancellation.</div>
+</div>
+<div class="paragraph">
+The other one is the following proposition.
+It lets us reduce questions about orthogonality classes to flub injectivity classes.</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 4.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a class of morphisms.
+Then there exists a superclass <img src="img-math/d07fb02f84c816774fbdb9bc745bcb889f7ee9e6402c4d09f80492efa7d105ad.svg" class="inline-math"> such that <img src="img-math/15b26252b70e16c76a728bb1f12efd72a5620ef60d67a3c5e74502c70e828c0d.svg" class="inline-math"> is flub and <img src="img-math/ed8bf41f8851754855256a2721a446fa49c2442709f36a45f83b6a27986a7bf1.svg" class="inline-math">.
+If <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is a set, then <img src="img-math/15b26252b70e16c76a728bb1f12efd72a5620ef60d67a3c5e74502c70e828c0d.svg" class="inline-math"> can be chosen as set.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> be a morphism in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.
+Then for each object <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">, the data of a single map <img src="img-math/3a2cf8b2a0dd9eac3568cc10c1c40a5e1aba7987f8820f3a0c2d12d9ef6c8a00.svg" class="inline-math"> and two maps <img src="img-math/2f8b46f13e650a24249caa14df638304c51bfd6632991d939df83a16373aad48.svg" class="inline-math"> such that
+<div class="display-math-row">
+<img src="img-math/434bf6b5f22dffbf010a8ae8adfd3d1502f3958411f201d1c77095f2b2caa022.svg">
+</div>
+commutes for <img src="img-math/3ad186399390005213f4125ac28dac6002fb5d414ef39d5e650dc38c8067b661.svg" class="inline-math"> is in bijective correspondence to a map <img src="img-math/def20df8da485a06b8c18c85652c7fd8df4df4d0644f9c5a5a6d11b639892129.svg" class="inline-math">.
+Let
+<div class="display-math-row">
+<img src="img-math/cbfefae1fdd060025c738b5de21ae877c2a8edad3654ea28be9f37790f67e9cb.svg">
+</div>
+be the canonical map that collapses the two copies of <img src="img-math/3fd45f66e82e0f5c22c74ef1d5536c036b8d7c7bfaa49aa25b96ca17db64a834.svg" class="inline-math"> into one.
+Then <img src="img-math/ba9b83ff14e90fce450e333e1ff3f2484bd6371aaeda7dca69bff7fda8498993.svg" class="inline-math"> if and only if there exists a map <img src="img-math/aecc659c512a5e97924b98a4c247312496a1ffd572b50e65866b9f8ebb3c8d93.svg" class="inline-math"> such that
+<div class="display-math-row">
+<img src="img-math/2425d193d23f1eb7d9babf7d108b61cd589b80dcdcb69557e67bf7d6c100904b.svg">
+</div>
+commutes.
+The map <img src="img-math/621202e6f45adb67f85f4fbf1c90c2db6a9210e0d0aa9128a7381aa2e9fcd0d7.svg" class="inline-math"> is an epimorphism.
+Thus if <img src="img-math/aecc659c512a5e97924b98a4c247312496a1ffd572b50e65866b9f8ebb3c8d93.svg" class="inline-math"> exists, then it exists uniquely, and <img src="img-math/07200fe32d6ac5a177c25879ba54184e718fce947dbd271415e2b626f4ecc05b.svg" class="inline-math">.
+It follows that <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is orthogonal to <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> if and only if <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is injective to both <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> and <img src="img-math/621202e6f45adb67f85f4fbf1c90c2db6a9210e0d0aa9128a7381aa2e9fcd0d7.svg" class="inline-math">.
+The desired set <img src="img-math/15b26252b70e16c76a728bb1f12efd72a5620ef60d67a3c5e74502c70e828c0d.svg" class="inline-math"> can thus be defined by <img src="img-math/d25b10c248b31eeede60cc343bf58ee5c33d87acc0e368c042502326a8b76b93.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 5.
+</h4>
+A <em>(countable) sequence</em> of morphisms is a diagram of the form
+<div class="display-math-row">
+<img src="img-math/7bd31ec975bb736173cc654bbd088dc810fe1dba68239f59d5af2148dbaa6c04.svg">
+</div>
+The <em>(countable) composition</em> of a sequence of morphisms <img src="img-math/2a1dcf8ee26cb41207ec3435436f37e6d180df3fcf2fadecb8c7e03a9ca9457b.svg" class="inline-math"> is the canonical map
+<div class="display-math-row">
+<img src="img-math/120292dbfbe7ab923beed818bcc719b49960ec735c24fdb6d0a845a9cc39de48.svg">
+</div>
+to the colimit of the sequence.</div>
+</div>
+<div class="paragraph">
+Note that composition of a sequence of morphisms is uniquely determined only up to a choice of colimit.</div>
+<div id="def-relative-cell-complex" class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 6.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a class of morphisms.
+The class <img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math"> of <em>relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complexes</em> is the least class of morphisms such that the following holds:
+<ol>
+<li id="itm-cell-base">
+<div class="paragraph">
+<img src="img-math/424aadbb603b5d4ce1106d7e6d7e68377f19d31c200ab7b0d4ec8f3968d85aec.svg" class="inline-math">.</div>
+</li>
+<li id="itm-cell-coproduct">
+<div class="paragraph">
+<img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math"> is closed under coproducts.
+That is, if <img src="img-math/f703e9a6f29ab68a289d45d3fe009cec3e51624a17348530f9cdb06d4a8f6457.svg" class="inline-math"> is a family of morphisms indexed by some set <img src="img-math/a643e33ce1369349993623337affc3d0357d933f7df4ffe75db54007953ae706.svg" class="inline-math"> and <img src="img-math/ca3c884f79777d9932dcf1815b8d96b15c7f4426a0d86cc57e2c9cd57da720c9.svg" class="inline-math"> for all <img src="img-math/c23dea4f83d14f0df3fed2d6864c55ef9ae75d6d5a33577b8fa6e662df3598a6.svg" class="inline-math">, then
+<div class="display-math-row">
+<img src="img-math/32eec8bd20e790427f99890522217b35dd4aae64f142ab72ef655a5849891bb1.svg">
+</div>
+is in <img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math">.</div>
+</li>
+<li id="itm-cell-pushout">
+<div class="paragraph">
+<img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math"> is closed under pushouts.
+That is, if
+<div class="display-math-row">
+<img src="img-math/8ba98aa3e9c8c1d5d06dcaa921da1868be52674b9bceb051c9136850631e0ef0.svg">
+</div>
+is a pushout square and <img src="img-math/8328c05385010f3dfc3115575e39ae42fcc6302b13b2009d0df721c6cb1cb9d2.svg" class="inline-math">, then <img src="img-math/9ae9af76df205cebe789916a6959f1cf97949b93fdf8be8c17221625e59e269b.svg" class="inline-math">.</div>
+</li>
+<li id="itm-cell-composition">
+<div class="paragraph">
+<img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math"> is closed under composition of sequences.
+That is, if
+<div class="display-math-row">
+<img src="img-math/35599cc54db2ee5681a67cfbf667263e56c3bf9c3b335b21a31061d06bf1698b.svg">
+</div>
+is a sequence of morphisms <img src="img-math/82a5d823d62278586a8995ace157fe9d088cf2b1d6020fececabff8d0e70389a.svg" class="inline-math"> with composition <img src="img-math/a359c1fe4450ce3b6e3451a53f09a50179ed8384b8d4d09ec7afe778eab66975.svg" class="inline-math">, then <img src="img-math/8328c05385010f3dfc3115575e39ae42fcc6302b13b2009d0df721c6cb1cb9d2.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="theorem-like theorem-style-remark">
+<div class="paragraph">
+<h4>Remark 7.
+</h4>
+Literature on factorization systems and the closely related small object argument considers usually not only countable sequences of morphisms, but also arbitrary transfinite sequences, which are chains of morphisms indexed by an arbitrary ordinal number.
+With this definition, one then typically defines a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex to be a transfinite composition of pushouts of morphisms in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.
+This notion of relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex then also satisfies closure properties <a href="#itm-cell-base">1</a> -- <a href="#itm-cell-composition">4</a>.
+For <a href="#itm-cell-coproduct">2</a>, one chooses a well-ordering on the indexing set <img src="img-math/a643e33ce1369349993623337affc3d0357d933f7df4ffe75db54007953ae706.svg" class="inline-math">, and then computes the coproduct as composition of a chain indexed by this well-ordering.</div>
+<div class="paragraph">
+Conversely, our definition of relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex is closed under arbitrary transfinite composition if all morphism in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> have finitely presentable domains and codomains (Definition <a href="#def-finitely-presentable">11</a>).
+</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 8.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a class of morphisms.
+Then <img src="img-math/e55680d4a3c6a2af1d634f3bdaa9e2edd060ecb93a9fcf5ccda3e8ec02966d62.svg" class="inline-math"> and <img src="img-math/b558053b18da7482603bc693a160a9e842517444ceef72bf5572f0d90d2265e5.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+If <img src="img-math/8d1512579e2e45a069ec5d9d5ce04d145ba9ba1cb66e5b54bea43a99e6c46b8e.svg" class="inline-math"> is an inclusion of classes of morphisms, then in general <img src="img-math/87a55db44944da6e3974a3b360a9e1d677f88d5942fd245fd706e5ed24cada0f.svg" class="inline-math"> and <img src="img-math/1fd3e2364a66dc2c50f821d4ef5d44835fae4bea6a0f9cfe25334842825f40ea.svg" class="inline-math">.
+This proves the inclusions <img src="img-math/2b6ec5ac7166822ef3e9ff685ed5f3a596a042acc0a7d74cd2ec7de4a3a313a0.svg" class="inline-math">.</div>
+<div class="paragraph">
+Conversely, it suffices to show for <img src="img-math/2a74d539e5a026e272aa6a238212bf0e61c60c2e8680a45db8eb1a85aa7375b0.svg" class="inline-math"> that the class
+<div class="display-math-row">
+<img src="img-math/13d83a2cd9f82db832cd39e09147d105f0c9dd8f18f73f201456e7e7a8f48c9c.svg">
+</div>
+satisfies the closure properties <a href="#itm-cell-base">1</a> -- <a href="#itm-cell-composition">4</a> of Definition <a href="#def-relative-cell-complex">6</a>, and similarly for <img src="img-math/f0693ed726a05d8bfc8a7b14964db3e6a0c3330ab0a87a566db28e1f6c35294f.svg" class="inline-math">.
+This is routine.
+For example, closure under pushouts can be proved as follows.
+Let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be injective (orthogonal) to <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math">, let <img src="img-math/0454210cf120ab15e149df7c9e0cc291757ce7e138a1e6a1c1dd88cb6425a700.svg" class="inline-math"> be a pushout of <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math">, and let <img src="img-math/9749a4d8bbd400d8e5aa3a3326211734d15457df7620827a0da9f05e73a3f18f.svg" class="inline-math"> be an arbitrary morphism.
+The lift <img src="img-math/e2838035575be1e2749ebfb74057467256625a938e898935a8b396a61f7a9235.svg" class="inline-math"> can then be obtained from a lift <img src="img-math/fd563ed4a80dad25b7b2d3b1c2ae7d95fe5e24875db70b392e96be959aa2d076.svg" class="inline-math"> and the universal property of the pushout in the following diagram:
+<div class="display-math-row">
+<img src="img-math/86ccf8cb088acf4eaed5807389e70d33d6731633ee62dab431bf6780e2dea14e.svg">
+</div>
+If the lift <img src="img-math/fd563ed4a80dad25b7b2d3b1c2ae7d95fe5e24875db70b392e96be959aa2d076.svg" class="inline-math"> is unique, then also <img src="img-math/e2838035575be1e2749ebfb74057467256625a938e898935a8b396a61f7a9235.svg" class="inline-math"> is unique by uniqueness of the morphism induced by the universal property of the pushout.</div>
+</div>
+<div id="lem-factoring-via-cell-complexes" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 9.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a class of morphisms.
+Let <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> be a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex, and let <img src="img-math/2d3ac62eb25651de9db763a381145a2c390291b40178ca07279fdc6d805220dc.svg" class="inline-math"> be a map with <img src="img-math/10bca19c37a89425fa5d6d5552afa5b6e87e991affa371aea07573a2d346b49a.svg" class="inline-math">.
+Then there is a map <img src="img-math/53bedaba1058c7b0b6ef912565a60f642e0fe5b388e8168047a27dcf688a22ca.svg" class="inline-math"> such that <img src="img-math/6155bb25b8b0f2904cd98d5bd08a86b905e33b4a44cbef86f0e6fda7dc05a8ff.svg" class="inline-math">.
+If furthermore <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is flub, then <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is unique.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+This follows from the fact that the class of morphisms <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> for which the lemma holds satisfies properties <a href="#itm-cell-base">1</a> -- <a href="#itm-cell-composition">4</a> of Definition <a href="#def-relative-cell-complex">6</a>.</div>
+</div>
+<div id="lem-relative-m-cell-complex-is-reflection" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 10.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be flub class of morphisms.
+Let <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> be a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex such that <img src="img-math/97068b466fbe25d7a12e4f0f96777b1c8df6e3b87bf604c993a7f85bc18954b7.svg" class="inline-math">.
+Then <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is a reflection of <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> into <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+By Lemma <a href="#lem-factoring-via-cell-complexes">9</a>.</div>
+</div>
+<div id="def-finitely-presentable" class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 11.
+</h4>
+An object <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is <em>finitely presentable</em> if the hom-functor <img src="img-math/5dc50aaf9b40bd62265a704da28546b711e1824af86d2677d71758bc1f2f9d25.svg" class="inline-math"> preserves filtered colimits.</div>
+</div>
+<div class="paragraph">
+</div>
+<div id="prop-orth-refl-constr-prop" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 12 <span class="theorem-note">(Property of the orthogonal-reflection construction)</span>.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a flub class of morphisms with finitely presentable domains and codomains.
+Let
+<div class="display-math-row">
+<img src="img-math/cadfbe8c9f7344d6dc09a359e1e3011f69d900cb561115c13aebeecda2cac0ee.svg">
+</div>
+be a sequence in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> such that the following holds:
+<ol>
+<li>
+<div class="paragraph">
+<img src="img-math/9023c80b7351e53fd96296a3c8aa7fb9fa8e44a2308bdf9045d444316231045a.svg" class="inline-math"> is a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex for all <img src="img-math/150104619b9aa8fdc1f44ce0a6feff6565aab78701c1166c8f7633e682e0fb9b.svg" class="inline-math">.</div>
+</li>
+<li id="itm-m-factorizations-exist">
+<div class="paragraph">
+For all <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">, <img src="img-math/040d0920e0c61e475199525e5bb601baf8befce883c21f56448c85832c6b0de3.svg" class="inline-math"> and maps <img src="img-math/66a7556a3167e33f9174bd33aead8d2fae11bc5ec109c39eb4c8e12b57bce01a.svg" class="inline-math">, there exists a map a map <img src="img-math/fa8cb0190772b4f38dc0ea3ab0e8e6f4921bef5dfd114cc48b28ffc43579f31d.svg" class="inline-math"> for some <img src="img-math/a043a8ddc3088d153012bdf2993f4a5a50568f20e11a760b61d0b58463d47d0c.svg" class="inline-math"> such that
+<div class="display-math-row">
+<img src="img-math/b8a97aed29be5e10b36d99d2356c82c462f3e17663df69c7d23482d660c66554.svg">
+</div>
+commutes.</div>
+</li>
+</ol>
+
+Then the transfinite composition <img src="img-math/bf3b0bf022247407fddacf2402bd730f5f02ccd88513d9b085be2ed0a17c83c5.svg" class="inline-math"> of the <img src="img-math/9023c80b7351e53fd96296a3c8aa7fb9fa8e44a2308bdf9045d444316231045a.svg" class="inline-math"> is a reflection into <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Because <img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math"> is closed under infinite composition, the map <img src="img-math/bf3b0bf022247407fddacf2402bd730f5f02ccd88513d9b085be2ed0a17c83c5.svg" class="inline-math"> is a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex.
+Thus by Lemma <a href="#lem-relative-m-cell-complex-is-reflection">10</a>, it suffices to show that <img src="img-math/5b4f34b307240dba77a38d7e0061bb6bb64b882909000d95a448c7f02e999aa0.svg" class="inline-math"> is in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-injective.</div>
+<div class="paragraph">
+Let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> be in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> and let <img src="img-math/ef5e25b1472329d155ec8a037007f20bfd0a003fb68e3ce015ce1ee660fabae6.svg" class="inline-math">.
+Because <img src="img-math/aae541c99c13ff410fb06af88f1a8a53b8abf2194ed0a4d7b3d7124b47d476b3.svg" class="inline-math"> is finitely presentable, there exists <img src="img-math/150104619b9aa8fdc1f44ce0a6feff6565aab78701c1166c8f7633e682e0fb9b.svg" class="inline-math"> and <img src="img-math/1cc136eadc6c60c4a4e01147ae3efa2dcf5f4e04bbe615290fc7c43971393fd1.svg" class="inline-math"> such that <img src="img-math/5bbc33248d7fae0923c9d82cb7eebc0609dcc4c6f04af1cfab46917781508f73.svg" class="inline-math"> factors as <img src="img-math/f9594eff2660fd8f8307018a700f5fe34601e4f3a49752d264373fa368e5d409.svg" class="inline-math">.
+By assumption <a href="#itm-m-factorizations-exist">2</a>, there exist <img src="img-math/85a96784e2aad8caf03b6d1dc51d47620565a8beef846daebfed7e7bed7ace18.svg" class="inline-math"> and <img src="img-math/26f87f8308c859e92fb9bbd867ebfb3494a2f293b31dd89001a26da8253ac562.svg" class="inline-math"> that commutes with <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math">, <img src="img-math/d2f296621f504439085c8848fc57c8e6bf11e83407f16eb867cbb45946141630.svg" class="inline-math"> and <img src="img-math/023457c1cb3b75155b07adbf8681224d12448fcc137ff4dc9916f6f8d93bd511.svg" class="inline-math">.
+Thus if we define <img src="img-math/aecc659c512a5e97924b98a4c247312496a1ffd572b50e65866b9f8ebb3c8d93.svg" class="inline-math"> as composition <img src="img-math/4189f9a8575e3e0ab7863a2499f91d7ad11c2d01012160b0c1dc9977873a590c.svg" class="inline-math">, then <img src="img-math/9b191e7531c78cb2d8d7b834c6b02a3079ca85cb36e9236e756290bf9921e2fb.svg" class="inline-math">.</div>
+</div>
+<div id="prop-orth-refl-constr-exist" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 13 <span class="theorem-note">(Existence of the orthogonal-reflection construction)</span>.
+</h4>
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be flub set (not a proper class!) of morphism and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be an object.
+Then there exists a sequence
+<div class="display-math-row">
+<img src="img-math/cadfbe8c9f7344d6dc09a359e1e3011f69d900cb561115c13aebeecda2cac0ee.svg">
+</div>
+satisfying the conditions of Proposition <a href="#prop-orth-refl-constr-exist">13</a> such that <img src="img-math/ee4b8d93e614b04e31b71368523d65b286a7eb2fafa74b8aa4881a491b8bebad.svg" class="inline-math">.
+In particular, <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> has a reflection in <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math">, which is a reflective subcategory of <img src="img-math/7f15748a64cbe3109d32be49234ca8ec81610a525584a866138e37b5176f186b.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+It suffices to construct a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complexes <img src="img-math/0db02e74ecd9c8712a0eaed9b81dd72ca9c6f2b6c2aa3d342742814787a7f787.svg" class="inline-math"> such that for every <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> and <img src="img-math/3a2cf8b2a0dd9eac3568cc10c1c40a5e1aba7987f8820f3a0c2d12d9ef6c8a00.svg" class="inline-math">, there exists a commuting diagram
+<div class="display-math-row">
+<img src="img-math/8a59e27688beff3122d1c54bed053423d0db6f82493fd62f59d4d76b93823ca6.svg">
+</div>
+We can then obtain the desired sequence by induction.</div>
+<div class="paragraph">
+Let <img src="img-math/a643e33ce1369349993623337affc3d0357d933f7df4ffe75db54007953ae706.svg" class="inline-math"> be the set of pairs <img src="img-math/699f2800c6b7dda67c9f808bd89d6ecdf8c81acc2483877329d03198dfe96ea2.svg" class="inline-math">, where <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> is a morphism in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> and <img src="img-math/3a2cf8b2a0dd9eac3568cc10c1c40a5e1aba7987f8820f3a0c2d12d9ef6c8a00.svg" class="inline-math">.
+Note that <img src="img-math/a643e33ce1369349993623337affc3d0357d933f7df4ffe75db54007953ae706.svg" class="inline-math"> is a set because <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is a set and <img src="img-math/0c1edff581ee0f44469d251a8bed51ff02ec332eeb61219f904b2f294efee28a.svg" class="inline-math"> is a set for all <img src="img-math/aae541c99c13ff410fb06af88f1a8a53b8abf2194ed0a4d7b3d7124b47d476b3.svg" class="inline-math">.
+We then define <img src="img-math/0db02e74ecd9c8712a0eaed9b81dd72ca9c6f2b6c2aa3d342742814787a7f787.svg" class="inline-math"> by the following pushout diagram:
+<div class="display-math-row">
+<img src="img-math/88b69fc28ad3cefe5ae67626b4c488e11d4b1dd59c8bbb0b25956cd25e98dba7.svg">
+</div>
+Here the top map is the the coproduct <img src="img-math/2535ee9eef4909e30443b49ee2a48ab50405e4a3cbe5d195585820c1fc6f6fcd.svg" class="inline-math">, and the left map <img src="img-math/e7c27e318e1150cf7f84543da96c50fff88ad9fba14c5a62b7ccfaedc0c2beb6.svg" class="inline-math"> is induced by the universal property of coproducts.</div>
+</div>
+<h2>
+3 Relational Horn logic</h2>
+<h3>
+3.1 Relational structures</h3>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 14.
+</h4>
+A <em>relational signature</em> is given by the following data:
+<ul>
+<li>
+<div class="paragraph">
+A set <img src="img-math/c2832d80b5751e91f954f46420dd121ac1301332acd6793d0af2b57613eab6ee.svg" class="inline-math"> of <em>sort symbols</em>.</div>
+</li>
+<li>
+<div class="paragraph">
+A set <img src="img-math/daaa22c6c42ff99c0d2790eb5050ae2f3da666acfe39106f7a90e4a3b989065f.svg" class="inline-math"> of <em>relation symbols</em>.</div>
+</li>
+<li>
+<div class="paragraph">
+A map that assigns to each relation symbol <img src="img-math/7306698e7f1cf998146d0de98ba98b1c1a70a31bd31460f9c0a1e45edec76840.svg" class="inline-math"> an <em>arity</em>
+<div class="display-math-row">
+<img src="img-math/25296ce3272f1bb03f24413df35a00cb54c448eb864fd93cdf408d0def83c7f5.svg">
+</div>
+of sort symbols <img src="img-math/bf7f5878263c6491c31102b86b91ebcfa2c2a37e1aa1fff75d20dea65e6b1288.svg" class="inline-math"> for <img src="img-math/040d0920e0c61e475199525e5bb601baf8befce883c21f56448c85832c6b0de3.svg" class="inline-math">.</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 15.
+</h4>
+Let <img src="img-math/877d3761764be9f212e6e0189eccbb9b95d1c06ef914515a2219b5b4cfbc92e4.svg" class="inline-math"> be a relational signature.
+A <em>relational structure</em> for <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> consists of the following data:
+<ul>
+<li>
+<div class="paragraph">
+For each sort symbol <img src="img-math/2db404a891ac4ca0a3dcfc09939ed91c0186915f637cd79f7b27fbc3c0512a80.svg" class="inline-math">, a <em>carrier</em> set <img src="img-math/73ddb663996be1a4803e804d27934530389ed6ca229487373bbfbb0ddbf669a8.svg" class="inline-math">.</div>
+</li>
+<li>
+<div class="paragraph">
+For each relation symbol <img src="img-math/7306698e7f1cf998146d0de98ba98b1c1a70a31bd31460f9c0a1e45edec76840.svg" class="inline-math"> with arity <img src="img-math/869cab5ed23eb80a04185f2cafbffb8bd40b626af4b0be7e9da93980c86a013f.svg" class="inline-math">, a relation <img src="img-math/842620f0beade02fad6e39ae9ee0968468f9d107c1b52ba41bb69257803e13aa.svg" class="inline-math">.</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+A <em>morphism of relational structures</em> <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> consists of a function <img src="img-math/ef1169d4225729556df7761476b07a706eb2048f5b0fabcd317c042ac769759c.svg" class="inline-math"> that are compatible with the relations <img src="img-math/ba6eb88389c99185746c2396d4d8f0a9a323b1c634d021a62473a2d1610d38c4.svg" class="inline-math"> and <img src="img-math/2022126b53269d9c628db80efc3a1fed5a9becc390a2b20d7ade2d11df55e0ea.svg" class="inline-math"> for all <img src="img-math/833d7ffba71c4923ea137894fe2bf2f6a1e9bc483ac05e7865d4684feea48b19.svg" class="inline-math">.
+That is, we require that if <img src="img-math/ecb9fe309b926e1b87760120a096c8f2801c6c1484bc55efbbcbe6392872fdd9.svg" class="inline-math"> for some relation symbol <img src="img-math/869cab5ed23eb80a04185f2cafbffb8bd40b626af4b0be7e9da93980c86a013f.svg" class="inline-math">, then <img src="img-math/be1396663c926260835de026e6136734f9085d806add927c32bbcbdc18879184.svg" class="inline-math">.
+The <em>category of relational structures</em> is denoted by <img src="img-math/f06f923e455d738cf519ed5599f784450c85f47fdf153037cde07ff85b5bbd86.svg" class="inline-math">.</div>
+</div>
+<div class="paragraph">
+When no confusion can arise, we suppress sort annotations.
+Thus if <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is a relational structure, then we write <img src="img-math/a42fcb0dabd6afce803f73b030d09542bd465130067f3e0605d5d9504c6da4c8.svg" class="inline-math"> to mean that <img src="img-math/56fc0b930dae03aa5729daeb00c9500ad364fe56c670cc23a0f7108c37e46ce9.svg" class="inline-math"> for some <img src="img-math/2db404a891ac4ca0a3dcfc09939ed91c0186915f637cd79f7b27fbc3c0512a80.svg" class="inline-math">.
+Similarly, if <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> is a morphism of relational structures and <img src="img-math/56fc0b930dae03aa5729daeb00c9500ad364fe56c670cc23a0f7108c37e46ce9.svg" class="inline-math">, then we often denote the image of <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math"> under <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> by <img src="img-math/c0423a67fff96de4f726c8f5ab9d1ba6407768b79e8d3579c3b122814133d8a2.svg" class="inline-math"> instead of <img src="img-math/dec5cb596854c71cb6f13f56aba711971f718ccc7edc3149cbf76627706f2c3d.svg" class="inline-math">.
+If the signature <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is clear from context, we abbreviate <img src="img-math/f06f923e455d738cf519ed5599f784450c85f47fdf153037cde07ff85b5bbd86.svg" class="inline-math"> as <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.</div>
+<div id="prop-rel-cocomplete" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 16.
+</h4>
+Let <img src="img-math/877d3761764be9f212e6e0189eccbb9b95d1c06ef914515a2219b5b4cfbc92e4.svg" class="inline-math"> be a relational signature.
+All colimits of relational structures exist, and commute with colimits on carrier sets.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Let <img src="img-math/2c9a7c8074cbeb471757dc1fa5e3a151acc8a1293e0552a3c046f889d4470065.svg" class="inline-math"> be a diagram of relational structures.
+We define the carrier sets of our candidate colimit structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> by the colimit of carrier sets.
+That is,
+<div class="display-math-row">
+<img src="img-math/e44b1385f36d702c1b46bea5cd939d9ba3b949622c254177d900a2562d568436.svg">
+</div>
+for all <img src="img-math/2db404a891ac4ca0a3dcfc09939ed91c0186915f637cd79f7b27fbc3c0512a80.svg" class="inline-math">.
+We obtain evident maps <img src="img-math/1ef224660143f1d125fadee60de33c159fdfc678e9c8b635f526b47fe8aacbf7.svg" class="inline-math"> for all objects <img src="img-math/0cd2ebe455fa9275c1072dc16d298bf3365b494df3871d22de001ba5dad53edf.svg" class="inline-math"> in <img src="img-math/a643e33ce1369349993623337affc3d0357d933f7df4ffe75db54007953ae706.svg" class="inline-math"> and <img src="img-math/2db404a891ac4ca0a3dcfc09939ed91c0186915f637cd79f7b27fbc3c0512a80.svg" class="inline-math">.
+Let <img src="img-math/869cab5ed23eb80a04185f2cafbffb8bd40b626af4b0be7e9da93980c86a013f.svg" class="inline-math"> be a relation symbol.
+Then we define <img src="img-math/ba6eb88389c99185746c2396d4d8f0a9a323b1c634d021a62473a2d1610d38c4.svg" class="inline-math"> as union over the images of the <img src="img-math/e3774eedd31f6ad6bab71fa2a6ed1013eaaaea6f0e4d449d20414e5568de3158.svg" class="inline-math">.
+Thus,
+<div class="display-math-row">
+<img src="img-math/703eb87977d5fb24b00432d13ae8133456103b7098cb5e1b6975835ed214f894.svg">
+</div>
+where <img src="img-math/ab6b22d537da226e3725bae7fb4568ee0fe124cc715af684a0c428cdab7b32f2.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 17.
+</h4>
+Let <img src="img-math/877d3761764be9f212e6e0189eccbb9b95d1c06ef914515a2219b5b4cfbc92e4.svg" class="inline-math"> be a relational signature.
+Then a relational structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is finitely presentable if and only if
+<div id="eq-finite-relational-structure" class="display-math-row">
+<img src="img-math/ce733d9c6dcb3b1a712e43c056a60f1986bd895cd9e9ce7ce67877f4252d9920.svg">
+</div>
+that is, if and only if all the <img src="img-math/73ddb663996be1a4803e804d27934530389ed6ca229487373bbfbb0ddbf669a8.svg" class="inline-math"> and <img src="img-math/2b2d8fb30a945771fb0cd5a6a33016acbe66becb1bd5fe69a7247839f1cf6646.svg" class="inline-math"> are finite and almost always empty.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Sufficiency of the condition follows by the same considerations as in the case of <img src="img-math/88a0d6ea8d4093bc344d10ea39fc30c646d39efd493564ad9043af82170bb6bb.svg" class="inline-math">.
+Conversely, if the conditions is not satisfied, then there exists a strictly increasing sequence of relational substructures
+<div class="display-math-row">
+<img src="img-math/6f54fd56acaa740b255a580a8e42d71c69a0e29347b5c862baa8702fd15170a1.svg">
+</div>
+such that <img src="img-math/7204eea227871b3154d64903233375e2f1421840f3d97e8b5044d0c86e60de98.svg" class="inline-math">.
+Note that <img src="img-math/c22f2ebc07750755fa29dfa9a0c832c1f021695ecfc70d63fc71835aea86b0be.svg" class="inline-math">.
+Then the canonical map <img src="img-math/571c39110de41af438b2d205ec3cdb141edbf49173ecbf67593de53d9eaeb70b.svg" class="inline-math"> does not factor via any <img src="img-math/bc875b5fa11bf26e108025133d4945de65f1304c8e643a339de3e17007060bec.svg" class="inline-math">, so <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is not finitely presentable.</div>
+</div>
+<div class="paragraph">
+</div>
+<div id="prop-surjective-orthogonal-reflection" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 18.
+</h4>
+Let <img src="img-math/877d3761764be9f212e6e0189eccbb9b95d1c06ef914515a2219b5b4cfbc92e4.svg" class="inline-math"> be a finite relational signature.
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a finite set of epimorphisms of finitely presentable relational structures.
+Let
+<div class="display-math-row">
+<img src="img-math/cadfbe8c9f7344d6dc09a359e1e3011f69d900cb561115c13aebeecda2cac0ee.svg">
+</div>
+be any sequence of maps of relational structures satisfying the conditions of Proposition <a href="#prop-orth-refl-constr-prop">12</a> such that furthermore <img src="img-math/1964dcce29339b6a2330f7f91a1c61ce5bcae79a10bbf2a9beac276b779fd556.svg" class="inline-math"> is finitely presentable.
+Then the sequence is eventually stationary.
+That is, there exists <img src="img-math/85a96784e2aad8caf03b6d1dc51d47620565a8beef846daebfed7e7bed7ace18.svg" class="inline-math"> such that for all <img src="img-math/aea3f2948ac1488ca334eae89699a73aeeb1c7ef607c985b47ed048b8ffc40f1.svg" class="inline-math">, the transition map <img src="img-math/9023c80b7351e53fd96296a3c8aa7fb9fa8e44a2308bdf9045d444316231045a.svg" class="inline-math"> is an isomorphism.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Since all maps in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> are surjective and colimits of relational structures commute with colimits on carrier sets, it follows that all maps in <img src="img-math/c4623fa1ac81596ef25111d1587522fb6ff3fd361478adfbe6703ad214915abf.svg" class="inline-math"> are surjective.
+Thus the cardinality of the carriers of the <img src="img-math/bc875b5fa11bf26e108025133d4945de65f1304c8e643a339de3e17007060bec.svg" class="inline-math"> decreases monotonically with <img src="img-math/150104619b9aa8fdc1f44ce0a6feff6565aab78701c1166c8f7633e682e0fb9b.svg" class="inline-math">.
+Eventually, the cardinality must thus become stable, say after <img src="img-math/ef9882d40d191d383586c13c8f2852fc29cecaae6292592e5ed4c0996ba208ca.svg" class="inline-math">.
+Without loss of generality, we may assume that <img src="img-math/9023c80b7351e53fd96296a3c8aa7fb9fa8e44a2308bdf9045d444316231045a.svg" class="inline-math"> is the identity map on carriers for <img src="img-math/89bea48b1015632bbc3c28a03e8674476df88dd2c535cd49623bc7c63aed1a9e.svg" class="inline-math">.
+Let <img src="img-math/7306698e7f1cf998146d0de98ba98b1c1a70a31bd31460f9c0a1e45edec76840.svg" class="inline-math">.
+Then for all <img src="img-math/89bea48b1015632bbc3c28a03e8674476df88dd2c535cd49623bc7c63aed1a9e.svg" class="inline-math">, we have that
+<div class="display-math-row">
+<img src="img-math/12e1ec11079ae40f0075bc24c94b88ff21673397c6d77c0539c943954943b9f3.svg">
+</div>
+and the latter is a finite set.
+Thus, we eventually have <img src="img-math/8c958a5b9302c736dbab129d7a356b48c4695e7642af8d779afb199130184e9e.svg" class="inline-math">.
+Because <img src="img-math/daaa22c6c42ff99c0d2790eb5050ae2f3da666acfe39106f7a90e4a3b989065f.svg" class="inline-math"> is finite, this holds simultaneously for all <img src="img-math/7306698e7f1cf998146d0de98ba98b1c1a70a31bd31460f9c0a1e45edec76840.svg" class="inline-math"> for large enough <img src="img-math/de62622435937285f3e9ad766f163cf94eb08c04d04a7aa32d426796c4c8af3b.svg" class="inline-math">.
+For <img src="img-math/aa9119d4028f342f30fb868144e09a2766691d794ec04e807e62c822208a2824.svg" class="inline-math"> we thus have <img src="img-math/84787c9800100221a8a828097cc13ed3045a1846e8fd705782af7485fe760968.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-remark">
+<div class="paragraph">
+<h4>Remark 19.
+</h4>
+Proposition <a href="#prop-surjective-orthogonal-reflection">18</a> can likely be generalized to locally finitely presentable categories (perhaps with further conditions on the cardinality of <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">) as such categories are always co-wellpowered:
+For every object <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">, there exists up to isomorphism only a <em>set</em> of epimorphism <img src="img-math/7767c200d09304ff709ad46a1079559ff8b33585bf0de6347d30462d6c6c223f.svg" class="inline-math">.
+We would now have to identify objects for which this set is finite.</div>
+</div>
+<h3>
+3.2 Syntax and semantics</h3>
+<div class="paragraph">
+Fix a relational signature <img src="img-math/12b4d4089dcc26dfd44d63890aa26f728ac3979eb2df9fbd2c6acc280a957b9e.svg" class="inline-math">.
+We assume a countable supply of variable symbols for each sort <img src="img-math/2db404a891ac4ca0a3dcfc09939ed91c0186915f637cd79f7b27fbc3c0512a80.svg" class="inline-math">.</div>
+<div id="def-relational-syntax" class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 20.
+</h4>
+A <em>relational atom</em> is a statement of one of the following forms:
+<ol>
+<li id="itm-relation-atom">
+<div class="paragraph">
+<img src="img-math/2d52c39315f5cafb458025bfa8db18f302bf469b2593420ccbe810f40be2b32d.svg" class="inline-math">, where <img src="img-math/869cab5ed23eb80a04185f2cafbffb8bd40b626af4b0be7e9da93980c86a013f.svg" class="inline-math"> is a relation symbol and the <img src="img-math/a970f58b8c5d471ba530c16af879bf107969809e6a9a813e8b0e14dc598327d8.svg" class="inline-math"> are variables of sort <img src="img-math/008b0397f04bd0cac38fe19fd1d380fc097d9d87d2a0b7bff496f402bdd3cab9.svg" class="inline-math"> for all <img src="img-math/9f7fa3656e5b00f5f55216194e551bb26597b48021860365d6a5db8a3dece48d.svg" class="inline-math">.</div>
+</li>
+<li>
+<div class="paragraph">
+<img src="img-math/13c110b7724eba4413ebe5f2fc1cc7b467e6cf2cf6591bfb5e5ad2a75e3db16d.svg" class="inline-math"> where <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math"> is a variable.</div>
+</li>
+<li>
+<div class="paragraph">
+<img src="img-math/77994baf05e3cac0dbc1e275e70594a2c50f0d7e17616251765af77c18cb317a.svg" class="inline-math">, where <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math"> and <img src="img-math/ce384f3aad23e55b1cd27c991033bc2e655610c7fbb78bd2a31a0bddb86b46d7.svg" class="inline-math"> are variables of the same sort.</div>
+</li>
+</ol>
+
+A <em>relational formula</em> is a finite conjunction of flat atoms.
+A <em>relational sequent</em> is an implication of flat formulas.</div>
+</div>
+<div id="def-relational-semantics" class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 21.
+</h4>
+Let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be a relational structure.
+An <em>interpretation of a set of variables <img src="img-math/38774a95266db54b1483065010f45e21d6565a9cce4d41ed9685b7e3380e3a86.svg" class="inline-math"></em> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is a map <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> that assigns to each variable <img src="img-math/6d42d157f3c408ea615a4b188b60795bf959592a1abae720987ef595ae0175b0.svg" class="inline-math"> of sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math"> an element <img src="img-math/38a0c9a5668f5f80bb1bb84da3ae3508be0dc40972e9f55eb64aae041de2b542.svg" class="inline-math">.
+An <em>interpretation of a relational atom <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"></em> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is an interpretation <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> of the variables occuring in <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> such that one of the following conditions holds:
+<ol>
+<li>
+<div class="paragraph">
+<img src="img-math/7c8d4b367050659bf5a2d6bd7000658baedb8778568419d5f6bfc401423f2ebe.svg" class="inline-math"> for some relation symbol <img src="img-math/833d7ffba71c4923ea137894fe2bf2f6a1e9bc483ac05e7865d4684feea48b19.svg" class="inline-math"> and <img src="img-math/b7406afbcf5192588390d1389de034aafbd11c964460aa3f06e2e88bf2495be0.svg" class="inline-math">.</div>
+</li>
+<li>
+<div class="paragraph">
+<img src="img-math/d7e90b98bcac70bee123d196cb3d9c4dab32ea4d6fb0db8a026bbe20a28cf815.svg" class="inline-math"> for some variable <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math">, without further assumptions.</div>
+</li>
+<li>
+<div class="paragraph">
+<img src="img-math/155699e6972565d7805a5f6e5ee54c4ff809248efebd4e24d071ce9e7dbd7656.svg" class="inline-math"> for some variables <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math"> and <img src="img-math/ce384f3aad23e55b1cd27c991033bc2e655610c7fbb78bd2a31a0bddb86b46d7.svg" class="inline-math">, and <img src="img-math/5208d5fcfa2252a14c63476a1aafc30c7256c5ee345908681873d26e8d3488c9.svg" class="inline-math">.</div>
+</li>
+</ol>
+
+An <em>interpretation of a relational formula <img src="img-math/9956eb71ce0f061821cba8e4d155ed5558eeb449cc7fc5fa890519c528b8c97c.svg" class="inline-math"></em> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is an interpretation of the variables occuring in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> that restricts to an interpretation of <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math"> for each <img src="img-math/9f7fa3656e5b00f5f55216194e551bb26597b48021860365d6a5db8a3dece48d.svg" class="inline-math">.</div>
+<div class="paragraph">
+A relational structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> <em>satisfies</em> a relational sequent <img src="img-math/85de10ac6f6c31f59c318d2bae2df031d9f3db5ae807e08a699b5beda700608e.svg" class="inline-math"> if each interpretation of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> can be extended to an interpretation of <img src="img-math/3283616ef3686dc8a6e9fbd4124d326d8056dd01c4c809193c3d18ad42ea841c.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 22.
+</h4>
+We associate to each flat atom <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> a relational structure <img src="img-math/1d012f6030f4603de546e3af526c9ab3094f0f4f69ad014c5c7e52800e268dca.svg" class="inline-math"> and an interpretation <img src="img-math/75a438b344a0bfffdfa91de819936e4277d49dfd5b293776a5cc707ad366636a.svg" class="inline-math"> of <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> in <img src="img-math/1d012f6030f4603de546e3af526c9ab3094f0f4f69ad014c5c7e52800e268dca.svg" class="inline-math"> as follows:
+<ol>
+<li>
+<div class="paragraph">
+If <img src="img-math/82c94faa44eb8d79dd68f424af0f4d5b20607d62ecdf92b8ae727cd533751b99.svg" class="inline-math"> where <img src="img-math/869cab5ed23eb80a04185f2cafbffb8bd40b626af4b0be7e9da93980c86a013f.svg" class="inline-math">, then the carriers of <img src="img-math/1d012f6030f4603de546e3af526c9ab3094f0f4f69ad014c5c7e52800e268dca.svg" class="inline-math"> are given by distinct elements <img src="img-math/5d449a6112b474e694efe6f4977bd61821e2af2bceeeb1234e0cd9d6bff387ae.svg" class="inline-math">, and <img src="img-math/01d394005d8fcab207409507d9c1ee2b879badf76220929f1ec357ab11f6c6ed.svg" class="inline-math">.
+The relations <img src="img-math/2512b0acde8d3a75fc8a4d83b75cdffafeaa7b50257d157692ea359e19cbf886.svg" class="inline-math"> for <img src="img-math/09c4bf8c1d34d946b9e42bea5ab1fd56ab319e6c62bbf183fcc6dd5685fcedd0.svg" class="inline-math"> are empty.</div>
+</li>
+<li>
+<div class="paragraph">
+If <img src="img-math/441d604ffeade869444ad3182014b579e45998b426fc14d86bee1509699ff63f.svg" class="inline-math">, where <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> has sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">, then <img src="img-math/92db325a25348edf10fe004ebee0f440e55b449dd89bf00b580c72f3b07ba5ab.svg" class="inline-math"> contains a single element <img src="img-math/ae5bfafbbd895fd3d3d85655b216cea188ca71143dd4145d3de70094d3571b31.svg" class="inline-math">.
+All other carrier sets and all relations are empty.</div>
+</li>
+<li>
+<div class="paragraph">
+If <img src="img-math/872a0d4c2dc52d1f4d805379ef437fbe72efd134ef6f6b37715210a2165c51ae.svg" class="inline-math">, where <img src="img-math/967e462ca422f333f0e3cdc196fb2175c0a6feffa6d1600f9e66954954e27006.svg" class="inline-math"> and <img src="img-math/0ee4455d52a5f6269c09d118a261ced0ab463d78051514da7dffc42faa414783.svg" class="inline-math"> have sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">, then <img src="img-math/92db325a25348edf10fe004ebee0f440e55b449dd89bf00b580c72f3b07ba5ab.svg" class="inline-math"> contains a single element <img src="img-math/c2554cf995e306c8d2a06de5c115b0d5dbec8c6d0e7e9ddb766dc8a60c455fbf.svg" class="inline-math">.
+All other carrier sets and all relations are empty.</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+Let <img src="img-math/9956eb71ce0f061821cba8e4d155ed5558eeb449cc7fc5fa890519c528b8c97c.svg" class="inline-math"> be a relational formula.
+Then we denote by <img src="img-math/eab6429caf16006bae6b7cbf32457865285a379b915710db96288f86cfeb67cb.svg" class="inline-math"> the relational structure
+<div class="display-math-row">
+<img src="img-math/72493a5e311d11354a18999b30d1174343ebad4b7b135983ac8c2c0168c908c4.svg">
+</div>
+where <img src="img-math/de5b4986fdded333aef1f13c9f6c5ae5f0153b5d28282031798205165e1cff66.svg" class="inline-math"> is the relation given by
+<div class="display-math-row">
+<img src="img-math/5cc142b46b07aaedfa5ed95bc22f545eda0a31b275a74377632775efa057141b.svg">
+</div>
+for all <img src="img-math/611819aef8217855c4fa3521c4a823e15b0769dcd7caa1ca198d07d19dcca6fc.svg" class="inline-math"> and variables <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> occuring in both <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math"> and <img src="img-math/2c1dce3142562a766c463be05a8e0defe89ec83a760c114c898ae2d44668efa7.svg" class="inline-math">.</div>
+<div class="paragraph">
+Let <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math"> be a relational sequent.
+Then we denote by <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> the evident map <img src="img-math/350dfa0634d0c3d01a3ecbfadb49be54eb6fef1413a94409d99cd9ec30dad368.svg" class="inline-math">.</div>
+</div>
+<div id="prop-relational-formula-structure-universal" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 23.
+</h4>
+Let <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> be a relational formula and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be a relational structure.
+Then there is a bijection between interpretations of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> and maps <img src="img-math/0cfed522a17e9e4736f16664f57a43ca6e007bfb32e99a40e51b2a84bb08a8b6.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+If <img src="img-math/746b0928d0310bb96d76acc09d8755c38ef0c5acd0bba62b0db43b05990ae3e6.svg" class="inline-math">, then <img src="img-math/dd18690c5894bfd7a44fc478c3655febfd7c5e2d0e661d0e4b177dbf26ac3a63.svg" class="inline-math"> is an interpretation of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.
+For the converse, let <img src="img-math/9956eb71ce0f061821cba8e4d155ed5558eeb449cc7fc5fa890519c528b8c97c.svg" class="inline-math"> for relational atoms <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math">.
+Then every interpretation <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> restricts to an interpretation of <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math"> for each <img src="img-math/0cd2ebe455fa9275c1072dc16d298bf3365b494df3871d22de001ba5dad53edf.svg" class="inline-math">.
+The carrier of <img src="img-math/de28c2b897bcaa1235e2cd4258322af5fcc2468511902a8e4baac9e3d29db09f.svg" class="inline-math"> is defined using the variables of <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math">, which defines an evident map <img src="img-math/e28655f919e0d0e89ce1eaddf25529ba741b49b3f3a5ee65d64a87cd493a2fd7.svg" class="inline-math">.
+Since the restrictions of <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> to the variables in each <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math"> agree on variables that occur in simultaneously in two atoms, the individual maps <img src="img-math/e28655f919e0d0e89ce1eaddf25529ba741b49b3f3a5ee65d64a87cd493a2fd7.svg" class="inline-math"> glue to a map <img src="img-math/0cfed522a17e9e4736f16664f57a43ca6e007bfb32e99a40e51b2a84bb08a8b6.svg" class="inline-math">.</div>
+</div>
+<div class="paragraph">
+In light of this universal property, we conflate relational formulas <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> with the relational structure <img src="img-math/eab6429caf16006bae6b7cbf32457865285a379b915710db96288f86cfeb67cb.svg" class="inline-math"> and variables occuring in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> with elements of <img src="img-math/eab6429caf16006bae6b7cbf32457865285a379b915710db96288f86cfeb67cb.svg" class="inline-math"> when confusion is unlikely.
+Similarly, we conflate relational sequents <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> with the corresponding morphisms <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math">.
+</div>
+<div id="prop-relational-sequent-morphism-lifts" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 24.
+</h4>
+Let <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> be a relational sequent and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be a relational structure.
+Then <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> if and only if <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is injective to <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Let <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math">.
+By Proposition <a href="#prop-relational-formula-structure-universal">23</a>, interpretations <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> of the premise <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> correspond to maps <img src="img-math/7379bd4432715a70f693acb89d2e5b1c09e038a8d0d20f89308ee92022040046.svg" class="inline-math">, and interpretations <img src="img-math/73d2ad40491bdb8e1909bbbbdce199a55369b3335500d98fa0e704096ffafcf0.svg" class="inline-math"> of <img src="img-math/3283616ef3686dc8a6e9fbd4124d326d8056dd01c4c809193c3d18ad42ea841c.svg" class="inline-math"> correspond to maps <img src="img-math/efaea41009f58d3b59c95ffd161a6de26d78d5637ce90fe2565e02683aed531c.svg" class="inline-math">.
+The map <img src="img-math/f0711fd45ee591c4c5737dc106c6244310118cffcb4f133fd3948de4c78e1f61.svg" class="inline-math"> can be obtained by restriction of the generic interpretation of <img src="img-math/3283616ef3686dc8a6e9fbd4124d326d8056dd01c4c809193c3d18ad42ea841c.svg" class="inline-math"> in <img src="img-math/b61bd5e098844bb87a913173c3aa900f9c6c284efb06477176b72118f0691794.svg" class="inline-math"> to the variables occurring in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">.
+It follows that
+<div class="display-math-row">
+<img src="img-math/836d2d7b577c437fdb6eb0c4955399acb81db82a32cfe625e80aa198d360f09b.svg">
+</div>
+commutes if and only if <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> is a restriction of <img src="img-math/73d2ad40491bdb8e1909bbbbdce199a55369b3335500d98fa0e704096ffafcf0.svg" class="inline-math">.</div>
+</div>
+<div id="lem-composition-sequent-morphisms" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 25.
+</h4>
+Let <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math"> and <img src="img-math/4cae6b83f8d9f77ccb55db8cca240d66a467c73b9fa3192d4923271a4f5bc188.svg" class="inline-math"> be relational sequents.
+Then
+<div class="display-math-row">
+<img src="img-math/0bccf61968b9ddc96f667a781f4acf916714ce147b0117fb0cff9faaad3a12d6.svg">
+</div></div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+This follows from Proposition <a href="#prop-relational-formula-structure-universal">23</a>.</div>
+</div>
+<h3>
+3.3 Completeness results</h3>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 26.
+</h4>
+Let <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> be a map of relational structures.
+We say that <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is <em>surjective</em> if <img src="img-math/d2617e705e049b95931a9fc5d21421cddf12b2ffb30c44f725a629d95145cde8.svg" class="inline-math"> is a surjective map for all <img src="img-math/2db404a891ac4ca0a3dcfc09939ed91c0186915f637cd79f7b27fbc3c0512a80.svg" class="inline-math">.</div>
+</div>
+<div id="prop-epimorphisms-classification" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 27.
+</h4>
+Let <img src="img-math/877d3761764be9f212e6e0189eccbb9b95d1c06ef914515a2219b5b4cfbc92e4.svg" class="inline-math"> be a relational signature.
+Let <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> be a map of relational structures.
+<ol>
+<li id="itm-relational-epimorphisms">
+<div class="paragraph">
+<img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is an epimorphism if and only if <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is surjective.</div>
+</li>
+<li id="itm-relational-effective-epimorphisms">
+<div class="paragraph">
+<img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is an effective epimorphism if and only if <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is surjective and furthermore the induced maps <img src="img-math/769b3f36e0eff1096fcf3cf7b0d4c1dd1387beaecec181ba83f44481bb97175d.svg" class="inline-math"> are surjective for all <img src="img-math/7306698e7f1cf998146d0de98ba98b1c1a70a31bd31460f9c0a1e45edec76840.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+<a href="#itm-relational-epimorphisms">1</a>.
+Note that, for every morphism <img src="img-math/bc3019cbf015ae3dcdf2a9f56e00516e5199161b6bdb918f7749919e78d103d5.svg" class="inline-math"> in a cocomplete category <img src="img-math/7f15748a64cbe3109d32be49234ca8ec81610a525584a866138e37b5176f186b.svg" class="inline-math">, <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is an epimorphism if and only if
+<div class="display-math-row">
+<img src="img-math/567d454f510dd37dbdc323150387c7c1f17abc2204d631db4b644430369692b5.svg">
+</div>
+is a pushout square.
+Because the forgetful functor from relational structures to <img src="img-math/c2832d80b5751e91f954f46420dd121ac1301332acd6793d0af2b57613eab6ee.svg" class="inline-math">-indexed families of sets preserves colimits, it follows that it preserves epimorphisms, i.e. that every epimorphism of relational structures must be surjective.
+The same forgetful functor is full and faithful, hence reflects epimorphisms.
+This shows that surjective maps of relational structures are indeed epimorphisms.</div>
+<div class="paragraph">
+<a href="#itm-relational-effective-epimorphisms">2</a>.
+This follows from the construction of colimits in Proposition <a href="#prop-rel-cocomplete">16</a>.</div>
+</div>
+<div id="prop-semantics-relational-sequents" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 28.
+</h4>
+The image of (surjective, effectively epi) relational sequents under the assignment <img src="img-math/e7fd86cb9f0d53ae9ddafe13f5d1cb4b9e4b7b6136fdd2cd4a2154f178ca19ac.svg" class="inline-math"> can be described as follows:
+<ol>
+<li id="itm-semantics-arbitrary-relational-sequent">
+<div class="paragraph">
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is a relational sequent, then <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is a map finite relational structures.
+Conversely, every map of finite relational structures is isomorphic to a map of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for a relational sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</li>
+<li id="itm-semantics-surjective-relational-sequent">
+<div class="paragraph">
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is surjective, then <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is a surjection of finite relational structures.
+Conversely, every surjection of finite relational structures is isomorphic to a map of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for a surjective relational sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</li>
+<li id="itm-semantics-quotient-relational-sequent">
+<div class="paragraph">
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is effectively epi, then <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is an effective epimorphism of finite relational structures.
+Conversely, every effective epimorphism of finite relational structures is isomorphic to a map of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for an effectively epi relational sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+<a href="#itm-semantics-arbitrary-relational-sequent">1</a>.
+Relational sequents <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> are by definition finite formulas, so it follows from the definition of the map <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> that its domain and codomain are finite.</div>
+<div class="paragraph">
+Conversely let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> be a map of finite relational structures.
+Choose distinct variables <img src="img-math/e16de19fe84783a9262ffe5fc1df224b5a316e6da768e878055d0d6c5a19d377.svg" class="inline-math"> of sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math"> for all sorts <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math"> and <img src="img-math/dec2ed436091ad7bd0cddc2212015de2ca394270e0e50189a4feab3fa4d88959.svg" class="inline-math">.
+The formulas
+<div class="display-math-row">
+<img src="img-math/b63065b2ec1b4f41e922da6c56c4f1a5f45d057de006beec9a7886b85caef163.svg">
+</div>
+are finite (and hence well-defined) because <img src="img-math/aae541c99c13ff410fb06af88f1a8a53b8abf2194ed0a4d7b3d7124b47d476b3.svg" class="inline-math"> is finite.
+The formula <img src="img-math/050f621472a1ec0f10526471899b981bff730d083bf8ff0dea4f58695b861c12.svg" class="inline-math"> encodes the carriers of <img src="img-math/aae541c99c13ff410fb06af88f1a8a53b8abf2194ed0a4d7b3d7124b47d476b3.svg" class="inline-math">, and <img src="img-math/143ecf20eff0a5fa134512cd843b01842034e305f96a66d450a01f5d1d0ea62d.svg" class="inline-math"> encodes the relations.
+Thus if <img src="img-math/6688d2e161dc5ca86bb9db753505a0c77a0c0aaa6a021214a4db12d99849760b.svg" class="inline-math">, then <img src="img-math/7055e3e1f413439bad49e158cc89da4ccd1cdc643e75e1c688a6fef06c623465.svg" class="inline-math">.</div>
+<div class="paragraph">
+Define similarly variables <img src="img-math/ccb5873001164b50e0e87c6a2bdebb0b28a5991d910f7307711d82b9740d6c0b.svg" class="inline-math"> for each <img src="img-math/c6374a3cc51e889193a97691da00cf5408a868d26fcbd438600e9a41d8854517.svg" class="inline-math"> and formulas <img src="img-math/3c8b16e32cfa2b8f612bca85bccea819bfa98e7118850b6a0733fef96b16d0a0.svg" class="inline-math"> for <img src="img-math/3fd45f66e82e0f5c22c74ef1d5536c036b8d7c7bfaa49aa25b96ca17db64a834.svg" class="inline-math">.
+Set
+<div class="display-math-row">
+<img src="img-math/6c914381668a7e2159e96d82c310c9b15caf6131f8289ca9fb01c5379296a773.svg">
+</div>
+and let <img src="img-math/2d5c0fbe233f683c690d4a61b05eb21790e16cb47a54e6f040b6503adbc2664c.svg" class="inline-math">.
+Then
+<div class="display-math-row">
+<img src="img-math/d993f02d9e0a182d424838c0f1be6393c5cb5ed70d703f661dd62a9bbb6517ff.svg">
+</div>
+and it can be verified using the universal property of <img src="img-math/eab6429caf16006bae6b7cbf32457865285a379b915710db96288f86cfeb67cb.svg" class="inline-math"> (Proposition <a href="#prop-relational-formula-structure-universal">23</a>) that
+<div class="display-math-row">
+<img src="img-math/306b378dbd0ea1101811454e2de852b17716490ba0991a9e84e01af278a18058.svg">
+</div>
+commutes.</div>
+<div class="paragraph">
+<a href="#itm-semantics-surjective-relational-sequent">2</a>.
+The carrier of a relational structure <img src="img-math/eab6429caf16006bae6b7cbf32457865285a379b915710db96288f86cfeb67cb.svg" class="inline-math"> obtained from a formula <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> is a quotient of the set of variables occuring in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">.
+Thus if every variable in the conclusion <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math"> of a sequent <img src="img-math/85de10ac6f6c31f59c318d2bae2df031d9f3db5ae807e08a699b5beda700608e.svg" class="inline-math"> occurs also in the premise <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">, then the resulting map <img src="img-math/997c470c2635708a894339fe63eac77da91df83911b0780348d35c1900142963.svg" class="inline-math"> is surjective.
+Conversely, let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> be a surjective map of finite relational structures.
+Let <img src="img-math/e16de19fe84783a9262ffe5fc1df224b5a316e6da768e878055d0d6c5a19d377.svg" class="inline-math"> for <img src="img-math/ca27b7a4d27260691762fdc0db4e240302921f696b64bcb205e5182621b1b2e4.svg" class="inline-math"> and <img src="img-math/9c3b6b1bbf696c2a7c8a46ac56c0129464e9f75d79729bc9b598e3f9d5a89fcc.svg" class="inline-math"> be as in the proof of <a href="#itm-semantics-arbitrary-relational-sequent">1</a>, so that <img src="img-math/0157644dcb9cdd8b7a615e7afefbf5920d0670ed0f8bf20c34a3b8df431c49ee.svg" class="inline-math">.
+Set
+<div class="display-math-row">
+<img src="img-math/b815478e9f73c8f251b6b7552f4375b8bc85e696ec7596634f64dd27a443d1fb.svg">
+</div>
+and <img src="img-math/35464b5f9358e23b47cfbb34cf41d6f7e6f33c7f0efade52f1d5a61bde88a190.svg" class="inline-math">.
+Because all the the <img src="img-math/e16de19fe84783a9262ffe5fc1df224b5a316e6da768e878055d0d6c5a19d377.svg" class="inline-math"> occur in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">, all the variables of <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math"> occur in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">.
+By definition of <img src="img-math/82db3751fc32aa185ca09602254d5f1edc5875bb1a0330635cbb500b209cc20a.svg" class="inline-math">, the map <img src="img-math/041605db9f2718783b9dee8af10d8f547dc0e2d0858979eb209e4c41c49cb79e.svg" class="inline-math"> is an isomorphism on carriers, which then implies that <img src="img-math/99b079295a0aaf2801273538da839bdd2b9210ecaceaa641860185b804b24816.svg" class="inline-math"> by definition of <img src="img-math/e150ad06c716ab3f1143dfb7efcd34f52247654c48b5a42598546208748ec3f1.svg" class="inline-math">.
+Thus <img src="img-math/df06feaa86f918711a4542ad32b2c3d579dd04d62a8de7410cec6f58ac991f7a.svg" class="inline-math">.</div>
+<div class="paragraph">
+<a href="#itm-semantics-quotient-relational-sequent">3</a>.
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is effectively epi and <img src="img-math/41dbad561aaf677c3664a19ce5b41cfd89a56eedc2db8c7a6c3725ff2b7c10d3.svg" class="inline-math">, then the maps <img src="img-math/c3a89e739b1d354b4d48aa5db574a8114b2920b8807ee14a3e339d66df33a445.svg" class="inline-math"> are surjective for all relation symbols <img src="img-math/833d7ffba71c4923ea137894fe2bf2f6a1e9bc483ac05e7865d4684feea48b19.svg" class="inline-math">.
+Thus by Proposition <a href="#prop-epimorphisms-classification">27</a>, <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is an effective epimorphism.</div>
+<div class="paragraph">
+Conversely, let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> be an effective epimorphism of finite relational structures.
+Let <img src="img-math/e16de19fe84783a9262ffe5fc1df224b5a316e6da768e878055d0d6c5a19d377.svg" class="inline-math"> for <img src="img-math/ca27b7a4d27260691762fdc0db4e240302921f696b64bcb205e5182621b1b2e4.svg" class="inline-math"> and <img src="img-math/9c3b6b1bbf696c2a7c8a46ac56c0129464e9f75d79729bc9b598e3f9d5a89fcc.svg" class="inline-math"> be as in the proof of <a href="#itm-semantics-arbitrary-relational-sequent">1</a>, so that <img src="img-math/0157644dcb9cdd8b7a615e7afefbf5920d0670ed0f8bf20c34a3b8df431c49ee.svg" class="inline-math">.
+Let
+<div class="display-math-row">
+<img src="img-math/e9941ef418db22bb313992819cfe83711eb99d2c9662c6b25923e0c8085d066c.svg">
+</div>
+By the same argument as in the proof of <a href="#itm-semantics-surjective-relational-sequent">2</a>, it follows that <img src="img-math/4b028f21e226470d316efdb2ee720e1e627548a001308a3a561d5c4fc7ee477f.svg" class="inline-math"> is an isomorphism on carriers.
+Let <img src="img-math/833d7ffba71c4923ea137894fe2bf2f6a1e9bc483ac05e7865d4684feea48b19.svg" class="inline-math"> be a relation symbol and let <img src="img-math/5690b467052138ba6f50d7bb28e038829b66f25224de44c65ab73df3debcdc52.svg" class="inline-math">.
+Then because <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> is an effective epimorphism, there exist <img src="img-math/b5ec06e736860e13d3ed6d5a3542ef9dd6b50ae84c16ae8fbb6a94aa62db4a7d.svg" class="inline-math"> such <img src="img-math/749286732c432a6ee96f0dd4cb9c0b7ad64209cbc369c4695a2ca7cfcbf07905.svg" class="inline-math"> for all <img src="img-math/0cd2ebe455fa9275c1072dc16d298bf3365b494df3871d22de001ba5dad53edf.svg" class="inline-math"> and <img src="img-math/fddced724613145e7b58428d432cac19dfed5ee98245aa1a29b067136e52a631.svg" class="inline-math">.
+Thus <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> contains the atom <img src="img-math/a48f911763f3a0e720e6f0837454de713464e7463824d37d07514bfaecee4a5d.svg" class="inline-math">, hence <img src="img-math/eaa782913a892dd3007c14ca8687a384b33703633040ae90d83ed06a1fd91f81.svg" class="inline-math"> is in the image of <img src="img-math/57eeed22f504648600195fd829557cc3e55f3131af3d689f286a93fee2e84d9f.svg" class="inline-math">.
+We conclude <img src="img-math/99b079295a0aaf2801273538da839bdd2b9210ecaceaa641860185b804b24816.svg" class="inline-math">, hence <img src="img-math/9089b260b13aca67a03b1c6be41f77a71c018d1f1612e73e8962ab8b62bb9b64.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Corollary 29.
+</h4>
+Let <img src="img-math/efa61f399adfb32c78c025687a0d5a5ee8a5d6ca708f5c0ca1490a1b631afcd8.svg" class="inline-math"> be a set of surjective relational sequents.
+Then <img src="img-math/e0d5fc235fa586431e359989228b39104a365633def8c55f41724e2df4f4b113.svg" class="inline-math"> is flub (Definition <a href="#def-flub">2</a>).
+The category <img src="img-math/597e85746ae115074927a5cf8a1742a4b4f55000d7d713316f26d7b9ddb9f81a.svg" class="inline-math"> is a reflective subcategory of <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Every morphism <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for <img src="img-math/141f5e57e47e44a15cbdcd13491751630ecc13255039d73f2d3b38190a14aca4.svg" class="inline-math"> is a surjection, hence an epimorphism.
+Thus lifts against <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> exist uniquely if they exist, and Proposition <a href="#prop-orth-refl-constr-exist">13</a> applies.</div>
+</div>
+<div class="paragraph">
+</div>
+<h2>
+4 Partial Horn logic</h2>
+<h3>
+4.1 Algebraic structures</h3>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 30.
+</h4>
+An <em>algebraic signature</em> is a relational signature <img src="img-math/12b4d4089dcc26dfd44d63890aa26f728ac3979eb2df9fbd2c6acc280a957b9e.svg" class="inline-math"> equipped with a partition <img src="img-math/a346436e391191696f995443bd93951e41c0e3be4e419be99467ab0d892d3300.svg" class="inline-math"> of the set of relation symbol into disjoint sets <img src="img-math/eadb6597fe7a4d7dce057adf4d5e52636987a7c5e3a9caae641629600304ca08.svg" class="inline-math"> of <em>predicate symbols</em> and <img src="img-math/4725abe47aed135a5c18e36ef6378a1f0790a3f5093662610105d03023a3dcab.svg" class="inline-math"> of <em>function symbols</em> such that the arity of every function symbol is non-empty.
+If <img src="img-math/cbf143c037e7dc37e36419f27f96f80394ba05763f4c5277b2ac8acccbdf2871.svg" class="inline-math"> is a function symbol, then we write <img src="img-math/02e8816cc1c595d88047271983b8999383bd25a5f4875c36bfb1a8c4ea88fef8.svg" class="inline-math"> if the arity of <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> as a relation symbol is <img src="img-math/062c11041d775b6cf7262236bb528a752db4cd35e8dab2980d84ee32d7f9095f.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 31.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+An <em>algebraic structure</em> for <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is a relational structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> for <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> such that <img src="img-math/da4e546545a8faa0502af11bd328aa900186ebefeda3ea2267601cc5ae836b0e.svg" class="inline-math"> is the graph of a partial function for all <img src="img-math/cbf143c037e7dc37e36419f27f96f80394ba05763f4c5277b2ac8acccbdf2871.svg" class="inline-math">.
+Thus if <img src="img-math/1cd439832ed75f3bee738239537d1043febbf1a50d2a539ef4adb020d952943b.svg" class="inline-math"> and <img src="img-math/fa18183235d5dc502d1429891adeee98bbff0bab60425d4d8ce4f85cbc9fe957.svg" class="inline-math">, then <img src="img-math/204875372f248aac8dd5a5d24639975eae4df87318fdf20f43d033047b0f24af.svg" class="inline-math">.
+We use <img src="img-math/b3967ce50546818552117737d6146dc403fe906b7053dd926043d0753b7bc872.svg" class="inline-math"> to denote the unique element <img src="img-math/ce384f3aad23e55b1cd27c991033bc2e655610c7fbb78bd2a31a0bddb86b46d7.svg" class="inline-math"> such that <img src="img-math/1cd439832ed75f3bee738239537d1043febbf1a50d2a539ef4adb020d952943b.svg" class="inline-math">, and we write <img src="img-math/2e17d1f4dec432397d4d5481ff98f2e91a3743fbcd2e4714c2d4fb11fc67278f.svg" class="inline-math"> to say that such an element <img src="img-math/ce384f3aad23e55b1cd27c991033bc2e655610c7fbb78bd2a31a0bddb86b46d7.svg" class="inline-math"> exists.
+A <em>morphism of algebraic structures</em> is a morphism of underlying relational structures.
+The <em>category of algebraic structures</em> is denoted by <img src="img-math/fc66cdd497debc89e253e636b251545c5bc13d89aea0b552463423bf7a640dc5.svg" class="inline-math">.</div>
+</div>
+<div class="paragraph">
+If the algebraic signature <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is clear from context, we abbreviate <img src="img-math/fc66cdd497debc89e253e636b251545c5bc13d89aea0b552463423bf7a640dc5.svg" class="inline-math"> as <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math">.</div>
+<div id="lem-functionality-axioms" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 32.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be a relational structure.
+Then <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is an algebraic structure if and only if it satisfies the relational sequent
+<div id="eq-functionality-axiom" class="display-math-row">
+<span>(1)</span>
+<img src="img-math/b5478e29cf6c7f5466884ae7e9cebf4e83f1bc3ff038bb7ae6e407d3867954a9.svg">
+<span>(1)</span>
+</div>
+for each function symbol <img src="img-math/43cd36a51ff6c103f4591ce8423c8cd52cef5406073c31a02c8f3e7625841844.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+The relational structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies the sequent <a href="#eq-functionality-axiom">(1)</a> if and only if <img src="img-math/da4e546545a8faa0502af11bd328aa900186ebefeda3ea2267601cc5ae836b0e.svg" class="inline-math"> is right-unique, i.e. the graph of a partial function.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 33.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+Then there exists a set <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> of epimorphisms in <img src="img-math/0e0be29d662784d877a5cf64ded3439a1a5f1ddc11147793d10571dcd0def986.svg" class="inline-math"> such that <img src="img-math/a0d35a53e76b7b1d6b8d7e85b7c8e66b31ecd57ec2218eeb2060e5ea6c4e1d37.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+
+Let <img src="img-math/062c11041d775b6cf7262236bb528a752db4cd35e8dab2980d84ee32d7f9095f.svg" class="inline-math"> be a function symbol.
+We construct an epimorphism <img src="img-math/f8e07b418e80490467d6c7db1f5a11dd59f3e469059c2ee0cb7fbc50e9331cd9.svg" class="inline-math"> of relational structures such that relational structures <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> are orthogonal to <img src="img-math/38e916a3c5b38f3a2d3a63d54a7f5f9555c9d3ef34b4fdb0b51442e90f6dadd2.svg" class="inline-math"> if and only if <img src="img-math/da4e546545a8faa0502af11bd328aa900186ebefeda3ea2267601cc5ae836b0e.svg" class="inline-math"> is the graph of a partial function.
+Then <img src="img-math/3a44bb3249936708eeecbe731bcef8e88d9da7b0ee880b817f1cf39825554ac6.svg" class="inline-math"> is a set of morphisms with the required property.</div>
+<div class="paragraph">
+<img src="img-math/5cc63dca1945cbda0a46168d09d55e263b26f35b3be2405eb787e95d1e56c04c.svg" class="inline-math"> is the relational structure with carriers given by distinct symbols <img src="img-math/8eaa87ca8372fa41e0e45b09758617d82054db0185176726cfb724508c86dbfc.svg" class="inline-math">, where <img src="img-math/94670ffabc9937aaea7da1e97790436ffbcbe0a8a8e2566daaff49ba7b434ef8.svg" class="inline-math"> has sort <img src="img-math/008b0397f04bd0cac38fe19fd1d380fc097d9d87d2a0b7bff496f402bdd3cab9.svg" class="inline-math"> and both <img src="img-math/da572e43e51cee8ece35edce76cc7a1a88bb975f22ab175eec22f0a2f88e07b1.svg" class="inline-math"> and <img src="img-math/4c4ad729d9fa659954c20bbb8e8ba31c0c12a9ab6896bcf31c81b6d694dd89cd.svg" class="inline-math"> have sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">.
+<img src="img-math/0310c0046cf3c8de55098ae630cbafa8cc8391d32bcc4fdb83ed4cae155971ae.svg" class="inline-math"> is empty for all <img src="img-math/cbf2dc780152eabfebede019ceeffd5910710c11f737e83b2a54f9e3813ce73d.svg" class="inline-math">, and
+<div class="display-math-row">
+<img src="img-math/e563b97f18de9a6095f41062a9487b34cc79abca301879211b59dca71bc09408.svg">
+</div>
+Let <img src="img-math/457b436b0fc8686509fe467075fe90e181f9f933a4ad7ed1f00513654936e288.svg" class="inline-math"> be the quotient of <img src="img-math/5cc63dca1945cbda0a46168d09d55e263b26f35b3be2405eb787e95d1e56c04c.svg" class="inline-math"> given by identifying <img src="img-math/da572e43e51cee8ece35edce76cc7a1a88bb975f22ab175eec22f0a2f88e07b1.svg" class="inline-math"> and <img src="img-math/4c4ad729d9fa659954c20bbb8e8ba31c0c12a9ab6896bcf31c81b6d694dd89cd.svg" class="inline-math">, and let <img src="img-math/f8e07b418e80490467d6c7db1f5a11dd59f3e469059c2ee0cb7fbc50e9331cd9.svg" class="inline-math"> be the evident quotient map.</div>
+<div class="paragraph">
+The data of a map <img src="img-math/c0c7e00c668c9c2b393ca3a072fe20ab2336783f982596c56623b97e06a65c99.svg" class="inline-math"> to a relational structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is equivalent to elements <img src="img-math/49e901b3b8eb8021091cf7f329f92362d1d5d4139d72c2df07e92898995cd8e5.svg" class="inline-math"> in the carriers of <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> such that <img src="img-math/65ff04441f5b28c08b3af4138755408c97011f40ff69f73248644da33aff349f.svg" class="inline-math"> and <img src="img-math/043aba7aeaf95e4ebb017470709771a57d2c7dc76f0436f9892fd90fd27e8d2c.svg" class="inline-math">.
+A factorization <img src="img-math/2231abbb64a30831f97be4e76bc738eb37b09642073429eedb052c08a569a3e0.svg" class="inline-math"> exists (necessarily uniquely) if and only if <img src="img-math/204875372f248aac8dd5a5d24639975eae4df87318fdf20f43d033047b0f24af.svg" class="inline-math">.
+Thus if all such factorizations exist, then <img src="img-math/da4e546545a8faa0502af11bd328aa900186ebefeda3ea2267601cc5ae836b0e.svg" class="inline-math"> is the graph of a partial function.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Corollary 34.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+The category of algebraic structures is a reflective subcategory of the category of relational structures.
+</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Corollary 35.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+The category of algebraic structures is cocomplete.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+As in every reflective subcategory, colimits of algebraic structures can be computed by first computing the colimit of relational structures and then applying the free-algebra functor.</div>
+</div>
+<div class="paragraph">
+We denote the free algebraic structure functor by <img src="img-math/64e8d63deabf1dd3aee5e9ee59b07ed97541a577973c30a63ab661a6ab490477.svg" class="inline-math">.</div>
+<h3>
+4.2 Syntax and semantics</h3>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 36.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+The set of <em>terms</em> and a sort assigned to each term is given by the following recursive definition:
+<ol>
+<li>
+<div class="paragraph">
+If <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math"> is a variable of sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">, then <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math"> is a term of sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">.</div>
+</li>
+<li>
+<div class="paragraph">
+If <img src="img-math/43cd36a51ff6c103f4591ce8423c8cd52cef5406073c31a02c8f3e7625841844.svg" class="inline-math"> is a function symbol and <img src="img-math/6095fd8f69b39f623ecc40c15f00f5a2dd35cc05622ee8f2f4862ef77c926288.svg" class="inline-math"> are terms such that <img src="img-math/b60be9a75999c108ad1efe1d2f83e1b2279f22fe7a15adcab715dc9f2db5ee72.svg" class="inline-math"> has sort <img src="img-math/008b0397f04bd0cac38fe19fd1d380fc097d9d87d2a0b7bff496f402bdd3cab9.svg" class="inline-math"> for all <img src="img-math/d16a69398073ece2695aa1b3a1d5a27d83841a4c494f948ef0c6bff9a18ddcaa.svg" class="inline-math">, then <img src="img-math/0a287385077b19816c15f55f48199ee8b28ac6a5d83b77ad2f2b5708dac29591.svg" class="inline-math"> is a term of sort <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">.</div>
+</li>
+</ol>
+
+<em>Algebraic atoms, formulas and sequents</em> are defined as in definition <a href="#def-relational-syntax">20</a>, with two changes:
+<ol>
+<li>
+<div class="paragraph">
+In each type of atom, also composite terms of the same sort are allowed in place of only variables.</div>
+</li>
+<li>
+<div class="paragraph">
+An algebraic atom <img src="img-math/96904f78f36b0134c239a13d9c4f2fa477930ef8f1aefd21d0357b9b31cb2501.svg" class="inline-math"> is valid only if <img src="img-math/afa65e4aa29fa6d4f122a4f4cfe884146280126540a3304a432bb5ce129dc22b.svg" class="inline-math"> is a predicate symbol (but not if <img src="img-math/833d7ffba71c4923ea137894fe2bf2f6a1e9bc483ac05e7865d4684feea48b19.svg" class="inline-math"> is a function symbol).</div>
+</li>
+</ol>
+
+</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 37.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be an algebraic structure.</div>
+<div class="paragraph">
+An <em>interpretation of a term <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"></em> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is an interpretation <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> of the variables occuring in <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"> such that the following recursive extension of <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> is well-defined on <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math">:
+<div class="display-math-row">
+<img src="img-math/42740309ded0728da97e701ebbc58e9dc7f551aeea29b09fe524071c9e95f09c.svg">
+</div>
+Note that the right-hand side might not be defined; in this case also the left-hand side is undefined.</div>
+<div class="paragraph">
+An <em>interpretation of an algebraic atom</em> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is defined analogously to the interpretation of a relational atom, but with the additional condition that the interpretation is defined on all (possibly composite) terms occuring in the atom.</div>
+<div class="paragraph">
+An <em>interpretation of an algebraic formula <img src="img-math/9956eb71ce0f061821cba8e4d155ed5558eeb449cc7fc5fa890519c528b8c97c.svg" class="inline-math"></em> is an interpretation of the variables occuring in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> that restricts to an interpretation of <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math"> for each <img src="img-math/9f7fa3656e5b00f5f55216194e551bb26597b48021860365d6a5db8a3dece48d.svg" class="inline-math">.</div>
+<div class="paragraph">
+An algebraic structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> <em>satisfies</em> an algebraic sequent <img src="img-math/85de10ac6f6c31f59c318d2bae2df031d9f3db5ae807e08a699b5beda700608e.svg" class="inline-math"> if each interpretation of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> can be extended to an interpretation of <img src="img-math/3283616ef3686dc8a6e9fbd4124d326d8056dd01c4c809193c3d18ad42ea841c.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 38.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+Let <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"> be a term.
+The <em>flattening</em> of <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"> consists of a relational formula <img src="img-math/d088a39e1c1d7447aec1612a1704a95453657ad61115ef9fbb821ca83ce6d126.svg" class="inline-math"> and a result variable <img src="img-math/ebc00c7473e36276d100342553af64f0ff2a7ce6ce1f5a952489e76d41f7012e.svg" class="inline-math">.
+Flattening is defined recursively as follows:
+<ol>
+<li>
+<div class="paragraph">
+If <img src="img-math/549b1931b294c253c26df789ae3537a17d8df997bbb1c8cc7d0522c077501b36.svg" class="inline-math"> is a variable, then <img src="img-math/815f88e340c0afca2109f286a32969e3dc61bf93bc134e7dd9864e6491eb3d37.svg" class="inline-math"> is the empty conjunction and <img src="img-math/61de9a6a728136f89ff111981fb802837f16879b1f712d430a345d52b2bfe958.svg" class="inline-math">.</div>
+</li>
+<li id="itm-flattening-composite">
+<div class="paragraph">
+If <img src="img-math/5b92d66650a0f2e2c55ef3e3a46c336e809dc5ab12751b3d05769f5295a482e6.svg" class="inline-math">, then
+<div class="display-math-row">
+<img src="img-math/b1da35230844a7ee18fc741a5f5bf4bbf8c3ec2cc945b77bf9955149f7753470.svg">
+</div>
+where <img src="img-math/ea7c665aaddf26ff0439c38f61f969bd5684b28d9f41e43113c1df9714cca5b0.svg" class="inline-math"> is a fresh variable, and <img src="img-math/3a7641378c1f92c7e800cfd7e4be4b9d47944ca39822a42984b18f600495abd5.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+Let <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> be an algebraic atom.
+The flattening <img src="img-math/c905b7c1f917ce41471217e3b351f2f99a8c681a4c86e2bf4c9839cc3584027b.svg" class="inline-math"> is a relational formula which is defined depending on the type of <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> as follows:
+<ol>
+<li>
+<div class="paragraph">
+If <img src="img-math/3fb3ca78986fc43b19f6c25b6e5da29e5ffd467b541511ad6250debe34d74651.svg" class="inline-math"> for some predicate <img src="img-math/e7fe50f1c1a477637c0a75deef686fc94a90a1b1f2d66c2fba8b427f71ab41c6.svg" class="inline-math">, then
+<div class="display-math-row">
+<img src="img-math/3e24c6f39b7a3a55c9af2edb658d55e744447dcbe97e2fa8dd9f0723cc9299f3.svg">
+</div></div>
+</li>
+<li>
+<div class="paragraph">
+If <img src="img-math/6a2ddfa4d1b348d34330cd9a30b58353f600e3bd0283d6e262985a259e276c53.svg" class="inline-math"> for some term <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math">, then
+<div class="display-math-row">
+<img src="img-math/3d09eb0ff011793ce03cb15b561e959a6638b9e1d367bd1f2c2a814b5f37f4fc.svg">
+</div></div>
+</li>
+<li>
+<div class="paragraph">
+If <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> is of the form <img src="img-math/899a64a5d1269a6389c61259d29ef4f448a819a4d21adfaea77e0136bbd845ce.svg" class="inline-math"> for terms <img src="img-math/7a4d60af724d8195e7292b7027c6f089c4b89bb695b8cfaecee21942696c2736.svg" class="inline-math">, then
+<div class="display-math-row">
+<img src="img-math/768189d12849c5c7d010f23cd7659e14a35778fce2b48eaa40150125e8a3f917.svg">
+</div></div>
+</li>
+</ol>
+
+The flattening of an algebraic formula is the conjunction of the flattenings of each atom making up the formula.
+The flattening of an algebraic sequent is given by flattening premise and conclusion.</div>
+</div>
+<div class="paragraph">
+Note that the flattening of a term depends on the choice of “fresh” variable in clause <a href="#itm-flattening-composite">2</a>.
+</div>
+<div id="lem-flattening-versus-interpretation" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 39.
+</h4>
+Let <img src="img-math/a346436e391191696f995443bd93951e41c0e3be4e419be99467ab0d892d3300.svg" class="inline-math"> be the structure of an algebraic signature and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be an algebraic structure.
+<ol>
+<li>
+<div class="paragraph">
+Let <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"> be a term and let <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> be an interpretation of the variables occuring in <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.
+Then <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> is can be extended to the term <img src="img-math/f2598d99fab2985105d3dd0502f6d51aa02a03db4e9a9d1d6a42ce17d3a16e2f.svg" class="inline-math"> if and only if <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> can be extended to an interpretation of of the relational formula <img src="img-math/d088a39e1c1d7447aec1612a1704a95453657ad61115ef9fbb821ca83ce6d126.svg" class="inline-math">.
+In either case, if an <img src="img-math/73d2ad40491bdb8e1909bbbbdce199a55369b3335500d98fa0e704096ffafcf0.svg" class="inline-math"> exists, then it exists uniquely, and <img src="img-math/6aa0c228318abd0b9ce341ea3d75cb3a7dfeef68888b18c15f0dc9e572666544.svg" class="inline-math">.</div>
+</li>
+<li>
+<div class="paragraph">
+Let <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> be an algebraic atom and let <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> be an interpretation of the variables occuring in <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.
+Then <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> is an interpretation of <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> if and only if <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> can be extended to an interpretation <img src="img-math/73d2ad40491bdb8e1909bbbbdce199a55369b3335500d98fa0e704096ffafcf0.svg" class="inline-math"> of the relational formula <img src="img-math/c905b7c1f917ce41471217e3b351f2f99a8c681a4c86e2bf4c9839cc3584027b.svg" class="inline-math">.
+If <img src="img-math/73d2ad40491bdb8e1909bbbbdce199a55369b3335500d98fa0e704096ffafcf0.svg" class="inline-math"> exists, then it exists uniquely.</div>
+</li>
+<li>
+<div class="paragraph">
+Let <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> be an algebraic sequent.
+Then <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> if and only if it satisfies the relational sequent <img src="img-math/faf9031cf08c07a5d76a42256c0f8dee205ccfbb5ef1fbfa320eed7469a0de55.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+By construction.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Theorem 40.
+</h4>
+Let <img src="img-math/a346436e391191696f995443bd93951e41c0e3be4e419be99467ab0d892d3300.svg" class="inline-math"> be the structure of an algebraic signature, let <img src="img-math/efa61f399adfb32c78c025687a0d5a5ee8a5d6ca708f5c0ca1490a1b631afcd8.svg" class="inline-math"> be a set of algebraic sequents, and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be a relational structure.
+Then <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is an algebraic structure that satisfies the algbraic sequents in <img src="img-math/efa61f399adfb32c78c025687a0d5a5ee8a5d6ca708f5c0ca1490a1b631afcd8.svg" class="inline-math"> if and only if it satisfies the sequents <a href="#eq-functionality-axiom">(1)</a> for all <img src="img-math/cbf143c037e7dc37e36419f27f96f80394ba05763f4c5277b2ac8acccbdf2871.svg" class="inline-math"> and the flattenings of all sequents in <img src="img-math/efa61f399adfb32c78c025687a0d5a5ee8a5d6ca708f5c0ca1490a1b631afcd8.svg" class="inline-math">.
+</div>
+</div>
+<div id="lem-unflatten" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 41.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+Let <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> be a relational formula.
+Then there exists an algebraic formula <img src="img-math/176681cc6e7ddb15e28b2ba76dfa9f955e2a45c4d330fba349996ee33bc3665c.svg" class="inline-math"> with the following properties:
+<ol>
+<li>
+<div class="paragraph">
+Every variable occurs in <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> if and only if it occurs in <img src="img-math/176681cc6e7ddb15e28b2ba76dfa9f955e2a45c4d330fba349996ee33bc3665c.svg" class="inline-math">.</div>
+</li>
+<li>
+<div class="paragraph">
+Let <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> be an interpretation of the variables of <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> in an algebraic structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.
+Then <img src="img-math/d756fdc927a3b10ba98041597d879b1bfe720d12cc23b7e8ac9d822cf74ebbed.svg" class="inline-math"> is an interpretation of the algebraic formula <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> if and only if it is an interpretation of the relational formula <img src="img-math/176681cc6e7ddb15e28b2ba76dfa9f955e2a45c4d330fba349996ee33bc3665c.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Replace every relational atom of the form <img src="img-math/4c9cf669902df7aec8db4dc3630c171d2d8de8327e7fbd5f5d76dd65e6dbc268.svg" class="inline-math"> for some function symbol <img src="img-math/43cd36a51ff6c103f4591ce8423c8cd52cef5406073c31a02c8f3e7625841844.svg" class="inline-math"> with the algebraic atom <img src="img-math/787ee7913cc4c244955babf0ff2d2903d8436355957084df7a26db210f3be6f9.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 42.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+We associate to each algebraic formula <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> the algebraic structure
+<div class="display-math-row">
+<img src="img-math/6cc75ef2e2a37f207cb5e149d1141409cf91097695f685c7434fb632809efb92.svg">
+</div>
+and to each algebraic sequent <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math"> the evident morphism
+<div class="display-math-row">
+<img src="img-math/5a92f528dadad8ee84b52f2a7bd1de27e2fdc8bd21b2c9e61cb568aec0365467.svg">
+</div>
+of algebraic structures.</div>
+</div>
+<div id="prop-algebraic-formula-structure-universal" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 43.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+Let <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> be an algebraic formula and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be an algebraic structure.
+Then there is a bijection between interpretations of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> and maps <img src="img-math/0cfed522a17e9e4736f16664f57a43ca6e007bfb32e99a40e51b2a84bb08a8b6.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+This follows by combining Lemma <a href="#lem-flattening-versus-interpretation">39</a>, Proposition <a href="#prop-algebraic-formula-structure-universal">43</a> and the universal property of the free algebraic structure functor.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 44.
+</h4>
+Let <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> be an algebraic sequent and let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be an algebraic structure.
+Then <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> if and only if <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is injective to <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Analogously to the proof of Proposition <a href="#prop-relational-sequent-morphism-lifts">24</a>.</div>
+</div>
+<div id="lem-composition-sequent-morphisms" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 45.
+</h4>
+Let <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math"> and <img src="img-math/4cae6b83f8d9f77ccb55db8cca240d66a467c73b9fa3192d4923271a4f5bc188.svg" class="inline-math"> be algebraic sequents.
+Then
+<div class="display-math-row">
+<img src="img-math/0bccf61968b9ddc96f667a781f4acf916714ce147b0117fb0cff9faaad3a12d6.svg">
+</div></div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+This follows from Proposition <a href="#prop-algebraic-formula-structure-universal">43</a>.</div>
+</div>
+<h3>
+4.3 Completeness results</h3>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 46.
+</h4>
+Let <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> be an algebraic sequent.
+We say that <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is <em>epi</em> if every variable in the conclusion of <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> also occurs in the premise.
+We say that <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is <em>effectively epi</em> if every atom in the conclusion of <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is of the form <img src="img-math/899a64a5d1269a6389c61259d29ef4f448a819a4d21adfaea77e0136bbd845ce.svg" class="inline-math"> for terms <img src="img-math/7a4d60af724d8195e7292b7027c6f089c4b89bb695b8cfaecee21942696c2736.svg" class="inline-math"> that also occur in the premise.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 47.
+</h4>
+Let <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> be a function symbol.
+The <em>totality sequent</em> <img src="img-math/6b04223b8ae146563618903e41fd88723c5dbe9cc3979185d7a55c5530deeae5.svg" class="inline-math"> is given by
+<div class="display-math-row">
+<img src="img-math/fe415fda6da7d096a55bad73c309b46c33ac8462869dfc68079bb93e4e85943c.svg">
+</div></div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 48.
+</h4>
+Let <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> be a function symbol.
+<ol>
+<li>
+<div class="paragraph">
+An algebraic structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies <img src="img-math/6b04223b8ae146563618903e41fd88723c5dbe9cc3979185d7a55c5530deeae5.svg" class="inline-math"> if and only if <img src="img-math/da4e546545a8faa0502af11bd328aa900186ebefeda3ea2267601cc5ae836b0e.svg" class="inline-math"> is a total function.</div>
+</li>
+<li>
+<div class="paragraph">
+<img src="img-math/79e95b373372083c8355250edfbe1e6bf1ff25f60214a899067d59690ed9391f.svg" class="inline-math"> is an epimorphism of algebraic structures.
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 49.
+</h4>
+Let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be a map of algebraic structures.
+We say that <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> is <em>saturated</em> (with respect to <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math">) if and only if for all function symbols <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> and elements <img src="img-math/0df69325eda2787971a68ff3e42d20d1f5450d743b6f825b71cc0c77f6280a77.svg" class="inline-math">, the implication
+<div class="display-math-row">
+<img src="img-math/d25b9bdb929c7d593654c5ce9cf0d947cd1c61662eeae6a18a5c82fde078811c.svg">
+</div>
+holds.</div>
+</div>
+<div id="prop-saturation" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 50.
+</h4>
+Let <img src="img-math/c0f123f415f9afaacc2a0618278a0216dbb6d6413ab89268a28f0ec494af9666.svg" class="inline-math">, and let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be a map of algebraic structures.
+Then there exists a factorization
+<div class="display-math-row">
+<img src="img-math/4b60c481469a280b39e702805dd3ebb8f226bac7d3da1ac3544cab5d3c6322af.svg">
+</div>
+such that <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is a relative <img src="img-math/4c55a8dd03b5c58f3b694054366de00d1a59ece93a980315125f21ff847f6298.svg" class="inline-math">-cell complex and <img src="img-math/da4b61d60435d670e3da1c6f8f21156cb7d0573c7c3ad271abc61b8e07d586c5.svg" class="inline-math"> is saturated.
+Moreover, the triple <img src="img-math/2025debafec7e1961a0249b01f93cf9e4dd4ca97c550c915d2e2f5bc9da9cb9e.svg" class="inline-math"> is unique up to unique isomorphism.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Consider the set <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> of all triples <img src="img-math/3fbff4d2bf9da45410da23778dbdc7e2546ea07b7e6b30ca474d90a5ffc181c3.svg" class="inline-math"> commuting triangles
+<div class="display-math-row">
+<img src="img-math/451eb630794bfd6dc4de81b566d5b1b2f2ff46f23f32e000c1e57f8710f21ab7.svg">
+</div>
+<img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is a set of epimorphisms in the slice category <img src="img-math/44fedfa5a4b123a79dde00003bd1dfac8424cca2ff5327b7f3dee6338ff7aba4.svg" class="inline-math">.
+It follows that <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> is flub, so <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math"> is a reflective subcategory of <img src="img-math/44fedfa5a4b123a79dde00003bd1dfac8424cca2ff5327b7f3dee6338ff7aba4.svg" class="inline-math">.</div>
+<div class="paragraph">
+A map with codomain <img src="img-math/9b22c42f4aa3635a033cc55f28fb40f2cee07e691bd96620362527c2ec7c2396.svg" class="inline-math"> is saturated if and only if, as an object of <img src="img-math/44fedfa5a4b123a79dde00003bd1dfac8424cca2ff5327b7f3dee6338ff7aba4.svg" class="inline-math">, it is injective to <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.
+Thus the reflection of <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> into <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math"> results into a factorization <img src="img-math/c65ac7234c7c5f7fe7b6ae7adc8f258ac6076ed77b5d999ecbb2d8c495a931b7.svg" class="inline-math"> where <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is a relative <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">-cell complex and <img src="img-math/da4b61d60435d670e3da1c6f8f21156cb7d0573c7c3ad271abc61b8e07d586c5.svg" class="inline-math"> is saturated.
+Because the forgetful functor <img src="img-math/f950ac93f5ed81a23b2e8929f38f6041a0d2240868063ce6d6ec684e8d546f14.svg" class="inline-math"> preserves colimits, <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is also a relative <img src="img-math/4c55a8dd03b5c58f3b694054366de00d1a59ece93a980315125f21ff847f6298.svg" class="inline-math">-cell complex.
+</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 51.
+</h4>
+Let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be a map of algebraic structures.
+We call the unique factorization <img src="img-math/15041105358cf8846dd2c8406a6c8ce8003d9b1be461fa83852bcacf44a43a81.svg" class="inline-math"> as in Proposition <a href="#prop-saturation">50</a> the <em>saturization</em> of <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math">.</div>
+</div>
+<div id="lem-saturated-epis" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 52.
+</h4>
+Let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be a saturated map of algebraic structures.
+Then <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math"> if and only if it is an epimorphism in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+The free algebraic structure functor <img src="img-math/1bfef1246d32563944ae9c197a3559db73af8574c98d1d129d81a74ba0b2ab9e.svg" class="inline-math"> preserves epimorphisms, which shows necessity of the condition.</div>
+<div class="paragraph">
+Note that <img src="img-math/93e37908a64aef9fe4d049a3712cdc5be97d09d7448079a8b20d54e3b0f56c30.svg" class="inline-math">, that is, the image algebraic structure can be computed as image of relational structures.
+Because <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math"> or <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math"> if and only if the inclusion of the image in the corresponding category is an epimorphism, we may assume that <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is a monomorphism, i.e. injective on carriers.</div>
+<div class="paragraph">
+Consider the the pushout <img src="img-math/0cf9922e2cc62fa8c7061e9ed80bb3628fed08fa1d496f2c44045765009dba39.svg" class="inline-math"> in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.
+There are inclusions <img src="img-math/b9d1d7a14e4ffb6dc005c793540a66ae53b472c1356a4d62b8ebc981e97b2dcc.svg" class="inline-math">, <img src="img-math/4527499ef99b2991a8b9b3c53333d6cc28cc8ca38ee1ecd213094ab6adf519dd.svg" class="inline-math"> corresponding to the two components of <img src="img-math/4c05afc6664108fe9d9c4a686e8c394005bad449b090b625d79d93c699066144.svg" class="inline-math"> such that <img src="img-math/de2446341985e40d0e078762e03a75f13488902f730b5cb84ea0468f042fa384.svg" class="inline-math">, and an inclusions <img src="img-math/ad9d9907318f7cdb901dc728abe03f87adb54dc7934bcdf9002f52890c6949a2.svg" class="inline-math">.
+We have <img src="img-math/da80dd358aed3dfd801f6c42228b5615d540048b5806a6f0752f12ecf13121e2.svg" class="inline-math"> for all sorts <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math">, but note that the analogous equation does not hold for relations:
+Epimorphisms of relational structures need not be surjective on relations.</div>
+<div class="paragraph">
+We claim that <img src="img-math/4c05afc6664108fe9d9c4a686e8c394005bad449b090b625d79d93c699066144.svg" class="inline-math"> is an algebraic structure.
+Thus let <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> be a function symbol, and let <img src="img-math/9615246f14b2d5d989d0653dee6010ac367215fa1c1287f36e46bace38e7dbc9.svg" class="inline-math"> such that <img src="img-math/5c8db6549e29fc27fe2894fb401dd0fd0f0ad23c0fa84199c14b5c986b5bb3c5.svg" class="inline-math"> and <img src="img-math/6349091888501a30c56ceecf7a10d465e576c99059c51d4a97b71cc5e8e50eb1.svg" class="inline-math">.
+We need to show that <img src="img-math/1615632a5322d2a9ed3f61a44d49d46ffb7c58ede9bccd9490c01463a1c23f0e.svg" class="inline-math">.</div>
+<div class="paragraph">
+If <img src="img-math/46316062e6cad890b5f2e09ce09f954457f8ff242a1ee2858f81d069368e3702.svg" class="inline-math"> or <img src="img-math/9a369dd04e86230126a9c0184ff52c5cb19ad0295977a372fbd8c5424cf70b88.svg" class="inline-math"> this follows from the fact that <img src="img-math/b8165258bda748045b98bdb3ad89c5ed0d6673b3447bf537f3ea16245677011d.svg" class="inline-math"> is an algebraic structure.
+We may thus (by symmetry) assume that <img src="img-math/4de8fc17b0d7ecedf695e7b9fc8abb7a04e98a1ede67ccbe5ebb01d33ce96f3e.svg" class="inline-math"> and <img src="img-math/5a061b8c09c885a8c5e0efd17a8007e6a81ea7cd0c3fdabb1d9f3fb32d00a5a4.svg" class="inline-math">.
+Now <img src="img-math/8a899abcea93e8ba4229345a59302bb82f1e3fcf644709c603c60d716127a0e3.svg" class="inline-math">, hence <img src="img-math/88ebf9dd0f1938599bc34449bd7aeb4d685c2dbafb68009356fee213ac7ead99.svg" class="inline-math">.
+Because the inclusions <img src="img-math/05ecf3d087d7153bcb47332b6231a5ea0e01631f6aa61d91b83e66907d920379.svg" class="inline-math"> are saturated, we have <img src="img-math/9457b18e4ef1ef1a63c2acc3f0f744a54e0990043da54af43e109ebb60f5c6c5.svg" class="inline-math"> for some <img src="img-math/96a242d6b417eece2739715ac64a4781942932be455d81f8832e69f93fdd5a2d.svg" class="inline-math">.
+It follows that <img src="img-math/4f4b4a3f0cefdb3c0e5c687d19d83ebd6dd3b258fd00a90dae0b9966037c159f.svg" class="inline-math"> and <img src="img-math/68f651078bea17e88abf6cba09b2d2ed4d73810c540f068eb8bcfd922adfa507.svg" class="inline-math">, hence <img src="img-math/1615632a5322d2a9ed3f61a44d49d46ffb7c58ede9bccd9490c01463a1c23f0e.svg" class="inline-math">.</div>
+<div class="paragraph">
+Now, if <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math">, then the two maps <img src="img-math/6709bdd47d78e56f97f9c5f4d5259ab794aae600d842d61c73fae8caa73fbd2f.svg" class="inline-math"> agree.
+But we have just shown that <img src="img-math/a16580dbfbcd286f9c09e963fb8f17339bd09214764963d93bc466f188179044.svg" class="inline-math">, so also the two maps <img src="img-math/dd5f4392f4b7f580d4c1331c6d5c8b90c5afdbad5667370be2c14732725060d3.svg" class="inline-math"> agree, which implies that <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is surjective, i.e. an epimorphism in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.</div>
+</div>
+<div id="prop-algebraic-epis" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 53.
+</h4>
+Let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be a map of algebraic structures.
+<ol>
+<li id="itm-algebraic-epimorphisms">
+<div class="paragraph">
+Let <img src="img-math/15041105358cf8846dd2c8406a6c8ce8003d9b1be461fa83852bcacf44a43a81.svg" class="inline-math"> be the totalization of <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math">.
+Then <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math"> if and only if <img src="img-math/da4b61d60435d670e3da1c6f8f21156cb7d0573c7c3ad271abc61b8e07d586c5.svg" class="inline-math"> is an epimorphism in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.</div>
+</li>
+<li id="itm-algebraic-effective-epimorphisms">
+<div class="paragraph">
+<img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an effective epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math"> if and only if it is an effective epimorphism in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+<a href="#itm-algebraic-epimorphisms">1</a>.
+Every morphism in <img src="img-math/4c55a8dd03b5c58f3b694054366de00d1a59ece93a980315125f21ff847f6298.svg" class="inline-math"> is an epimorphism.
+Since epimorphisms are stable under pushouts and transfinite compositions, every relative <img src="img-math/4c55a8dd03b5c58f3b694054366de00d1a59ece93a980315125f21ff847f6298.svg" class="inline-math">-cell and in particular <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is an effective epimorphism.
+We conclude with Lemma <a href="#lem-saturated-epis">52</a>.</div>
+<div class="paragraph">
+<a href="#itm-algebraic-effective-epimorphisms">2</a>.
+This follows from general properties of colimits and reflective subcategories.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 54.
+</h4>
+An algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is called <em>epi</em> if every variable that occurs in the conclusion of <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> also occurs in the premise.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 55.
+</h4>
+Let <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> be an algebraic sequent.
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is epi, then the reflection of <img src="img-math/be44eda285edd486f9ce2bb70d2382c357fbb695b611139548d9f1a06a3f3f81.svg" class="inline-math"> into the category of algebraic structures is an epimorphism of finite algebraic structures.
+Conversely, if <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math"> is an epimorphism of finite algebraic structures, then there exists an epi algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> such that <img src="img-math/77f9cbfc2469ffe87af4bbd11c23314cd582de9aa0db1d9faddb025cebfa5167.svg" class="inline-math">.
+
+</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 56.
+</h4>
+
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be flub set of morphisms, and let <img src="img-math/860fb91fb8225fc14e84b953453544cb19bcabbe5406d1463334e1d7133a9aa2.svg" class="inline-math">.
+Denote by <img src="img-math/989d384e2ca04d72d670316419808faa16ade73f42143212b532162934d57816.svg" class="inline-math"> the reflection of <img src="img-math/e82ad592b5e71ff9299163153c66f4ef674cc2cf1d12363199fe7f0dfede357d.svg" class="inline-math"> into <img src="img-math/85c2292fb1090fe7275a9dd52d27346d3e82bfe1413a3cbe18f09dde1d1a2b1f.svg" class="inline-math">.
+Then
+<div class="display-math-row">
+<img src="img-math/c9f5c60fd487cd890b7920cfb293b7fc04f64fa22ec69eb66fa72e0596eb9f44.svg">
+</div>
+and
+<div class="display-math-row">
+<img src="img-math/46258e59f5dd6e2d0c4ef085a54ec26c14bebb7a37c4cfda4bcda9114df34589.svg">
+</div></div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be orthogonal (equivalently, injective) to <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.
+Then there is bijective correspondance between solutions to the following lifting problems:
+<div class="display-math-row">
+<img src="img-math/4f804a81759a696381298fc1470142799ee6dc0082988671c1c068a1efc8ec2e.svg">
+</div>
+Here <img src="img-math/5bbc33248d7fae0923c9d82cb7eebc0609dcc4c6f04af1cfab46917781508f73.svg" class="inline-math"> is an arbitrary map, and <img src="img-math/cce919f015088cf9291181ca55fd8f78a634e571b9e0ab95569fef5b2c3d1944.svg" class="inline-math"> is induced from <img src="img-math/5bbc33248d7fae0923c9d82cb7eebc0609dcc4c6f04af1cfab46917781508f73.svg" class="inline-math"> by the universal property of <img src="img-math/3eb6a705776371a8137736c97ff840fde3a4eac6327a1ff6582206c0f69e3b7e.svg" class="inline-math"> and <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> being orthogonal to <img src="img-math/0c95512de45ed1fd9c42f11a2284e80144cbe3b35bb46f8f96ce6476aac6705e.svg" class="inline-math">.</div>
+</div>
+<div id="lem-flattening-atoms" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Lemma 57.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+Let <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> be an algebraic formula and let <img src="img-math/38774a95266db54b1483065010f45e21d6565a9cce4d41ed9685b7e3380e3a86.svg" class="inline-math"> be the set of variables that occur in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">.
+Let <img src="img-math/26627d6fbd672820ed30fc981f0a1e4e695b9db138e829eae41e6ed4236b73a1.svg" class="inline-math"> for relational atoms <img src="img-math/c5c0775b51c0c2296df0a55b658f0b416679417cf66ebd819234f7909393369f.svg" class="inline-math">.
+Let <img src="img-math/015ca6b3a96916e7a41e0eb15d232834d5566fd216d3e1cb19ad7688af992e1a.svg" class="inline-math"> for some <img src="img-math/0cd2ebe455fa9275c1072dc16d298bf3365b494df3871d22de001ba5dad53edf.svg" class="inline-math"> and let
+<div class="display-math-row">
+<img src="img-math/adfe69271a47fb7c86fe6f58c293fff5acdd8ab54c1aca2b11c522ccd2d0a35b.svg">
+</div>
+Then <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> has one of the following forms:
+<ol>
+<li id="itm-flattened-predicate-case">
+<div class="paragraph">
+<img src="img-math/6915f1a65332b94db2b9e519157ac13e8ae2bbf65a6dd04b1d6f8c4e06820576.svg" class="inline-math">, where <img src="img-math/e7fe50f1c1a477637c0a75deef686fc94a90a1b1f2d66c2fba8b427f71ab41c6.svg" class="inline-math"> is a predicate symbol and <img src="img-math/f5b895c05a8854676fc1f6883ef3381c91809ddc53ecad4e3f5c5e773f625014.svg" class="inline-math">.</div>
+</li>
+<li id="itm-flattened-function-case">
+<div class="paragraph">
+<img src="img-math/0c411c6f1d7e4b3937c4dba0ff146d1e48ce1c3879f112499f34b0c3e2a2ca4d.svg" class="inline-math">, where <img src="img-math/d46550f7792998eef51e76e8bdeeb43c445402456f07a65e2a2f01bf824de9d0.svg" class="inline-math"> is a function symbol, <img src="img-math/f5b895c05a8854676fc1f6883ef3381c91809ddc53ecad4e3f5c5e773f625014.svg" class="inline-math"> and <img src="img-math/6d4800e101355676e5e1b8bb700ca7ffd11b2031ef523e0bf21ed712dd37c219.svg" class="inline-math">.</div>
+</li>
+<li id="itm-flattened-defined-case">
+<div class="paragraph">
+<img src="img-math/441d604ffeade869444ad3182014b579e45998b426fc14d86bee1509699ff63f.svg" class="inline-math">, where <img src="img-math/6d42d157f3c408ea615a4b188b60795bf959592a1abae720987ef595ae0175b0.svg" class="inline-math">.</div>
+</li>
+<li id="itm-flattened-equals-case">
+<div class="paragraph">
+<img src="img-math/872a0d4c2dc52d1f4d805379ef437fbe72efd134ef6f6b37715210a2165c51ae.svg" class="inline-math">, where <img src="img-math/dc1d239c77ae5bf09d374148c85066eee159b265aaed77524d75ae0943521f06.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+</div>
+</div>
+<div id="prop-semantics-algebraic-sequents" class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 58.
+</h4>
+Let <img src="img-math/bd142337874b03b631bac4ac955244855bf9efc23ed2b6708c18108e9c5df19a.svg" class="inline-math"> be an algebraic signature.
+The image of (epi, quotient) algebraic sequents under the assignment <img src="img-math/e7fd86cb9f0d53ae9ddafe13f5d1cb4b9e4b7b6136fdd2cd4a2154f178ca19ac.svg" class="inline-math"> can be described as follows:
+<ol>
+<li id="itm-semantics-arbitrary-algebraic-sequent">
+<div class="paragraph">
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is an algebraic sequent, then <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is a map of finite algebraic structures.
+Conversely, every map of finite relational structures is isomorphic to a map of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for some algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</li>
+<li id="itm-semantics-epi-algebraic-sequent">
+<div class="paragraph">
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is an epi algebraic sequent, then <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is an epimorphism of finite algebraic structures.
+Conversely, every epimorphism of finite relational structures is isomorphic to a map of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for some epi algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</li>
+<li id="itm-semantics-quotient-algebraic-sequent">
+<div class="paragraph">
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is a quotient algebraic sequent, then <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is an effective epimorphism of finite algebraic structures.
+Conversely, every effective epimorphism of finite relational structures is isomorphic to a map of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for some quotient algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+<a href="#itm-semantics-arbitrary-algebraic-sequent">1</a>.
+If <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is an algebraic sequent, then by <a href="#prop-semantics-relational-sequents">28</a>, <img src="img-math/6fd5565352df88ec0a9712bc16561af80a2829ef7a2e6ae665a229fd3e2e3ad1.svg" class="inline-math"> is a map of finite relational structures, hence <img src="img-math/f61bae678f0bd394392f251cd111f83a21f9403cf70ff23d2d7b576fbc18d912.svg" class="inline-math"> is a map of finite algebraic structures.</div>
+<div class="paragraph">
+Conversely, let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be a map of finite algebraic structures.
+Then <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is, in particular, a map of finite relational structures.
+By <a href="#prop-semantics-relational-sequents">28</a>, there exists a relational sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> such that <img src="img-math/03c75fe5aa48682a3c44e44f195eddc60e388298af1f353e7a7e062af71767f4.svg" class="inline-math">.
+We can now invoke Lemma <a href="#lem-unflatten">41</a> to obtain an algebraic sequent <img src="img-math/180d91a4744561cdaa2afaab7930dfeacb5db891653238196be1c128783bb70d.svg" class="inline-math"> such that <img src="img-math/66043354ccf27f22a3dac9b3b9a5f3f3d2f3b7481105c314d5c230b024e43031.svg" class="inline-math">.</div>
+<div class="paragraph">
+<a href="#itm-semantics-quotient-algebraic-sequent">3</a>.
+Let <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math"> be a quotient relational sequent.
+By Lemma <a href="#lem-composition-sequent-morphisms">45</a>, we may assume that <img src="img-math/d5a4dc32fc90e0462105f68eeb69f4594edc5a9a194090d71cdc5cfd96d64f0a.svg" class="inline-math"> for terms <img src="img-math/7a4d60af724d8195e7292b7027c6f089c4b89bb695b8cfaecee21942696c2736.svg" class="inline-math"> that also occur in the premise.
+It follows that <img src="img-math/34ad28ef2afb942ede5659e481757544e0397b1f6bbf752554dc5ec0db22d76a.svg" class="inline-math"> and <img src="img-math/b0e52faf9d19e750c1f4e32875ef8796e9a6ac726689574bbfff49b31dfc6572.svg" class="inline-math"> occur in <img src="img-math/8be1529c3a3222c20682cac43936fa2cf9e066d6bb9c1bfbe2a5e55db329c98a.svg" class="inline-math">.
+Thus <img src="img-math/033c2d8f74f7d58017e7652a3a6762f4bdaf17553d4ee5790a55a451a86f1922.svg" class="inline-math"> is a quotient relational sequent such that <img src="img-math/718a2ef45e76d2963180e4171ecf7d21bf2dd85571104f8bc9d95a542401ed23.svg" class="inline-math">.
+By clause <a href="#itm-semantics-quotient-relational-sequent">3</a> of Proposition <a href="#prop-semantics-relational-sequents">28</a>, <img src="img-math/6f0670a06666f34bfba5b6f17610d0ca29ae833e54b56307c39b5166a31e1b24.svg" class="inline-math"> is an effective epimorphism of relational structures.
+Because the free algebra functor is a left adjoint, it preserves effective epimorphisms.
+Thus <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> is an effective epimorphism.</div>
+<div class="paragraph">
+<a href="#itm-semantics-epi-algebraic-sequent">2</a>.
+Let <img src="img-math/1835248f9f5f5ff3fd171a9689be946551687e7d5e73e02b53bc42aeab822f4d.svg" class="inline-math"> be the flattening of an epi algebraic formula.
+We need to show that <img src="img-math/34f554f5343cab905fb4425ec799bc4d63977ef90deef13db2780471dad83c5b.svg" class="inline-math"> is an epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math">.</div>
+<div class="paragraph">
+By Lemma <a href="#lem-composition-sequent-morphisms">45</a>, we may without loss of generality assume that <img src="img-math/0690e446f388059c1816500945cb922a3bc1e9db469e1c92bfc49cb91fb24794.svg" class="inline-math"> is a relational atom of one of the types as in Lemma <a href="#lem-flattening-atoms">57</a>, where <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math"> is the set of variables in <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math">.
+In cases <a href="#itm-flattened-predicate-case">1</a>, <a href="#itm-flattened-defined-case">3</a> and <a href="#itm-flattened-equals-case">4</a>, the map <img src="img-math/406f1932d845793309b5538c571274882a888a443607c738615f892422d06092.svg" class="inline-math"> is surjective.
+Because the free algebra functor preserves epimorphisms, this implies that <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math">.
+In case <a href="#itm-flattened-predicate-case">1</a>, <img src="img-math/406f1932d845793309b5538c571274882a888a443607c738615f892422d06092.svg" class="inline-math"> is a pushout of <img src="img-math/79e95b373372083c8355250edfbe1e6bf1ff25f60214a899067d59690ed9391f.svg" class="inline-math"> in <img src="img-math/d938087d32c7352a9bcfbce0f3d68f36a91de22463c9e3b34dd63eace52284a5.svg" class="inline-math">.
+Since <img src="img-math/708717f99e7fa73912df41a8df9a0936d4d8b62f37787afcaab73ddde4d0bc88.svg" class="inline-math"> is an epimorphism in <img src="img-math/042e6fb763b2e0b92c54f26117c2b08bb79332109ffdac55d0672d9846af3a90.svg" class="inline-math"> and pushouts preserve epimorphisms, it follows that also in this case <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism.</div>
+<div class="paragraph">
+Conversely, let <img src="img-math/263c83dcb72d9fd582d09a904e74ebdd7a099952d718f53288c20804787c7fa2.svg" class="inline-math"> be an epimorphism of finite algebraic structures.
+Let <img src="img-math/15041105358cf8846dd2c8406a6c8ce8003d9b1be461fa83852bcacf44a43a81.svg" class="inline-math"> be the saturation of <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math">.
+Then <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is a relative <img src="img-math/4c55a8dd03b5c58f3b694054366de00d1a59ece93a980315125f21ff847f6298.svg" class="inline-math">-complex, hence <img src="img-math/2c6c5fa17754a355bfa95f1d8cdcb03d03b9df34d1e1bb8661537d3fd643ce72.svg" class="inline-math"> is the colimit of a chain
+<div class="display-math-row">
+<img src="img-math/bfce6386c2635325bae312f0c24709e8278160c167871a4bf2981e48ae769cf9.svg">
+</div>
+where each <img src="img-math/a6a071f17dcef428206363275b5cdd8722f208f582980e894eaa2d7d2305a2c1.svg" class="inline-math"> is a pushout
+<div class="display-math-row">
+<img src="img-math/dde5766ad71a73d78b64f200ae6ca831c1d1948fe3850f4da1dc575ca3ed170f.svg">
+</div>
+of a totality sequent <img src="img-math/193917c7cf705fe5cbadf62d0c651f4dcbd2b64d9a9ad7112d78318f1a058157.svg" class="inline-math">.</div>
+<div class="paragraph">
+We claim that <img src="img-math/e7171451fd49f70fc65583e2d63e892655dfb49c82cf45fc7244d9efcc693fde.svg" class="inline-math"> for some epi algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> for all <img src="img-math/040d0920e0c61e475199525e5bb601baf8befce883c21f56448c85832c6b0de3.svg" class="inline-math">.
+To verify this, choose first an algebraic formula <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> such that <img src="img-math/fb6d54017be7fc2b6ca918fcc66f0dd8f6e2ebbf7e3c9945eee7bdecf831e67c.svg" class="inline-math">.
+A formula <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> with property exists because <img src="img-math/bc875b5fa11bf26e108025133d4945de65f1304c8e643a339de3e17007060bec.svg" class="inline-math"> is finite.
+The map <img src="img-math/5bbc33248d7fae0923c9d82cb7eebc0609dcc4c6f04af1cfab46917781508f73.svg" class="inline-math"> corresponds to elements <img src="img-math/0df69325eda2787971a68ff3e42d20d1f5450d743b6f825b71cc0c77f6280a77.svg" class="inline-math">, and these elements correspond to terms <img src="img-math/6095fd8f69b39f623ecc40c15f00f5a2dd35cc05622ee8f2f4862ef77c926288.svg" class="inline-math"> that occur in <img src="img-math/44883461ca0adf9942d77f6e3cd7b6d48d975aee4832a1a9844064c7c0c6f38c.svg" class="inline-math">.
+Now <img src="img-math/d88e1e39c6023d896f6705dd470284b6e8b15d14f107aac7f2761368e8b08e7b.svg" class="inline-math">.</div>
+<div class="paragraph">
+Let <img src="img-math/936834fe7399efbace59cdc0b9f056ed8c0884c4093ea2eac6b125338707a0b0.svg" class="inline-math"> for <img src="img-math/040d0920e0c61e475199525e5bb601baf8befce883c21f56448c85832c6b0de3.svg" class="inline-math">.
+Because <img src="img-math/9b22c42f4aa3635a033cc55f28fb40f2cee07e691bd96620362527c2ec7c2396.svg" class="inline-math"> is finite, the chain
+<div class="display-math-row">
+<img src="img-math/34102ccf66b9c7e24c9a4903d07b4469078c9e105392d133cf37e01458edd7f5.svg">
+</div>
+becomes stationary, say for <img src="img-math/89bea48b1015632bbc3c28a03e8674476df88dd2c535cd49623bc7c63aed1a9e.svg" class="inline-math">, and then <img src="img-math/b436f39d0bbbaf95363296f492bc2086e83670a1d8a04e009e6aa7db28b9925a.svg" class="inline-math">.
+<img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> is an epimorphism, hence <img src="img-math/da4b61d60435d670e3da1c6f8f21156cb7d0573c7c3ad271abc61b8e07d586c5.svg" class="inline-math"> is a surjection by Proposition , hence also <img src="img-math/5057f03ffb6eefb715cfce704b5f2e692ff8929a69548850ce823ac6a810042a.svg" class="inline-math"> is a surjection.
+Thus <img src="img-math/eaf45b41555d62432dd762a23c3cb9efe60a546186d7d42d9569edec1ee2121f.svg" class="inline-math"> for some surjective relational sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.
+Note that because <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> is surjective, the algebraic sequent <img src="img-math/180d91a4744561cdaa2afaab7930dfeacb5db891653238196be1c128783bb70d.svg" class="inline-math"> is epi.</div>
+<div class="paragraph">
+We have thus decomposed <img src="img-math/9b1098dcfe2d663b5d5a5cb4ce50fdeb46b0518e744236fa9d1515e0f4ab64de.svg" class="inline-math"> as
+<div class="display-math-row">
+<img src="img-math/45d3f89620b6db89a73972d3c5c3dbbc74524914fdf19d85ee2725128211bf62.svg">
+</div>
+where each map is of the form <img src="img-math/f2f002b99d97430b4903e61648c7f7a1edf9087348ae75c71ac3481ddb422e9a.svg" class="inline-math"> for some epi algebraic sequent.
+It follows that also <img src="img-math/3fb4a86e025596ec028f22242ef06d19e381c980367c4f578db72793bdb906c9.svg" class="inline-math"> for some epi algebraic sequent <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">.</div>
+</div>
+<div class="theorem-like theorem-style-theorem">
+<div class="paragraph">
+<h4>Proposition 59.
+</h4>
+Let <img src="img-math/877d3761764be9f212e6e0189eccbb9b95d1c06ef914515a2219b5b4cfbc92e4.svg" class="inline-math"> be a relational signature.
+Let <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> be a set of finite relational <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">-structures.
+Then there exists an algebraic signature <img src="img-math/3bba93011c37997559fd2306f489974fae37aad156391aca5d6976b3e08b9ff2.svg" class="inline-math"> on the same set of sorts <img src="img-math/c2832d80b5751e91f954f46420dd121ac1301332acd6793d0af2b57613eab6ee.svg" class="inline-math"> such that <img src="img-math/da43c662a20b4f084701034d73cb95ec8e127b3b284c6966c9e19f3454795527.svg" class="inline-math"> and a set <img src="img-math/e3e5baf40a4b705be0aea94f258ebaef8ece074188c3ccad266f4cd4e121af66.svg" class="inline-math"> of epimorphisms of finite algebraic <img src="img-math/20e75ac6438dfb65954d668720e0204e9613f6ad0ede85a9a3aa63777a7c7050.svg" class="inline-math">-structures such that the forgetful functor <img src="img-math/2315a6f819727099d7189c468e73ff348bcdd1749af4437497611d8815c98cad.svg" class="inline-math"> restricts to an equivalence <img src="img-math/0b332c8581d40152084984493dead7083e791fcf57f90a4f8e3f6875fc08376e.svg" class="inline-math">.</div>
+</div>
+<div class="proof">
+<div class="paragraph">
+<i class="proof">Proof.</i>
+Choosing a relational seuqent <img src="img-math/3da84e0b664eeca6f95eb8be567d5905f3f99275ebcea6bfd9656398b31d0650.svg" class="inline-math"> such that <img src="img-math/0ea0044d185dd3b49768f8912f4f8b55db43cb96f0a66076c20fe899a9ce1b82.svg" class="inline-math"> for each <img src="img-math/0a7c21c04c22c783c13f51661892f2557dc98fb57bec043a14a726cfa7a53253.svg" class="inline-math">, we identify <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> with a set of relational sequents.</div>
+<div class="paragraph">
+Our set of function symbols <img src="img-math/4725abe47aed135a5c18e36ef6378a1f0790a3f5093662610105d03023a3dcab.svg" class="inline-math"> is given by
+<div class="display-math-row">
+<img src="img-math/94c69890afefcfefe2c07ec4fe058be1713e8708fffd852aca8020887579b12e.svg">
+</div>
+Let <img src="img-math/059462896ccb08212fd810d33f54696aeccaffeededf77334e8b038bcac73991.svg" class="inline-math"> be in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> and let <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> be a variable in <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math">.
+Let <img src="img-math/9f9d02bacb4f56a8a939ddeba68bc711a1023e0689dc525980a337ddeabc333c.svg" class="inline-math"> be an enumeration of the variables in <img src="img-math/aae541c99c13ff410fb06af88f1a8a53b8abf2194ed0a4d7b3d7124b47d476b3.svg" class="inline-math">, let <img src="img-math/008b0397f04bd0cac38fe19fd1d380fc097d9d87d2a0b7bff496f402bdd3cab9.svg" class="inline-math"> be the sort of <img src="img-math/a970f58b8c5d471ba530c16af879bf107969809e6a9a813e8b0e14dc598327d8.svg" class="inline-math"> and let <img src="img-math/d0be9cc3a6f8c731b78ea0cb0ebd105f0bae120db876b262c2dfedee248c9b1a.svg" class="inline-math"> be the sort of <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math">.
+Then we define the signature of <img src="img-math/295e0cfed539e56c9bc42ad483e56fd99397913ac2e321c8f07caef42b940549.svg" class="inline-math"> by <img src="img-math/2c9c91fbba5ba90b0bbfb36f61f1b7af836bd01327b7f3d12fdc8458dd873343.svg" class="inline-math">.</div>
+<div class="paragraph">
+Note that each relation symbol in <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> corresponds to a predicate symbol in <img src="img-math/20e75ac6438dfb65954d668720e0204e9613f6ad0ede85a9a3aa63777a7c7050.svg" class="inline-math">.
+We thus implicitly coerce relational <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">-sequents to algebraic <img src="img-math/20e75ac6438dfb65954d668720e0204e9613f6ad0ede85a9a3aa63777a7c7050.svg" class="inline-math">-sequents (without invoking <img src="img-math/e4a3214ccc7f5f2e3d7e393d7dd82aebf1c97b97953ea0f4ef07f6d67c28911a.svg" class="inline-math">).</div>
+<div class="paragraph">
+Let <img src="img-math/e3e5baf40a4b705be0aea94f258ebaef8ece074188c3ccad266f4cd4e121af66.svg" class="inline-math"> be the set containing the following algebraic sequents, for all <img src="img-math/85de10ac6f6c31f59c318d2bae2df031d9f3db5ae807e08a699b5beda700608e.svg" class="inline-math"> in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">:
+<ol>
+<li id="itm-new-functions-satisfy">
+<div class="paragraph">
+The sequent <img src="img-math/2485b07c3a86a22c7133d53e9b8ca59a40c00cb304fb25c7bc1acfa3a66e749f.svg" class="inline-math">, where <img src="img-math/d82b1582b5e9b5ac574faf1e386c39fa185ea832d7f26fb3aaeb7d54a3942e38.svg" class="inline-math"> is obtained from <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math"> by replacing each variable <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> in <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math"> with <img src="img-math/f29b73f4cf376807cb8d930cbe5bd495b3d8d5903c227f4bff92386054a7e5fc.svg" class="inline-math">.</div>
+</li>
+<li id="itm-new-functions-only-defined-if-premise">
+<div class="paragraph">
+The sequents
+<div class="display-math-row">
+<img src="img-math/2595b6cd4bd93485fb14ad65ea63acd5b373eb6941be70a2edeb5dcae3274e1f.svg">
+</div>
+for all variables <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> in <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math">.</div>
+</li>
+<li id="itm-new-functions-uniquely">
+<div class="paragraph">
+The sequents
+<div class="display-math-row">
+<img src="img-math/8c840435c20b562c735d2233a76d814d9e1b62b31b386038a09949a5e42c73e2.svg">
+</div>
+for all variables <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> in <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math">.</div>
+</li>
+</ol>
+
+Clearly algebraic sequents in <img src="img-math/e3e5baf40a4b705be0aea94f258ebaef8ece074188c3ccad266f4cd4e121af66.svg" class="inline-math"> are epi.</div>
+<div class="paragraph">
+Now let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be a relational <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">-structure that satisfies all sequents in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.
+We define an algebraic <img src="img-math/20e75ac6438dfb65954d668720e0204e9613f6ad0ede85a9a3aa63777a7c7050.svg" class="inline-math">-structure <img src="img-math/c8b8adfed5765df7a74480a6b1f6013bc99b7adb8878e5713db13d9b3457198d.svg" class="inline-math"> on the underlying relational <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">-structure <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> by defining
+<div class="display-math-row">
+<img src="img-math/8259ba554e6b35b432f76f997aca45386ba674d9d908e8745c66c6606c3283ab.svg">
+</div>
+if the assignment <img src="img-math/207d7ab78292e99dd87120bf4de2f3a51259730ae191e3350ec847e0ca799875.svg" class="inline-math"> defines an interpretation of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">, and the unique extension to an interpretation of <img src="img-math/c7b3da049303bac09c9231162d9d69a7cd501cbff5a8c74898bf2e7dcfa101ca.svg" class="inline-math"> maps <img src="img-math/fe8f0c1da03f51ed21d0d2863cd1a9c128c2c1b37bdfb6dbe6f7cfb61b090e1b.svg" class="inline-math"> to <img src="img-math/d3d0a1b0efae852cb27e8edcf9eacf3fc77287336306f558042c267acd9f25f7.svg" class="inline-math">.
+Now clearly <img src="img-math/c8b8adfed5765df7a74480a6b1f6013bc99b7adb8878e5713db13d9b3457198d.svg" class="inline-math"> satisfies all sequents in <img src="img-math/e3e5baf40a4b705be0aea94f258ebaef8ece074188c3ccad266f4cd4e121af66.svg" class="inline-math">.</div>
+<div class="paragraph">
+Conversely let <img src="img-math/c8b8adfed5765df7a74480a6b1f6013bc99b7adb8878e5713db13d9b3457198d.svg" class="inline-math"> be an algebraic <img src="img-math/20e75ac6438dfb65954d668720e0204e9613f6ad0ede85a9a3aa63777a7c7050.svg" class="inline-math">-structure satisfying all sequents in <img src="img-math/e3e5baf40a4b705be0aea94f258ebaef8ece074188c3ccad266f4cd4e121af66.svg" class="inline-math">, let <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> be the underlying relational <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">-structure, and let <img src="img-math/aead9b9c366d470a4cc449286a167f17f2ee6e18144c5e838177d304e70fa7a4.svg" class="inline-math"> be a relational sequent in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.
+Then by the algebraic sequent <a href="#itm-new-functions-satisfy">1</a>, <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">, and the algebraic sequent <a href="#itm-new-functions-uniquely">3</a>, <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> satisfies <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math"> uniquely.</div>
+<div class="paragraph">
+Because of the sequents <a href="#itm-new-functions-only-defined-if-premise">2</a>, the functions <img src="img-math/c0441018e9712d858159dc1519e3b51064a9e0d94a707ecf05d9085ffd1fc87d.svg" class="inline-math"> have the same domain for all <img src="img-math/984068dbff5bed4b6e525238c8c5cae7fcfc4325ee903f8f50ae72d57a575402.svg" class="inline-math"> in the premise of <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">:
+The set of tuples <img src="img-math/6043ed3adb8110d5cc23dbda22d1a30707e66053196e938cec01f4afe9f269b4.svg" class="inline-math"> such that <img src="img-math/207d7ab78292e99dd87120bf4de2f3a51259730ae191e3350ec847e0ca799875.svg" class="inline-math"> defines an interpretation of <img src="img-math/8b4fb74482e4644bd958ee9a8f2c6389ac29dc5c4ad02eaa776cf7aac68302f7.svg" class="inline-math"> in <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.
+Thus <img src="img-math/c8b8adfed5765df7a74480a6b1f6013bc99b7adb8878e5713db13d9b3457198d.svg" class="inline-math"> is uniquely determined by <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math">.</div>
+<div class="paragraph">
+We have thus far shown that the forgetful functor restricts to a well-defined functor <img src="img-math/b01c389008e2bcc141245fd0701c07d326016dc6f970672c46303270ad35b04b.svg" class="inline-math"> that is essentially surjective (in fact, an isomorphism on objects).
+Because every map of algebraic or relational structures is determined by its value on carriers, the forgetful functor is faithful.
+To show that it is full, we need to convince ourselves that every map <img src="img-math/0db02e74ecd9c8712a0eaed9b81dd72ca9c6f2b6c2aa3d342742814787a7f787.svg" class="inline-math"> of relational <img src="img-math/6457ed7373aa78c8554039b72fc99874a7977a66f687facf2e75d648e9930b9b.svg" class="inline-math">-structures satisfying all sequents in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math"> lifts to a map <img src="img-math/72006395a6c16f8d2d51667fbff300b97e0c993a5012f861f592187f33237c9f.svg" class="inline-math">, where <img src="img-math/c8b8adfed5765df7a74480a6b1f6013bc99b7adb8878e5713db13d9b3457198d.svg" class="inline-math"> and <img src="img-math/586d7efecce20cc0dba4223fe8b2933ad4d0c1767daa04851662bbb2fd983093.svg" class="inline-math"> are the algebraic structures in <img src="img-math/4f03774dd66b13829f3ed32c7b7165548a4edd38cfea013a936e69ba4145df59.svg" class="inline-math"> mapping to <img src="img-math/6fe3fbef6738d25a7c856c876a8274b30f594ee867bdc8ac1233bb98228f6a13.svg" class="inline-math"> and <img src="img-math/9b22c42f4aa3635a033cc55f28fb40f2cee07e691bd96620362527c2ec7c2396.svg" class="inline-math">.
+This condition follows from uniqueness of lifts in diagrams of the form
+<div class="display-math-row">
+<img src="img-math/b0a613461c36f4b83507e153f41cdd6ff012a2f9fb47cc0cff48d783242e75bf.svg">
+</div>
+for relational sequents <img src="img-math/431b2e26ffedc1ce6b333886422c382bc9fb3c09a2709a6beea15c97bc47096e.svg" class="inline-math"> in <img src="img-math/def2d207cfac074a22778d9c811349d0e822fa6863ab5621de0b4840dea40838.svg" class="inline-math">.</div>
+</div>
+<h2>
+5 Conclusion</h2>
+<h2>Bibliography</h2>
+<ol class="bibliography">
+</ol>
+</body>
+</html>
