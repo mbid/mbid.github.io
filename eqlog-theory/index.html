@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Relational and Partial Horn Logic</title>
+<title>Semantics of Datalog with Equalities</title>
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
 <link rel="stylesheet" type="text/css" href="style.css">
 <link rel="stylesheet" type="text/css" href="img-math/geometry.css">
 </head>
 
 <body>
-<h1>Relational and Partial Horn Logic</h1>
+<h1>Semantics of Datalog with Equalities</h1>
 <h2>Abstract</h2>
 <div class="paragraph">
 We discuss the syntax and semantics of relational Horn logic (RHL) and partial Horn logic (PHL).
@@ -25,7 +25,7 @@ It underpins the implementation of the <em>Eqlog</em> Datalog engine, which comp
 <h2>
 1 Introduction</h2>
 <div class="paragraph">
-<em>Datalog</em> [<a href="#know-datalog">10</a>] is a programming language for logical inference from Horn clauses.
+<em>Datalog</em> [<a href="#know-datalog">11</a>] is a programming language for logical inference from Horn clauses.
 Abstracting from concrete syntax, a Datalog program consists of the following declarations:
 <ul>
 <li>
@@ -40,9 +40,9 @@ A set of <em>relation symbols</em> and their <em>arities</em> <img src="img-math
 <div class="paragraph">
 A set of <em>sequents</em> (or <em>rules</em>, or <em>axioms</em>) of the form
 <div class="display-math-row">
-<img src="img-math/f36ae2e3b75accd82a3c0a1a4da1a7f08cde4059411fcab575d8663048febfd0.svg">
+<img src="img-math/6437a45b5cc2bcf0a305c53f594af33f3716b507dd72d5674905f336d673b8f6.svg">
 </div>
-where <img src="img-math/3421dfebf9cc5e127cb77eed9b6cd8801c095a3f4d9abb956de73f978071b27f.svg" class="inline-math"> is a sort-compatible list of variables for each <img src="img-math/d42d5862aea05b2fd7aa9c5bb07e9c13754585c17cee2cf95c36c2d9fc35ebeb.svg" class="inline-math">, and each variable in the conclusion also appears in the premise.</div>
+where <img src="img-math/76d213f7fc5b846c31e4909cd423e452744714c9fc6eeb95902631cb28bc1a22.svg" class="inline-math"> is a sort-compatible list of variables for each <img src="img-math/d42d5862aea05b2fd7aa9c5bb07e9c13754585c17cee2cf95c36c2d9fc35ebeb.svg" class="inline-math">, and each variable in the conclusion also appears in the premise.</div>
 </li>
 </ul>
 
@@ -65,13 +65,13 @@ For each such substitution, the Datalog engine then adds the substitution <img s
 This process is repeated until the set of facts does not increase anymore, that is, until a fixed point has been reached.
 This final set of facts now corresponds to a transitive graph.</div>
 <div class="paragraph">
-Datalog has seen renewed interest in recent years for the implementation of program analysis tools [<a href="#declarative-points-to">9</a>, <a href="#alias-analysis-bdd">8</a>, <a href="#flix">7</a>].
+Datalog has seen renewed interest in recent years for the implementation of program analysis tools [<a href="#declarative-points-to">10</a>, <a href="#alias-analysis-bdd">9</a>, <a href="#flix">8</a>].
 From a high-level point of view, one applies Datalog by encoding abstract syntax trees as tuples in relations:
 Each type of abstract syntax tree node translates into a relation. If the node type as <img src="img-math/509fe7e8ba852248c1de4dfc8c752f04a501aa15dc740f89268b2dd4cb0e9155.svg" class="inline-math"> children, then the relation has <img src="img-math/d0c752a914241f4f7e66e7affaf49531bcc8d090f651e5cf00e6377856d0f7f6.svg" class="inline-math"> entries, one entry for each children and one entry representing the node itself.
 This encoding allows executing Datalog programs on inputs that are derived from source code.
 Of course, the abstract syntax tree need not be encoded faithfully if some of its features are not required for the analysis one is interested in.</div>
 <div class="paragraph">
-<em>Equality saturation</em> has recently garnered interest as a program optimization technique [<a href="#egg">12</a>].
+<em>Equality saturation</em> has recently garnered interest as a program optimization technique [<a href="#egg">13</a>].
 The idea is to insert expressions that should be optimized into an e-graph, and then close the e-graph under a set of rewrite rules.
 E-graphs allow sharing nodes that occur as children more than once, so that a large number of expressions can be stored.
 Furthermore, e-graphs can be efficiently closed under congruence, i.e. equivalence can be propagated from subexpressions to their parents.
@@ -94,7 +94,7 @@ In addition to a set of derived facts, we also expect evaluation to yield an equ
 We interpret the latter as existentially quantified:
 If the premise of a sequent matches and the conclusion contains a variable that is not bound in the premise, then we expect the Datalog engine to create new identifiers of the given sort if necessary to ensure that the conclusion holds.</div>
 <div class="paragraph">
-<em>Partial Horn logic</em>, originally due to [<a href="#phl">5</a>], is a layer of syntactic sugar on top RHL, i.e. a purely syntactic extension with the same descriptive power.
+<em>Partial Horn logic</em>, originally due to [<a href="#phl">6</a>], is a layer of syntactic sugar on top RHL, i.e. a purely syntactic extension with the same descriptive power.
 PHL adds function symbols <img src="img-math/9ff31b575bd0eda2c907ebbefc461c8a75a43c525285dc5c8d7be434eb95f452.svg" class="inline-math">, which desugar into relations <img src="img-math/85b7fe30ab12e9ccee0c8e2280e633cc1d6cea397a57863c7d413847ef06ec6f.svg" class="inline-math"> representing the graph of the function and the functionality axiom
 <div class="display-math-row">
 <img src="img-math/0d7bb62e0696830dc3c1a7fe597087d099d6f913f81daf478d6f370bdbf61c55.svg">
@@ -102,7 +102,7 @@ PHL adds function symbols <img src="img-math/9ff31b575bd0eda2c907ebbefc461c8a75a
 In positions where RHL expects variables (e.g. arguments of predicates or in equations), PHL allows also composed terms.
 These composed terms are desugared into a fresh variable corresponding to the result of applying the function and an assertion about the graph of the function.</div>
 <div class="paragraph">
-The features of PHL allow implementing more algorithms than standard Datalog, for example congruence closure [<a href="#congruence-closure">3</a>], Steensgaard-style pointer analysis [<a href="#steensgard">2</a>] and Hindley-Milner type inference [<a href="#milner-inference">1</a>].
+The features of PHL allow implementing more algorithms than standard Datalog, for example congruence closure [<a href="#congruence-closure">4</a>], Steensgaard-style pointer analysis [<a href="#steensgard">3</a>] and Hindley-Milner type inference [<a href="#milner-inference">2</a>].
 In each case, evaluation (which will be described in follow-up work) of the PHL theory encoding the problem domain yields the same algorithm as the standard domain-specific algorithm.
 In general, we should expect problems that are typically solved by combining union-find data structures with fixed point computations to be instances of PHL evaluation.</div>
 <div class="paragraph">
@@ -165,41 +165,41 @@ Thus Proposition <a href="#prop-free-transitive-graph">1</a> shows that the tran
 Our primary goal in this paper is to explore and extend a semantics of PHL along these lines.</div>
 <div class="paragraph">
 <strong>Outline and Contributions.</strong>
-In Section <a href="#sec-small-object-argument">2</a>, we review the <em>small object argument</em> [<a href="#hovey-model-categories">11</a>, Theorem 2.1.14] as a method of computing weak reflections into subcategories of injective objects.
-We introduce <em>flub</em> classes of morphisms, for which the small object argument specializes to the <em>orthogonal-reflection construction</em> [<a href="#locally-presentable-and-accessible-categories">6</a>, Chapter 1.C].
-Although the concepts discussed in this section are required for a thorough understanding of the paper, I recommend that readers only skim this rather abstract section on first reading and return to it as needed.</div>
+In Section <a href="#sec-small-object-argument">2</a>, we review the <em>small object argument</em> [<a href="#hovey-model-categories">12</a>, Theorem 2.1.14] as a method of computing weak reflections into subcategories of injective objects.
+We introduce <em>strong</em> classes of morphisms, for which the small object argument specializes to the <em>orthogonal-reflection construction</em> [<a href="#locally-presentable-and-accessible-categories">7</a>, Chapter 1.C].</div>
 <div class="paragraph">
 In Section <a href="#sec-rhl">3</a>, we introduce <em>relational Horn logic (RHL)</em>.
 RHL extends Datalog with unbound variables, with variables that occur only in the conclusion, and with equations.
 Input data of Datalog programs generalize to finite <em>relational structures</em>, and output data generalize to <em>models</em>, i.e. relational structures that satisfy all sequents.
-We show that free models exist for <em>flub</em> RHL theories, which include all Datalog theories.</div>
+We show that free models exist for <em>strong</em> RHL theories, which include all Datalog theories.</div>
 <div class="paragraph">
 Our poof of the existence of free models associates to each RHL sequent a <em>classifying morphism</em> of relational structures.
 Satisfaction of the sequent can be characterized as lifting property against the classifying morphism.
-The small object argument now shows the existence of free models for flub theories.
+The small object argument now shows the existence of free models for strong theories.
 From this perspective, we may thus understand the small object argument as an abstract formulation of Datalog evaluation.</div>
 <div class="paragraph">
 In Section <a href="#sec-phl">4</a>, we extend RHL by function symbols to obtain <em>partial Horn logic (PHL)</em>.
 By identifying each function symbol with a relation symbol representing its graph and adding a functionality axiom, every PHL theory gives rise to a relational Horn logic theory with equivalent semantics.
-For <em>epic</em> PHL theories, where all variables must be introduced in the premise of a sequent, the associated RHL theory is flub.
-Conversely, we show that the semantics of every flub RHL theory can be recovered as semantics of an epic PHL theory.
-This justifies the usage of epic PHL as an equally powerful but syntactically better-behaved language compared to flub RHL.</div>
+For <em>epic</em> PHL theories, where all variables must be introduced in the premise of a sequent, the associated RHL theory is strong.
+Conversely, we show that the semantics of every strong RHL theory can be recovered as semantics of an epic PHL theory.
+This justifies the usage of epic PHL as an equally powerful but syntactically better-behaved language compared to strong RHL.</div>
 <div class="paragraph">
 The results of this paper serve as semantics of <em>Eqlog</em>, a Datalog engine that computes free models of PHL theories.
-Eqlog's algorithm is based on an efficient implementation of the small object argument that combines optimized Datalog evaluation (semi-naive evaluation and indices) with techniques used in congruence closure algorithms.</div>
+Eqlog's algorithm is based on an efficient implementation of the small object argument that combines optimized Datalog evaluation (semi-naive evaluation and indices) with techniques used in congruence closure algorithms.
+Independently of Eqlog and the work presented there, members of the Egg [<a href="#egg">13</a>] community have created the <em>Egglog</em> tool, which combines Datalog with e-graphs and is based on very similar ideas as those of Eqlog.</div>
 <h2 id="sec-small-object-argument">
 2 The Small Object Argument</h2>
 <div class="paragraph">
 This section is a review of the small object argument, which we shall in later sections come to understand as an abstract description of Datalog evaluation.
-The concepts we discuss here are not new and are in fact widely known among homotopy theorists; see for example [<a href="#locally-presentable-and-accessible-categories">6</a>] for a standard exposition.
-A minor innovation is our consideration of <em>flub</em> sets:
+The concepts we discuss here are not new and are in fact widely known among homotopy theorists; see for example [<a href="#locally-presentable-and-accessible-categories">7</a>] for a standard exposition.
+A minor innovation is our consideration of <em>strong</em> sets:
 Sets of morphisms for which injectivity coincides with orthogonality.
-For flub sets, the small object argument yields a reflection into the orthogonal subcategory where in general we would obtain only a weak reflection into the injective subcategory.</div>
+For strong sets, the small object argument yields a reflection into the orthogonal subcategory where in general we would obtain only a weak reflection into the injective subcategory.</div>
 <div class="paragraph">
-The related <em>orthogonal-reflection construction</em> [<a href="#locally-presentable-and-accessible-categories">6</a>, Chapter 1.C] produces a reflection into the orthogonal subcategory for arbitrary sets of morphisms <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">.
-We show that every set of morphism <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> can be extended to a flub set <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> such that <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> and <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> induce the same orthogonality class.
+The related <em>orthogonal-reflection construction</em> [<a href="#locally-presentable-and-accessible-categories">7</a>, Chapter 1.C] produces a reflection into the orthogonal subcategory for arbitrary sets of morphisms <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">.
+We show that every set of morphism <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> can be extended to a strong set <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> such that <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> and <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> induce the same orthogonality class.
 The small object argument for <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> now specializes to the orthogonal-reflection construction for <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">.
-Thus, the concept of flub morphisms can be used to understand the orthogonal-reflection construction as a specialized variation of the small object argument.</div>
+Thus, the concept of strong morphisms can be used to understand the orthogonal-reflection construction as a specialized variation of the small object argument.</div>
 <div class="paragraph">
 Fix a cocomplete category locally small <img src="img-math/dc523e12504d2f9a179ee90b400d2e5b29b05d6ee1e496dda0eed156a4ef0a2c.svg" class="inline-math"> for the remainder of this section.
 We reserve the word <em>set</em> for a small set, while a <em>class</em> refers to a set in a larger set-theoretic universe that contains the collection of objects in <img src="img-math/dc523e12504d2f9a179ee90b400d2e5b29b05d6ee1e496dda0eed156a4ef0a2c.svg" class="inline-math">.
@@ -220,20 +220,20 @@ If <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833
 The full subcategories given by the injective and orthogonal objects, respectively, are denoted by <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math"> and <img src="img-math/e6dad0925b8a4a15da0c3b9e68ab23258014b3f75d1b2319f935206c98eac23c.svg" class="inline-math">.
 We call <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math"> the <em>injectivity class</em> of <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> and <img src="img-math/e6dad0925b8a4a15da0c3b9e68ab23258014b3f75d1b2319f935206c98eac23c.svg" class="inline-math"> the <em>orthogonality class</em> of <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">.</div>
 </div>
-<div id="def-flub" class="theorem-like theorem-style-definition">
+<div id="def-strong" class="theorem-like theorem-style-definition">
 <div class="paragraph">
 <h4>Definition 3.
 </h4>
-A class <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> of morphisms is called <em>flub</em>  if <img src="img-math/af595a9c3b1bd077b038c479670e7c2f7983cfce70a96cfffa570de14bfee87c.svg" class="inline-math">.</div>
+A class <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> of morphisms is called <em>strong</em>  if <img src="img-math/af595a9c3b1bd077b038c479670e7c2f7983cfce70a96cfffa570de14bfee87c.svg" class="inline-math">.</div>
 </div>
 <div class="paragraph">
-One of the main sources of flub sets is the following proposition:</div>
-<div id="prop-epi-flub" class="theorem-like theorem-style-theorem">
+One of the main sources of strong sets is the following proposition:</div>
+<div id="prop-epi-strong" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
 <h4>Proposition 4.
 </h4>
 Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a class of epimorphisms.
-Then <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is flub.
+Then <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is strong.
 </div>
 </div>
 <div class="proof">
@@ -242,14 +242,14 @@ Then <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f8
 This follows immediately from right-cancellation.</div>
 </div>
 <div class="paragraph">
-Another source of flub sets is the following proposition.
-It lets us reduce questions about orthogonality classes to flub injectivity classes.</div>
-<div id="prop-flubbization" class="theorem-like theorem-style-theorem">
+Another source of strong sets is the following proposition.
+It lets us reduce questions about orthogonality classes to strong injectivity classes.</div>
+<div id="prop-strongbization" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
 <h4>Proposition 5.
 </h4>
 Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a class of morphisms.
-Then there exists a superclass <img src="img-math/b78f0648c6c34ce92419435ab312536183954fdde085350dc62a3be82f3ed7a6.svg" class="inline-math"> such that <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> is flub and <img src="img-math/43ead473f40b488f49ea87fa42d843382451625ad2c58c67c3cb022655b38249.svg" class="inline-math">.
+Then there exists a superclass <img src="img-math/b78f0648c6c34ce92419435ab312536183954fdde085350dc62a3be82f3ed7a6.svg" class="inline-math"> such that <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> is strong and <img src="img-math/43ead473f40b488f49ea87fa42d843382451625ad2c58c67c3cb022655b38249.svg" class="inline-math">.
 If <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is a set, then <img src="img-math/c5799ea52b08e42b5b204ac3525a050e838549f4aca1c418cbfd67898971c734.svg" class="inline-math"> can be chosen as set.</div>
 </div>
 <div class="proof">
@@ -338,7 +338,7 @@ is a sequence of morphisms <img src="img-math/b600807ca169b285c10a65efc222ea95f4
 <div class="paragraph">
 <h4>Remark 8.
 </h4>
-Standard literature on factorization systems and the closely related small object argument [<a href="#hovey-model-categories">11</a>] considers usually not only countable sequences of morphisms but also arbitrary transfinite sequences, which are chains of morphisms indexed by an arbitrary ordinal number.
+Standard literature on factorization systems and the closely related small object argument [<a href="#hovey-model-categories">12</a>] considers usually not only countable sequences of morphisms but also arbitrary transfinite sequences, which are chains of morphisms indexed by an arbitrary ordinal number.
 In this more general setting, one then typically defines a relative <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">-cell complex to be a transfinite composition of pushouts of morphisms in <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> without mention of coproducts.</div>
 <div class="paragraph">
 This more common notion of relative <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">-cell complex satisfies our closure properties <a href="#itm-cell-base">1</a> -- <a href="#itm-cell-composition">4</a>.
@@ -408,7 +408,7 @@ The subcategory <img src="img-math/f51e1e3e2eb72c54fc9c2b2e4fc147df9af16693bd468
 Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a class of morphisms.
 Let <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> be a relative <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">-cell complex, and let <img src="img-math/34aeb4e77cbf9ab9ed6b6eecfdee8e5d3d3b25079ebc0acf324c8efe4568ea36.svg" class="inline-math"> be a map with <img src="img-math/f786ed98baec0b0948cca6c76ea5b867d310abc204078c0fc3011882f7c309c7.svg" class="inline-math">.
 Then there is a map <img src="img-math/34fdba4817ce62d83598229f2e13d0b9b754e08893f6596f35f73ea0e0d27901.svg" class="inline-math"> such that <img src="img-math/6ad03f10ce73834e82c4ccd40041410b120c41e3bc38424f9e6db55afc4058a5.svg" class="inline-math">.
-If furthermore <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is flub, then <img src="img-math/a377d23a5d42b7385429fc05b94bb6baf3dc6e993286ea1099d657ce9f31543e.svg" class="inline-math"> is unique.</div>
+If furthermore <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is strong, then <img src="img-math/a377d23a5d42b7385429fc05b94bb6baf3dc6e993286ea1099d657ce9f31543e.svg" class="inline-math"> is unique.</div>
 </div>
 <div class="proof">
 <div class="paragraph">
@@ -422,7 +422,7 @@ This follows from the fact that the class of morphisms <img src="img-math/f2738b
 Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a class of morphisms.
 Let <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> be a relative <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">-cell complex such that <img src="img-math/b478a8a39553afb5e30c8ccfcce564674b25735249d139633ad48cf5bea27144.svg" class="inline-math">.
 Then <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is a weak reflection into <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math">.
-If <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is flub, then <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is a reflection.</div>
+If <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is strong, then <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is a reflection.</div>
 </div>
 <div class="proof">
 <div class="paragraph">
@@ -461,24 +461,24 @@ commutes.</div>
 </ol>
 
 Then the transfinite composition <img src="img-math/759a6399318290dae07b83d4a6924f2a2f200e84b25acd6cb6643a45580afa33.svg" class="inline-math"> of the <img src="img-math/41a98b302dc8d6b3ff252a20c42d9845cdb7664b552cff13b695f1e751e1836e.svg" class="inline-math"> is a weak reflection into <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math">.
-If <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is flub, then <img src="img-math/759a6399318290dae07b83d4a6924f2a2f200e84b25acd6cb6643a45580afa33.svg" class="inline-math"> is a reflection.</div>
+If <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> is strong, then <img src="img-math/759a6399318290dae07b83d4a6924f2a2f200e84b25acd6cb6643a45580afa33.svg" class="inline-math"> is a reflection.</div>
 </div>
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
 Because <img src="img-math/a603ba9c120beeb4cc13d75afd4bffb964f013db497ed642147503edd36cd7b5.svg" class="inline-math"> is closed under infinite composition, the map <img src="img-math/759a6399318290dae07b83d4a6924f2a2f200e84b25acd6cb6643a45580afa33.svg" class="inline-math"> is a relative <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">-cell complex.
-Thus by Proposition <a href="#prop-relative-m-cell-complex-is-reflection">13</a>, it suffices to show that <img src="img-math/b9d6b3ae35e7f40a1396cf408900a8a57e30831a071f37ad8d81ea74884462f7.svg" class="inline-math"> is in <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math">.</div>
+Thus by Proposition <a href="#prop-relative-m-cell-complex-is-reflection">13</a>, it suffices to show that <img src="img-math/48848ad7f63729e09495d86a45da82ecbb4e3b7b8600abefc01c63010e6da355.svg" class="inline-math"> is in <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math">.</div>
 <div class="paragraph">
-Let <img src="img-math/ce45e690d14c519d518a69b5d8fbeef4fc1bdb717fda749b3ce014728cb1807c.svg" class="inline-math"> be in <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> and let <img src="img-math/ec77f6c06cb488377d0e4b0cbb658ec88a68c8e1e5b05704a01056e6c476bed7.svg" class="inline-math">.
-Because <img src="img-math/40886b1745a36e9b8a947c1ebc2f64c47d47f7465154c3aa49b1a2a7d80a5ab1.svg" class="inline-math"> is finitely presentable, there exists <img src="img-math/8fed3626623475d97ded6863da7837207d2dc337c82cf10ee6d0c0be45d5596b.svg" class="inline-math"> and <img src="img-math/6d086bdab57b3c0746b6624dc78aed5b7d695ba47eeb84f7d78010569d33eb50.svg" class="inline-math"> such that <img src="img-math/a4bd19b1cdf1d5d5f761239964ebfba12682d12ccb248fe4b410276067940e15.svg" class="inline-math"> factors as <img src="img-math/cecd9d2844ddfca90f7b0f23164b61f31a80930b0e53043cabeafabeb36053d5.svg" class="inline-math">.
+Let <img src="img-math/ce45e690d14c519d518a69b5d8fbeef4fc1bdb717fda749b3ce014728cb1807c.svg" class="inline-math"> be in <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> and let <img src="img-math/1f7429dec5e61463b4e9cafc0a3360999838082217ce75f387fb93029ccfca61.svg" class="inline-math">.
+Because <img src="img-math/40886b1745a36e9b8a947c1ebc2f64c47d47f7465154c3aa49b1a2a7d80a5ab1.svg" class="inline-math"> is finitely presentable, there exists <img src="img-math/8fed3626623475d97ded6863da7837207d2dc337c82cf10ee6d0c0be45d5596b.svg" class="inline-math"> and <img src="img-math/6d086bdab57b3c0746b6624dc78aed5b7d695ba47eeb84f7d78010569d33eb50.svg" class="inline-math"> such that <img src="img-math/a4bd19b1cdf1d5d5f761239964ebfba12682d12ccb248fe4b410276067940e15.svg" class="inline-math"> factors as <img src="img-math/a43d5dfb64c4dc21e6c6e7c334eb4e43d72b7bf251228fa357e4345c1b9b42b3.svg" class="inline-math">.
 By assumption <a href="#itm-m-factorizations-exist">2</a>, there exist <img src="img-math/396b9269ff6f1c316dd0e64e61ac28d8bdce88a5ec656424ce023f96c788b326.svg" class="inline-math"> and <img src="img-math/b3cf3e5a4c8e598a86d9b54d9bc63d5877027f7ddb7bb2c6a303b5d1e3225cc9.svg" class="inline-math"> that commutes with <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math">, <img src="img-math/0abd1f3def3a83ad436689b17d36745eb6634e1735349a4932f09618c41ce8dc.svg" class="inline-math"> and <img src="img-math/ad775893a921c9bb748387e65f1e7815b9567024c5c1818783e0661c6a4861aa.svg" class="inline-math">.
-Thus if we define <img src="img-math/45ba21d96a2b4e186f8fd82018b8419f30aef974b138b989b17f0ef42b7c1d40.svg" class="inline-math"> as composition <img src="img-math/1ed30a46de1b7086726edc0dcd2739de233b5a2924b57c982fd481d1617d3de5.svg" class="inline-math">, then <img src="img-math/610a488e49a88c4455fb7c3074a1a45df259b740f6b3b5e41e467b5faa11843c.svg" class="inline-math">.</div>
+Thus if we define <img src="img-math/45ba21d96a2b4e186f8fd82018b8419f30aef974b138b989b17f0ef42b7c1d40.svg" class="inline-math"> as composition <img src="img-math/ae5057519202d0d0d3a2dc83c5f2c5385697e9d2f2a83e6a430d57fe08a9bb2e.svg" class="inline-math">, then <img src="img-math/610a488e49a88c4455fb7c3074a1a45df259b740f6b3b5e41e467b5faa11843c.svg" class="inline-math">.</div>
 </div>
 <div id="prop-small-object-argument-exist" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
 <h4>Proposition 16 <span class="theorem-note">(Small Object Argument: Existence)</span>.
 </h4>
-Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a set (not a proper class!) of morphism with finitely presentable domains and codomains, and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be an object.
+Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a set of morphism with finitely presentable domains and codomains, and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be an object.
 Then there exists a sequence
 <div class="display-math-row">
 <img src="img-math/183947dad4f323fe851e172398328c36dc7bbe5b7434b6700a72e5d14ec328fa.svg">
@@ -507,11 +507,11 @@ Here the top map is the coproduct <img src="img-math/11a3e7cbfab9a658cac076dd662
 <div class="paragraph">
 <h4>Proposition 17.
 </h4>
-Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be flub set of morphisms, and let <img src="img-math/ce45e690d14c519d518a69b5d8fbeef4fc1bdb717fda749b3ce014728cb1807c.svg" class="inline-math">.
-Denote by <img src="img-math/706e7e959010013d872f86c9a62d7b293a2205ad1f9b1c415c0f61bbfc7177c7.svg" class="inline-math"> the reflection of <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> into <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math">.
-Then the following equations hold:
+Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be strong set of morphisms, and let <img src="img-math/ce45e690d14c519d518a69b5d8fbeef4fc1bdb717fda749b3ce014728cb1807c.svg" class="inline-math">.
+Denote by <img src="img-math/ac6ee149b36e101967e12d8ecc0a21417d9be83b4b801ce81837a5b156532e72.svg" class="inline-math"> the reflection of <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> into <img src="img-math/00b0c6579ea555a95618595a9fc59c54224cda841d202964e8bc06af3c218455.svg" class="inline-math">.
+Then the following equations among injectivity and orthogonality classes hold:
 <div class="display-math-row">
-<img src="img-math/28310f0312b6bce48e39465648701d97a86077cccb452dc4db0dfd4f8f6b7e56.svg">
+<img src="img-math/6add3929c3e6cdede759ff25d8218a036b2f3b1feea8efd8a40915e7da5e6a5d.svg">
 </div></div>
 </div>
 <div class="proof">
@@ -520,9 +520,9 @@ Then the following equations hold:
 Let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be orthogonal (equivalently: injective) to <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">.
 Then there is a bijective correspondance between solutions to the following lifting problems:
 <div class="display-math-row">
-<img src="img-math/a20316494461a48dd66cdab1ba6df5aa13a9d3676c82a3e0a966b605b55ee6cd.svg">
+<img src="img-math/0301f2a1d8c11e276fb4bf759a5608fb0fef2dd77952ccc65e4cdeffdb329ed9.svg">
 </div>
-Here <img src="img-math/a4bd19b1cdf1d5d5f761239964ebfba12682d12ccb248fe4b410276067940e15.svg" class="inline-math"> is an arbitrary map, and <img src="img-math/9c11bd49553505ada2371f75cf1f1a7847af15461d0e5a9bb65c0db88b8786b3.svg" class="inline-math"> is induced from <img src="img-math/a4bd19b1cdf1d5d5f761239964ebfba12682d12ccb248fe4b410276067940e15.svg" class="inline-math"> by the universal property of <img src="img-math/f9e107a30897322f836ead7b46fcd44dc703243178f3761c5d01d39306aa22af.svg" class="inline-math"> and <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> being orthogonal to <img src="img-math/b90bc05483e2444fdefdff613b77cea04ea60e0743fca53dec97a3ac834fe1ef.svg" class="inline-math">.</div>
+Here <img src="img-math/a4bd19b1cdf1d5d5f761239964ebfba12682d12ccb248fe4b410276067940e15.svg" class="inline-math"> is an arbitrary map, and <img src="img-math/ab91c6470f7e6993cf9a24bf626197b61848724779cfc14c361f2452e6c1057c.svg" class="inline-math"> is induced from <img src="img-math/a4bd19b1cdf1d5d5f761239964ebfba12682d12ccb248fe4b410276067940e15.svg" class="inline-math"> by the universal property of <img src="img-math/4808133a7f26d5ad6ecbf4fcf1e418065e68bfba4f4d82191602fc54dae0b84b.svg" class="inline-math"> and <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> being orthogonal to <img src="img-math/3ac9675be6c0e312b76184b216f47bd95af3bc8c60c0dd273cadefb50dd492f3.svg" class="inline-math">.</div>
 </div>
 <h2 id="sec-rhl">
 3 Relational Horn Logic</h2>
@@ -582,7 +582,7 @@ For each relation symbol <img src="img-math/eb8a0ae53bfae72796e1352feea1dea35fd9
 </ul>
 </div>
 <div class="paragraph">
-A <em>morphism of relational structures</em> <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> consists of a function <img src="img-math/2fc8944a69ab8ecefed8e427133b07f1fa857f568e6933cf69ecac510d406adb.svg" class="inline-math"> that are compatible with the relations <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math"> and <img src="img-math/7d54818f3cf13ae54c8d91398231e08a61cb1cc0eac6502d940ad8ee218b454e.svg" class="inline-math"> for all <img src="img-math/3a1de76e144a3a79a90c93f2763a2b1a152e8321cc10b1b6949020cbdd8b3ff7.svg" class="inline-math">.
+A <em>morphism of relational structures</em> <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> consists of functions <img src="img-math/2fc8944a69ab8ecefed8e427133b07f1fa857f568e6933cf69ecac510d406adb.svg" class="inline-math"> for <img src="img-math/d53b76ba7dd62a8b4c29d4609b13844e774a64afa734cc26b21e2fead3ebaacf.svg" class="inline-math"> that are compatible with the relations <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math"> and <img src="img-math/7d54818f3cf13ae54c8d91398231e08a61cb1cc0eac6502d940ad8ee218b454e.svg" class="inline-math"> for all <img src="img-math/3a1de76e144a3a79a90c93f2763a2b1a152e8321cc10b1b6949020cbdd8b3ff7.svg" class="inline-math">.
 That is, we require that if <img src="img-math/320e3660b6689f272e73e4417ec601693f3520e68490349f1ea453d382918fca.svg" class="inline-math"> for some relation symbol <img src="img-math/1811f68eb74929ecb6edffe855e69d59f231c07bbc85eda64f0b42728156e759.svg" class="inline-math">, then <img src="img-math/8407d52d774e4b85b7a5a1f8a3544715f9e56612e6c570c501c4133ce0c8f2cb.svg" class="inline-math">.
 The <em>category of relational structures</em> is denoted by <img src="img-math/2a848f9d861e1b801356d9c69359f0c93fb8118e315aedabba7031e6457792c7.svg" class="inline-math">.</div>
 </div>
@@ -598,9 +598,9 @@ When we mention the <em>carrier sets</em> of a relational structure, we mean the
 <div class="paragraph">
 <h4>Proposition 20.
 </h4>
-Let <img src="img-math/e94a30cee0214f847bdd9fd94bd185ce58e109ee4c9196e76f806ead42454c79.svg" class="inline-math"> and <img src="img-math/f174f874bfe3f341b1d6951d6496e6450b250dcee9b15d2b278381515b3e4e16.svg" class="inline-math"> be a relational signature such that <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> extends <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math">, in the sense that <img src="img-math/75d13729ce1820cebb6eda1eb217c503e52073f46a27f8ba6c9163b2b643778c.svg" class="inline-math"> and the arities of relations <img src="img-math/eb8a0ae53bfae72796e1352feea1dea35fd9884f2e749b6aeab6f52fd03277ab.svg" class="inline-math"> for <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> and <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> agree.
-Then the evident forgetful functor <img src="img-math/d4cc6d576d61c861ed0fdfadb3a2bc13fd63f2fb76cd5ab855de0d0c1153bfb8.svg" class="inline-math"> has both a left and a right adjoint.
-Both adjoints are sections to the forgetful functor; that is, both composites
+Let <img src="img-math/e94a30cee0214f847bdd9fd94bd185ce58e109ee4c9196e76f806ead42454c79.svg" class="inline-math"> and <img src="img-math/f174f874bfe3f341b1d6951d6496e6450b250dcee9b15d2b278381515b3e4e16.svg" class="inline-math"> be relational signatures such that <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> extends <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math">, in the sense that <img src="img-math/75d13729ce1820cebb6eda1eb217c503e52073f46a27f8ba6c9163b2b643778c.svg" class="inline-math"> and <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> and <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> assign the the same arities to relation symbols <img src="img-math/eb8a0ae53bfae72796e1352feea1dea35fd9884f2e749b6aeab6f52fd03277ab.svg" class="inline-math">.
+Then the evident forgetful functor <img src="img-math/98311752dcf0bf449d823033b2d4ca1172cae553cd4d4731c1817fad3d706d93.svg" class="inline-math"> has left and right adjoints.
+Both adjoints are sections to the forgetful functor, that is, both composites
 <div class="display-math-row">
 <img src="img-math/168b2d98b2b878fa0e14c5e2b1aab7bd087cadfcc220cb91d5f5780c5fc81111.svg">
 </div>
@@ -625,10 +625,10 @@ Then <img src="img-math/2a848f9d861e1b801356d9c69359f0c93fb8118e315aedabba7031e6
 <div class="paragraph">
 <i class="proof">Proof.</i>
 Limit and colimit preservation follows from Proposition <a href="#prop-adjoints-signature-inclusion">20</a>, since the forgetful functor is induced by the inclusion <img src="img-math/9d5ad94f40a12063770dd5bb497d2b2ee68de07b3a0a67ff072b34987e7f262c.svg" class="inline-math">.
-Limits commute with other limits and in paritcular products.
+Limits commute with other limits and in particular products.
 Thus, limits of relational structures can be constructed as limits of carriers endowed with the limits of relation sets.</div>
 <div class="paragraph">
-Colimits are slightly more involved because products don't generally commute with quotients.
+Colimits are slightly more involved because products do not generally commute with quotients.
 Let <img src="img-math/3fa57f0a206e5b97e3743bf6669875a0adb2b9ac9969c3857734622a7870473d.svg" class="inline-math"> be a diagram of relational structures.
 We define the carrier sets of our candidate colimit structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> by the colimit of carrier sets.
 That is,
@@ -654,7 +654,7 @@ A relational structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e141
 <div id="eq-finite-relational-structure" class="display-math-row">
 <img src="img-math/ccb9b8d8333f14a587b2c8548329fee696e3df93d090602e4061e1cbea095ac0.svg">
 </div>
-that is, if and only if all the <img src="img-math/69ca06f3a8e0c73ea0a4a22f998b12768df8b0cb30389e1961bd442291669af2.svg" class="inline-math"> and <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math"> are finite and almost always empty.</div>
+that is, if all the <img src="img-math/69ca06f3a8e0c73ea0a4a22f998b12768df8b0cb30389e1961bd442291669af2.svg" class="inline-math"> and <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math"> are finite and almost always empty.</div>
 </div>
 <div id="prop-finite-equiv-finitely-presentable" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
@@ -666,8 +666,7 @@ Then a relational structure for <img src="img-math/3f48b0f68758e065321bb41ffd846
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
-A finite relational structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is finitely presentable by the same considerations as for finite sets:
-Let
+Let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be a finite relational structure and let
 <div class="display-math-row">
 <img src="img-math/1f3515c8332edf99e3bddca8017a7d23a11ad10c44a7a7a5348c025bcbf26923.svg">
 </div>
@@ -694,19 +693,19 @@ We assume a countable supply of variable symbols <img src="img-math/35611dd17007
 <div class="paragraph">
 <h4>Definition 24.
 </h4>
-A <em>relational atom</em> is a statement of one of the following forms:
+An <em>RHL atom</em> is a statement of one of the following forms:
 <ol>
 <li id="itm-relation-atom">
 <div class="paragraph">
-<img src="img-math/8c924071d6c96f9a761592025825770d7ed5fa02ae095eab7a936a0671858fd2.svg" class="inline-math">, where <img src="img-math/1811f68eb74929ecb6edffe855e69d59f231c07bbc85eda64f0b42728156e759.svg" class="inline-math"> is a relation symbol and the <img src="img-math/90275abc21a6a4571eb3f15d9be4f18696c8b105a04d93af93da257466bd0d96.svg" class="inline-math"> are variables of sort <img src="img-math/baf65a1761f8845318b6d260476ad9483528d03101a79244cd644cd984f26f02.svg" class="inline-math"> for all <img src="img-math/ceec897e2982ac3e9a8a0fe65f23f5caaf56b422384e50d177d99b89ce584b59.svg" class="inline-math">.</div>
+<img src="img-math/72b97bbfd4d8280f058093ac3e6e269b2701cc3600603a31876d9b8156094425.svg" class="inline-math">, where <img src="img-math/1811f68eb74929ecb6edffe855e69d59f231c07bbc85eda64f0b42728156e759.svg" class="inline-math"> is a relation symbol and the <img src="img-math/90275abc21a6a4571eb3f15d9be4f18696c8b105a04d93af93da257466bd0d96.svg" class="inline-math"> are variables of sort <img src="img-math/baf65a1761f8845318b6d260476ad9483528d03101a79244cd644cd984f26f02.svg" class="inline-math"> for all <img src="img-math/ceec897e2982ac3e9a8a0fe65f23f5caaf56b422384e50d177d99b89ce584b59.svg" class="inline-math">.</div>
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/45e41c595b6176ec96fd7eccb3f969a74a9a76e410f67f1d1db2b17234fbe4cb.svg" class="inline-math"> where <img src="img-math/80b62814a2107cccf2b62c4fc766ccca3986bf3a34e18eed5a6a6c540fcf8a24.svg" class="inline-math"> is a variable.</div>
+<img src="img-math/3847348cd93d06ac59b59e21238c28ea661356d3bbb4178706cd29bebe6c6bed.svg" class="inline-math"> where <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math"> is a variable.</div>
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/ea0d8efe055bfaf5a157788ab86ca888bd99f0286302b13a4c0fee95a6b022ae.svg" class="inline-math">, where <img src="img-math/80b62814a2107cccf2b62c4fc766ccca3986bf3a34e18eed5a6a6c540fcf8a24.svg" class="inline-math"> and <img src="img-math/806de71b4bf42a05afaf38d65f7d5757b9406f0f158ae8009f7a8e0a8d0752f0.svg" class="inline-math"> are variables of the same sort.</div>
+<img src="img-math/9cd2b0fcede7653e1b74d39d80f93075066d668d15e1482494016ff0f94e433f.svg" class="inline-math">, where <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> and <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math"> are variables of the same sort.</div>
 </li>
 </ol>
 
@@ -724,15 +723,15 @@ An <em>interpretation of a relational atom <img src="img-math/e6602cbfa7788f74e9
 <ol>
 <li>
 <div class="paragraph">
-<img src="img-math/f01ca2031c66e73f66eb246bbb9d375979d6cdbdb7e9abce8aac5d59eaa87cc2.svg" class="inline-math"> for some relation symbol <img src="img-math/3a1de76e144a3a79a90c93f2763a2b1a152e8321cc10b1b6949020cbdd8b3ff7.svg" class="inline-math"> and <img src="img-math/08dde9d1ecd390ba3b037801547dfe7d28798056b25accf15c30adee1ea2147c.svg" class="inline-math">.</div>
+<img src="img-math/fde92b884cd61a05f563f5dad8518ad69244b1019f53732519380f8a1bb59a73.svg" class="inline-math"> for some relation symbol <img src="img-math/3a1de76e144a3a79a90c93f2763a2b1a152e8321cc10b1b6949020cbdd8b3ff7.svg" class="inline-math"> and <img src="img-math/91693dee7c75be2ed138a5ae03278ab13db32a8cd8e3f099ccf1b1d09f26d116.svg" class="inline-math">.</div>
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/023bfd801374b73ee8b446a669cfdf96bee8e2e8cf649a8b7d39f8ff70f89813.svg" class="inline-math"> for some variable <img src="img-math/80b62814a2107cccf2b62c4fc766ccca3986bf3a34e18eed5a6a6c540fcf8a24.svg" class="inline-math">, without further assumptions.</div>
+<img src="img-math/7f9eeb15ec638cabf6b30cdeaa9dda87afc4c2b2c41590f104978e69ba08794f.svg" class="inline-math"> for some variable <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">, without further assumptions.</div>
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/f7d71406907d3abf7ac34deb5e0e57b844cfdb179c846564050687d9fccc50dc.svg" class="inline-math"> for some variables <img src="img-math/80b62814a2107cccf2b62c4fc766ccca3986bf3a34e18eed5a6a6c540fcf8a24.svg" class="inline-math"> and <img src="img-math/806de71b4bf42a05afaf38d65f7d5757b9406f0f158ae8009f7a8e0a8d0752f0.svg" class="inline-math">, and <img src="img-math/069952f716210f7128f4546c224cf02e7f2877b21238b67bd1fc1054d6d2463c.svg" class="inline-math">.</div>
+<img src="img-math/586baaece37d78fa041472c19db1fc1d894f53852a1452971850301b8d8f7a12.svg" class="inline-math"> for some variables <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> and <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">, and <img src="img-math/b04d57a239523b5511154fba2941191a9ab389483b60c3229ed5a7f548735f31.svg" class="inline-math">.</div>
 </li>
 </ol>
 
@@ -750,7 +749,7 @@ We associate to each flat atom <img src="img-math/e6602cbfa7788f74e914319dd9b4ca
 <ol>
 <li>
 <div class="paragraph">
-If <img src="img-math/fde92b884cd61a05f563f5dad8518ad69244b1019f53732519380f8a1bb59a73.svg" class="inline-math"> where <img src="img-math/1811f68eb74929ecb6edffe855e69d59f231c07bbc85eda64f0b42728156e759.svg" class="inline-math">, then the carriers of <img src="img-math/213013bc223083dd8b2f7185919a1c79aaba8a05802f428c33605ca7eb6e3b1b.svg" class="inline-math"> are given by distinct elements <img src="img-math/46bb188b48af157265aaf892ddcbd2c32f5294e3e3e13221a2333bc9882a5441.svg" class="inline-math">, and <img src="img-math/990dca9ebe4471bb9b4f98325818a657a0f929fbe6b3bfcb045b9d3665c04741.svg" class="inline-math">.
+If <img src="img-math/fde92b884cd61a05f563f5dad8518ad69244b1019f53732519380f8a1bb59a73.svg" class="inline-math"> where <img src="img-math/1811f68eb74929ecb6edffe855e69d59f231c07bbc85eda64f0b42728156e759.svg" class="inline-math">, then the carriers of <img src="img-math/213013bc223083dd8b2f7185919a1c79aaba8a05802f428c33605ca7eb6e3b1b.svg" class="inline-math"> are given by distinct elements <img src="img-math/46bb188b48af157265aaf892ddcbd2c32f5294e3e3e13221a2333bc9882a5441.svg" class="inline-math"> and a single tuple <img src="img-math/990dca9ebe4471bb9b4f98325818a657a0f929fbe6b3bfcb045b9d3665c04741.svg" class="inline-math">.
 The relations <img src="img-math/8cd89c547786afaa1a920758b92f6ac4878cdefc6f25cd8567201f55910b9c74.svg" class="inline-math"> for <img src="img-math/d6469e8d5520135182823b8e43e6c1c1e245c2f282844286fbb31a4b5073da9c.svg" class="inline-math"> are empty.</div>
 </li>
 <li>
@@ -775,10 +774,7 @@ where <img src="img-math/7b75c8cac28cd194a6550187248242acae459224fb4eace57888b52
 <div class="display-math-row">
 <img src="img-math/01514d89b6055bd8f3600b8e6648102cfab63ba0710eed63647e7e77fb604d6a.svg">
 </div>
-for all <img src="img-math/00fa28b6705c4996e7036b4006dcd7ab7e08f12c9aec6ed28f6b24c178b4f52e.svg" class="inline-math"> and variables <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math"> occuring in both <img src="img-math/07a47d98126e3bd35068f453fc1f4a459d9226bd9caf8ef8c35f8bc9ddda24e4.svg" class="inline-math"> and <img src="img-math/d16a2ddc12fd8ac0ae5b2335d811edee09ea99cb86da28e936b12f109c792f9e.svg" class="inline-math">, and the generic interpretation <img src="img-math/deeb4f21ec9b0e5fe23f759e86556b7237699475494e8bfa016238422cae44b4.svg" class="inline-math"> is the amalgamation of the <img src="img-math/97dd1eaaf2beb229d981c8c0d09227fefa9d41f6feb50a54315c7fd5b16b0306.svg" class="inline-math">.</div>
-<div class="paragraph">
-Let <img src="img-math/3ee054267b2482dd601e7989eee8fddbaed341d4d976512c352d54149be9a72a.svg" class="inline-math"> be a relational sequent.
-The <em>classifying morphism</em> of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is the evident map <img src="img-math/d0d95ef98bf92c93a89e01504be411dd5e078456c48115cc428e6a0ab9820307.svg" class="inline-math">.</div>
+for all <img src="img-math/00fa28b6705c4996e7036b4006dcd7ab7e08f12c9aec6ed28f6b24c178b4f52e.svg" class="inline-math"> and variables <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math"> occuring in both <img src="img-math/07a47d98126e3bd35068f453fc1f4a459d9226bd9caf8ef8c35f8bc9ddda24e4.svg" class="inline-math"> and <img src="img-math/d16a2ddc12fd8ac0ae5b2335d811edee09ea99cb86da28e936b12f109c792f9e.svg" class="inline-math">, and the generic interpretation <img src="img-math/deeb4f21ec9b0e5fe23f759e86556b7237699475494e8bfa016238422cae44b4.svg" class="inline-math"> is the amalgamation of the interpretations <img src="img-math/73357ae5677085a7de9c0bade420ecaccfd59b5740fd90148d40f79fe752f4b0.svg" class="inline-math">.</div>
 </div>
 <div id="prop-relational-formula-structure-universal" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
@@ -796,9 +792,16 @@ Then every interpretation <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c0
 The carrier sets of <img src="img-math/aa2ba950387d85c4237e08981eeff0493339e1f209dba23fb5eb78ce69f81f6f.svg" class="inline-math"> are defined using the variables of <img src="img-math/07a47d98126e3bd35068f453fc1f4a459d9226bd9caf8ef8c35f8bc9ddda24e4.svg" class="inline-math">, which defines an evident map <img src="img-math/0fd99ac251897bebbe89faa35423ad03ad41ddb34c7737d96fb1ad4680d54a09.svg" class="inline-math">.
 Since the restrictions of <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> to the variables in each <img src="img-math/07a47d98126e3bd35068f453fc1f4a459d9226bd9caf8ef8c35f8bc9ddda24e4.svg" class="inline-math"> agree on variables that occur in simultaneously in two atoms, the individual maps <img src="img-math/0fd99ac251897bebbe89faa35423ad03ad41ddb34c7737d96fb1ad4680d54a09.svg" class="inline-math"> glue to a map <img src="img-math/988ea3b9f738b6ccc887a2c2dba2eba42f7049f33d27dc71cc9ac06e50d58d40.svg" class="inline-math">.</div>
 </div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 28.
+</h4>
+Let <img src="img-math/3ee054267b2482dd601e7989eee8fddbaed341d4d976512c352d54149be9a72a.svg" class="inline-math"> be a relational sequent.
+The <em>classifying morphism</em> of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is the map <img src="img-math/ce36923cecd5df0297700ff93246be0de597221ec59f3f304daa8f7ddd542e9b.svg" class="inline-math"> that is induced by the canonical interpretation of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> in <img src="img-math/5e54a1f805cc1db6c174c02a8b23256b39f57a019f0c0495e7e15122c76ff08e.svg" class="inline-math">.</div>
+</div>
 <div id="prop-relational-sequent-morphism-lifts" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 28.
+<h4>Proposition 29.
 </h4>
 Let <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> be a relational sequent and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be a relational structure.
 Then <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> satisfies <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> if and only if <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is injective to <img src="img-math/6ff9f6433f9a2ff1291b28de007b9ce9524af3cd4449c64a6f2fa0a7e855b7c1.svg" class="inline-math">.</div>
@@ -817,11 +820,11 @@ commutes if and only if <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e
 </div>
 <div id="prop-free-models" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 29.
+<h4>Proposition 30.
 </h4>
 Let <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> be a relational theory.
 Then <img src="img-math/c192b4063ac4e8cd6d40e0c63d029efe1fedfd02db29f1d3cfd0cd3d8554392c.svg" class="inline-math"> is a weakly reflective category.
-If <img src="img-math/e808fd067db113de8bf5ec6fca77a9eaff0ab38b3c34b40e6bf795e62d9f4d83.svg" class="inline-math"> is flub, then <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9189e3672.svg" class="inline-math"> is a reflective subcategory.</div>
+If <img src="img-math/e808fd067db113de8bf5ec6fca77a9eaff0ab38b3c34b40e6bf795e62d9f4d83.svg" class="inline-math"> is strong, then <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9189e3672.svg" class="inline-math"> is a reflective subcategory.</div>
 </div>
 <div class="proof">
 <div class="paragraph">
@@ -830,10 +833,10 @@ By application of the small object argument (Propositions <a href="#prop-small-o
 </div>
 <div class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 30.
+<h4>Remark 31.
 </h4>
-Let us reflect on the similarities between the proof of Proposition <a href="#prop-free-models">29</a> and Datalog evaluation.
-Note that Datalog is a strict subset of RHL, so we have to specialize Proposition <a href="#prop-free-models">29</a> to Datalog theories <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> in order to compare.
+Let us reflect on the similarities between the proof of Proposition <a href="#prop-free-models">30</a> and Datalog evaluation.
+Note that Datalog is a strict subset of RHL, so we have to specialize Proposition <a href="#prop-free-models">30</a> to Datalog theories <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> in order to compare.
 Thus, we assume that the conclusions of sequents in <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> only contain atoms <img src="img-math/72b97bbfd4d8280f058093ac3e6e269b2701cc3600603a31876d9b8156094425.svg" class="inline-math"> for variables that occur in the premise (see Section <a href="#subsec-datalog-vs-rhl">3.4</a> for detailed discussion of fragments of RHL).</div>
 <div class="paragraph">
 Now, unfolding the small object argument, we see that the reflection of a relational structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> into the category of models is given by the colimit of a chain
@@ -864,42 +867,43 @@ Since <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf30
 </div>
 <div class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 31.
+<h4>Remark 32.
 </h4>
-Semi-naive evaluation is an optmized version of Datalog evaluation, where we consider only matches of premises at the <img src="img-math/d42d5862aea05b2fd7aa9c5bb07e9c13754585c17cee2cf95c36c2d9fc35ebeb.svg" class="inline-math">th stage that have not been present already in the <img src="img-math/de2c7e0bbd57228036fdbb2b1b2816b3cbcbe182c8e9e130c591bcbf22daf63f.svg" class="inline-math">th stage.
+Semi-naive evaluation is an optimized version of Datalog evaluation, where we consider only matches of premises at the <img src="img-math/d42d5862aea05b2fd7aa9c5bb07e9c13754585c17cee2cf95c36c2d9fc35ebeb.svg" class="inline-math">th stage that have not been present already in the <img src="img-math/de2c7e0bbd57228036fdbb2b1b2816b3cbcbe182c8e9e130c591bcbf22daf63f.svg" class="inline-math">th stage.
 This does not change the result of Datalog evaluation since conclusions of matches that have been found in a previous iteration have already been adjoined.
 In terms of the small object argument, this optimization can be understood as a more economic choice of the set <img src="img-math/bbe5cc62db3c4a7c10e82a1dd874cf11721cf4749c18a673bb56499ec8237707.svg" class="inline-math">:
 In Diagram <a href="#eq-small-object-argument-step-datalog">(3)</a>, we can replace <img src="img-math/bbe5cc62db3c4a7c10e82a1dd874cf11721cf4749c18a673bb56499ec8237707.svg" class="inline-math"> by the set of interpretations <img src="img-math/c1c1d846005a81eca467a07d6347a5a0f80acdc9740d50c9897aa1f5f2f86bcb.svg" class="inline-math"> that do not factor via <img src="img-math/8de24616b4e5e3ad2dfebf667d8ac45a8ce43b415d210fdfd034116b6dd9e6d2.svg" class="inline-math">.</div>
 </div>
 <div class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 32.
+<h4>Remark 33.
 </h4>
-Still, there are properties of Datalog evaluation that Proposition <a href="#prop-free-models">29</a> does not entirely capture.
-First, the result of Datalog evaluation is determined uniquely via fixed point semantics, whereas Proposition <a href="#prop-free-models">29</a> guarantees uniqueness (up to ismorphism) only in the case of flub theories.
-Since classifying morphisms of Datalog sequents are surjective, all Datalog theories are flub (Proposition <a href="#prop-epi-flub">4</a>).
-Thus, Proposition <a href="#prop-free-models">29</a> does indeed determine the result of Datalog computation uniquely.
-However, not all flub theories are Datalog theories or even contain epimorphisms only.
-For example, Proposition <a href="#prop-flubbization">5</a> allows extending every RHL theory to a flub theory.
-A syntactic characterization of flub RHL theories is the main purpose of Section <a href="#sec-phl">4</a>, where we discuss partial Horn logic.</div>
+Still, there are properties of Datalog evaluation that Proposition <a href="#prop-free-models">30</a> does not entirely capture.
+First, the result of Datalog evaluation is determined uniquely via fixed point semantics, whereas Proposition <a href="#prop-free-models">30</a> guarantees uniqueness (up to ismorphism) only in the case of strong theories.
+Since classifying morphisms of Datalog sequents are surjective, all Datalog theories are strong (Proposition <a href="#prop-epi-strong">4</a>).
+Thus, Proposition <a href="#prop-free-models">30</a> does indeed determine the result of Datalog computation uniquely.
+However, not all strong theories are Datalog theories or even contain epimorphisms only.
+For example, Proposition <a href="#prop-strongbization">5</a> allows extending every RHL theory to a strong theory.
+A syntactic characterization of strong RHL theories is the main purpose of Section <a href="#sec-phl">4</a>, where we discuss partial Horn logic.</div>
 <div class="paragraph">
 A second feature of Datalog evaluation we have not discussed is that it always terminates:
 Since each Datalog evaluation monotonically increases the size of relations on a fixed carrier, we reach a fixed point after a finite number of iterations.
 This is not generally true for RHL theories, since the carrier sets change during evaluation.
-We can, however, prove termination for <em>surjective</em> theories, which subsume and generalize Datalog theories (Corollary <a href="#cor-surjective-rhl-theories-terminate">37</a>).</div>
+We can, however, prove termination for <em>surjective</em> theories, which subsume and generalize Datalog theories (Corollary <a href="#cor-surjective-rhl-theories-terminate">38</a>).
+In general, however, termination of RHL evaluation is undecidable.</div>
 </div>
 <h3 id="subsec-rhl-completeness">
 3.3 Completeness Results</h3>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 33.
+<h4>Definition 34.
 </h4>
 Let <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> be a map of relational structures.
 We say that <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is <em>surjective</em> if <img src="img-math/45897b5e62d11df6fc0bbc805809763e20ddf7e466032d382f19eeae2eca2cf6.svg" class="inline-math"> is a surjective map for all <img src="img-math/d53b76ba7dd62a8b4c29d4609b13844e774a64afa734cc26b21e2fead3ebaacf.svg" class="inline-math">.</div>
 </div>
 <div id="prop-epimorphisms-classification" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 34.
+<h4>Proposition 35.
 </h4>
 Let <img src="img-math/e94a30cee0214f847bdd9fd94bd185ce58e109ee4c9196e76f806ead42454c79.svg" class="inline-math"> be a relational signature.
 Let <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> be a map of relational structures.
@@ -925,15 +929,14 @@ Note that, for every morphism <img src="img-math/48066c92e9c1389e9d01471a09b3377
 </div>
 is a pushout square.
 Because the forgetful functor from relational structures to <img src="img-math/afd87c23c65e17b0c51f83111752692ab0030bfc9716c0a0c3b2483e4fbf7ba7.svg" class="inline-math">-indexed families of sets preserves colimits, it follows that it preserves epimorphisms, i.e. that every epimorphism of relational structures must be surjective.
-The same forgetful functor is full and faithful, hence reflects epimorphisms.
-This shows that surjective maps of relational structures are indeed epimorphisms.</div>
+The same forgetful functor is faithful, hence reflects epimorphisms.</div>
 <div class="paragraph">
 <a href="#itm-relational-effective-epimorphisms">2</a>.
 This follows from the construction of colimits in Proposition <a href="#prop-rel-cocomplete">21</a>.</div>
 </div>
 <div id="prop-semantics-relational-sequents" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 35.
+<h4>Proposition 36.
 </h4>
 The image of (surjective, effectively epic) relational sequents under the assignment <img src="img-math/ef9a5d285c5aa120ef228ab92938f55dc21eef66b38d2b11694f1f3dfe05dbef.svg" class="inline-math"> can be described as follows:
 <ol>
@@ -988,7 +991,7 @@ and it can be verified using the universal property of <img src="img-math/38ea0a
 commutes.</div>
 <div class="paragraph">
 <a href="#itm-semantics-surjective-relational-sequent">2</a>.
-The carrier sets of a relational structure <img src="img-math/38ea0a85e8e091acaa0053b546b0f55124854385b49fe559e3e52dcba18a1abd.svg" class="inline-math"> obtained from a formula <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> is a quotient of the set of variables occuring in <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
+The carrier of a relational structure <img src="img-math/38ea0a85e8e091acaa0053b546b0f55124854385b49fe559e3e52dcba18a1abd.svg" class="inline-math"> obtained from a formula <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> is a quotient of the set of variables occuring in <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
 Thus if every variable in the conclusion <img src="img-math/f01bc8a000c08d15aed25ef15f5acd71cf0134bc807b3f0564102b2ed8197abc.svg" class="inline-math"> of a sequent <img src="img-math/121cfe734ff5ad02c5c220036e8387f3cd32c0d74ea3fcafefc50437b8f7e11e.svg" class="inline-math"> occurs also in the premise <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">, then the resulting map <img src="img-math/f423f4f1e501ba5aacae13a14a4c5db10f539ee1eede95a5110890421d30a195.svg" class="inline-math"> is surjective.
 Conversely, let <img src="img-math/ce45e690d14c519d518a69b5d8fbeef4fc1bdb717fda749b3ce014728cb1807c.svg" class="inline-math"> be a surjective map of finite relational structures.
 Let <img src="img-math/535cb63eb49c38124a87627c60a7b5f454c44682ea0743ce612aa67804923900.svg" class="inline-math"> for <img src="img-math/205b33806536c522ad1e99864f9b2a667c790c327be3fab82e03b2c4628f9f81.svg" class="inline-math"> and <img src="img-math/aa083e01074a476d184059bfa3395522f1ba2fa22b02db539fd35c0b64fa7ea1.svg" class="inline-math"> be as in the proof of <a href="#itm-semantics-arbitrary-relational-sequent">1</a>, so that <img src="img-math/4bca7514a74e3a5d806b2281673a795be6d30fb94fd8eaad13c99fd4ed910338.svg" class="inline-math">.
@@ -1003,7 +1006,7 @@ Thus <img src="img-math/da355831e25757a668033fed67fc74c948e532ed88a31c6a0703f72f
 <div class="paragraph">
 <a href="#itm-semantics-quotient-relational-sequent">3</a>.
 If <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is effectively epic and <img src="img-math/5d2246ff94f1fa4f10972b22e22d09523f9369e3446fce07c9c947bd8378320f.svg" class="inline-math">, then the maps <img src="img-math/8c1f6595c1c55bf8f2fde7eb9c956ec9cec3d2f3ce99ab16e36448768229b881.svg" class="inline-math"> are surjective for all relation symbols <img src="img-math/3a1de76e144a3a79a90c93f2763a2b1a152e8321cc10b1b6949020cbdd8b3ff7.svg" class="inline-math">.
-Thus by Proposition <a href="#prop-epimorphisms-classification">34</a>, <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is an effective epimorphism.</div>
+Thus by Proposition <a href="#prop-epimorphisms-classification">35</a>, <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is an effective epimorphism.</div>
 <div class="paragraph">
 Conversely, let <img src="img-math/ce45e690d14c519d518a69b5d8fbeef4fc1bdb717fda749b3ce014728cb1807c.svg" class="inline-math"> be an effective epimorphism of finite relational structures.
 Let <img src="img-math/535cb63eb49c38124a87627c60a7b5f454c44682ea0743ce612aa67804923900.svg" class="inline-math"> for <img src="img-math/205b33806536c522ad1e99864f9b2a667c790c327be3fab82e03b2c4628f9f81.svg" class="inline-math"> and <img src="img-math/aa083e01074a476d184059bfa3395522f1ba2fa22b02db539fd35c0b64fa7ea1.svg" class="inline-math"> be as in the proof of <a href="#itm-semantics-arbitrary-relational-sequent">1</a>, so that <img src="img-math/4bca7514a74e3a5d806b2281673a795be6d30fb94fd8eaad13c99fd4ed910338.svg" class="inline-math">.
@@ -1019,7 +1022,7 @@ We conclude <img src="img-math/fc56640aed0bad30c3b4b62417c79e303faffefbc5ede744c
 </div>
 <div id="prop-surjective-small-object-argument" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 36.
+<h4>Proposition 37.
 </h4>
 Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a finite set of epimorphisms of finite relational structures.
 Let
@@ -1049,7 +1052,7 @@ For sufficiently large <img src="img-math/6292e27c03bd37bfad4c40c7b385ee2a195e16
 </div>
 <div id="cor-surjective-rhl-theories-terminate" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Corollary 37.
+<h4>Corollary 38.
 </h4>
 Let <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> be an RHL theory containing only surjective sequents.
 Then the reflection of a finite relational structure into <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9189e3672.svg" class="inline-math"> is a finite relational structure.
@@ -1057,9 +1060,9 @@ Then the reflection of a finite relational structure into <img src="img-math/001
 </div>
 <div class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 38.
+<h4>Remark 39.
 </h4>
-Proposition <a href="#prop-surjective-small-object-argument">36</a> can likely be generalized to locally finitely presentable categories (perhaps with further conditions on the cardinality of <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">) as such categories are always co-wellpowered:
+Proposition <a href="#prop-surjective-small-object-argument">37</a> can likely be generalized to locally finitely presentable categories (perhaps with further conditions on the cardinality of <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">) as such categories are always co-wellpowered:
 For every object <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">, there exists up to isomorphism only a <em>set</em> of epimorphism <img src="img-math/5d0fffd65cffebf0debdc19d763a9cc565243331c349ac7863feac23c20b57af.svg" class="inline-math">.
 We would now have to identify objects for which this set is finite.</div>
 </div>
@@ -1067,43 +1070,44 @@ We would now have to identify objects for which this set is finite.</div>
 3.4 Datalog and Relational Horn Logic</h3>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 39.
+<h4>Definition 40.
 </h4>
 Let <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> be an RHL sequent.
 <ol>
 <li>
 <div class="paragraph">
-<img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is a <em>Datalog sequent</em> if all atoms in <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> are of the form <img src="img-math/5fadd7ac315fb156697b558b5fdac891cfbac18d6ab20969437f7753e1622f2f.svg" class="inline-math"> and all variables in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> also occur in the premise.</div>
+<img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is a <em>Datalog sequent</em> if all atoms in <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> are of the form <img src="img-math/7b60fb809a4f511c5fea9a685075798c4a7beb8be660a3690554b7122cfa1cdf.svg" class="inline-math"> and all variables in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> also occur in the premise.</div>
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is a <em>Datalog sequent with sort quantification</em> if all atoms in <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> are of the form <img src="img-math/5fadd7ac315fb156697b558b5fdac891cfbac18d6ab20969437f7753e1622f2f.svg" class="inline-math"> or <img src="img-math/45e41c595b6176ec96fd7eccb3f969a74a9a76e410f67f1d1db2b17234fbe4cb.svg" class="inline-math">, and all variables in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> also occur in the premise.</div>
+<img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is a <em>Datalog sequent with sort quantification</em> if all atoms in <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> are of the form <img src="img-math/7b60fb809a4f511c5fea9a685075798c4a7beb8be660a3690554b7122cfa1cdf.svg" class="inline-math"> or <img src="img-math/3847348cd93d06ac59b59e21238c28ea661356d3bbb4178706cd29bebe6c6bed.svg" class="inline-math">, and all variables in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> also occur in the premise.</div>
 </li>
-<li>
+<li id="itm-datalog-with-choice">
 <div class="paragraph">
-<img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is a <em>Datalog sequent with choice</em> if all atoms in <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> are of the form <img src="img-math/5fadd7ac315fb156697b558b5fdac891cfbac18d6ab20969437f7753e1622f2f.svg" class="inline-math"> or <img src="img-math/45e41c595b6176ec96fd7eccb3f969a74a9a76e410f67f1d1db2b17234fbe4cb.svg" class="inline-math">.</div>
+<img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is a <em>Datalog sequent with choice</em> if all atoms in <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> are of the form <img src="img-math/7b60fb809a4f511c5fea9a685075798c4a7beb8be660a3690554b7122cfa1cdf.svg" class="inline-math"> or <img src="img-math/3847348cd93d06ac59b59e21238c28ea661356d3bbb4178706cd29bebe6c6bed.svg" class="inline-math">.</div>
 </li>
 </ol>
 </div>
 </div>
 <div class="paragraph">
 Note that in standard Datalog, usually only sequents with a single atom as conclusion are allowed.
-However, our generalized Datalog sequents have the same descriptive power as standard Datalog, since a single sequent with <img src="img-math/509fe7e8ba852248c1de4dfc8c752f04a501aa15dc740f89268b2dd4cb0e9155.svg" class="inline-math"> conclusions can equivalently be replaced by <img src="img-math/509fe7e8ba852248c1de4dfc8c752f04a501aa15dc740f89268b2dd4cb0e9155.svg" class="inline-math"> sequents with single conclusions.</div>
+However, our generalized Datalog sequents have the same descriptive power as standard Datalog, since a single sequent with <img src="img-math/509fe7e8ba852248c1de4dfc8c752f04a501aa15dc740f89268b2dd4cb0e9155.svg" class="inline-math"> conclusions can equivalently be replaced by <img src="img-math/509fe7e8ba852248c1de4dfc8c752f04a501aa15dc740f89268b2dd4cb0e9155.svg" class="inline-math"> sequents with single conclusions.
+The name <em>Datalog with choice</em> in <a href="#itm-datalog-with-choice">3</a> alludes to the choice construct in Souffle [<a href="#souffle-choice">1</a>] with similar semantics.</div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 40.
+<h4>Definition 41.
 </h4>
 An element <img src="img-math/113fb91cc7d1f6e0146fe362d9331a949fba05fa510417002447baa42cfb4d1f.svg" class="inline-math"> in a relational structure is <em>unbound</em> if it does not appear in any tuple <img src="img-math/ed30778bb92408a5f11dfb0d2bee4e5047be84be762d0348f788a721babc8535.svg" class="inline-math"> for all <img src="img-math/eb8a0ae53bfae72796e1352feea1dea35fd9884f2e749b6aeab6f52fd03277ab.svg" class="inline-math">.</div>
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 41.
+<h4>Definition 42.
 </h4>
 A morphism <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> of relational structures is <em>injective</em> if <img src="img-math/2fc8944a69ab8ecefed8e427133b07f1fa857f568e6933cf69ecac510d406adb.svg" class="inline-math"> is an injective map for all <img src="img-math/d53b76ba7dd62a8b4c29d4609b13844e774a64afa734cc26b21e2fead3ebaacf.svg" class="inline-math">.</div>
 </div>
 <div class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 42.
+<h4>Proposition 43.
 </h4>
 The classifying morphisms of Datalog sequents can be characterized up to isomorphism as follows:
 <ol>
@@ -1121,11 +1125,13 @@ The classifying morphisms of Datalog sequents with choice are precisely the inje
 </li>
 </ol>
 
+
+
 </div>
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 43.
+<h4>Definition 44.
 </h4>
 A <em>setoid</em> consists of a set <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> and an equivalence relation <img src="img-math/790e7fe250959eee5f1526a9fed44396f1f8d2fcf355e1403ef0522f01b7cc79.svg" class="inline-math"> on <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.
 A morphism <img src="img-math/48066c92e9c1389e9d01471a09b3377bc1b8af0ac5cb934e689031d4b7e0b765.svg" class="inline-math"> is a map of underlying sets that respects the equivalence relations.
@@ -1134,17 +1140,17 @@ The category of setoids is denoted by <img src="img-math/9e2312dd7c175db5706972c
 </div>
 <div id="prop-setoid-quotient-equivalence" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 44.
+<h4>Proposition 45.
 </h4>
 The categories <img src="img-math/9e2312dd7c175db5706972c7f5862e83d1eeea22c24507a76927f3e15262854f.svg" class="inline-math"> and <img src="img-math/722b686db72121b21d03fd570178bcf88cf932cd6f81f7f46a8a6d4fd3532c82.svg" class="inline-math"> are equivalent.
-An equivalence is given by the functor <img src="img-math/aff05cb166e035f6c4f83ee0faca352386d9500bbb896101589288474a9ec204.svg" class="inline-math"> with <img src="img-math/876eb587a466648f4f79c972e7252c460279ce800f99eeeaffdd3986273b3ec1.svg" class="inline-math"> and the functor <img src="img-math/7fb62377b1b2d4ad9b258823a0d63f76683953b8dbe582f00fb9f61e880d42c5.svg" class="inline-math"> with <img src="img-math/b5cd423ef236d8abc0416f63acae8f96a55d8a5f54c4c00717a5fd31f02d83c5.svg" class="inline-math">.
+An equivalence is given by the functor <img src="img-math/aff05cb166e035f6c4f83ee0faca352386d9500bbb896101589288474a9ec204.svg" class="inline-math"> defined by <img src="img-math/876eb587a466648f4f79c972e7252c460279ce800f99eeeaffdd3986273b3ec1.svg" class="inline-math"> and the functor <img src="img-math/7fb62377b1b2d4ad9b258823a0d63f76683953b8dbe582f00fb9f61e880d42c5.svg" class="inline-math"> defined by <img src="img-math/b5cd423ef236d8abc0416f63acae8f96a55d8a5f54c4c00717a5fd31f02d83c5.svg" class="inline-math">.
 </div>
 </div>
 <div id="def-setoid-transformation" class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 45.
+<h4>Definition 46.
 </h4>
-The <em>setoid transformation</em> of an RHL theory <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> defined on a signature <img src="img-math/e94a30cee0214f847bdd9fd94bd185ce58e109ee4c9196e76f806ead42454c79.svg" class="inline-math"> is a Datalog theory with choice <img src="img-math/f24a7839080827e962f5824997687f4f6bc05f9bae00e47932450e60b837a389.svg" class="inline-math"> defined on a relational signature <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> as follows.
+The <em>setoid transformation</em> of an RHL theory <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> defined on a signature <img src="img-math/e94a30cee0214f847bdd9fd94bd185ce58e109ee4c9196e76f806ead42454c79.svg" class="inline-math"> is a Datalog with choice theory <img src="img-math/f24a7839080827e962f5824997687f4f6bc05f9bae00e47932450e60b837a389.svg" class="inline-math"> defined on a relational signature <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> as follows.
 The signature <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> extends <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> by a relation symbol <img src="img-math/35121ea63e821f497ac49db17388c67da41e521e873c9af1928511085549a193.svg" class="inline-math"> for each sort <img src="img-math/d53b76ba7dd62a8b4c29d4609b13844e774a64afa734cc26b21e2fead3ebaacf.svg" class="inline-math">.
 The sequents of <img src="img-math/f24a7839080827e962f5824997687f4f6bc05f9bae00e47932450e60b837a389.svg" class="inline-math"> are given as follows:
 <ol>
@@ -1164,15 +1170,15 @@ For each relation <img src="img-math/1811f68eb74929ecb6edffe855e69d59f231c07bbc8
 </li>
 <li>
 <div class="paragraph">
-For each sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> original theory, the sequent which is obtained from <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> by replacing each equality atom <img src="img-math/9cd2b0fcede7653e1b74d39d80f93075066d668d15e1482494016ff0f94e433f.svg" class="inline-math"> with the atom <img src="img-math/129ed8219a8ef54f3d860158e34778c66337a20ff447a8a78a403aa7b5625252.svg" class="inline-math">, where <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math"> is the sort of <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> and <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">.</div>
+For each sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> in <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math">, the sequent which is obtained from <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> by replacing each equality atom <img src="img-math/9cd2b0fcede7653e1b74d39d80f93075066d668d15e1482494016ff0f94e433f.svg" class="inline-math"> with the atom <img src="img-math/129ed8219a8ef54f3d860158e34778c66337a20ff447a8a78a403aa7b5625252.svg" class="inline-math">, where <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math"> is the sort of <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> and <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">.</div>
 </li>
 </ol>
 
-The <em>category of setoid models</em> <img src="img-math/36285aad81ba673aeab3b3c9dab7f20eaef86b0acb37145b33c41ccf0d754960.svg" class="inline-math"> is given by the models of <img src="img-math/ab3dd81a7c311e54dd69f2b81062eeb8280426c24928eae5ad6a08e457282453.svg" class="inline-math"> with morphisms <img src="img-math/b56fab323938458b38b4f57eb49a8300894db1b2625b2d4740ba22f01ccd365f.svg" class="inline-math"> are equal if <img src="img-math/2cbed36f6a251ff5773d4d4d00a271b951fdc07b8277de94b056f2eda7724bad.svg" class="inline-math"> are equal as setoid morphisms for all sorts <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">.</div>
+The <em>category of setoid models</em> <img src="img-math/36285aad81ba673aeab3b3c9dab7f20eaef86b0acb37145b33c41ccf0d754960.svg" class="inline-math"> is given by the models of <img src="img-math/ab3dd81a7c311e54dd69f2b81062eeb8280426c24928eae5ad6a08e457282453.svg" class="inline-math">, where we consider morphisms <img src="img-math/b56fab323938458b38b4f57eb49a8300894db1b2625b2d4740ba22f01ccd365f.svg" class="inline-math"> as equal if <img src="img-math/2cbed36f6a251ff5773d4d4d00a271b951fdc07b8277de94b056f2eda7724bad.svg" class="inline-math"> are equal as setoid morphisms for all sorts <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">.</div>
 </div>
 <div id="prop-setoid-model-equivalence" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 46.
+<h4>Proposition 47.
 </h4>
 Let <img src="img-math/72bb8e5b66461b29c01b0b449190df7b0e8b2c1c35997d0b3dbea7039d447f66.svg" class="inline-math"> be an RHL theory.
 Then <img src="img-math/36285aad81ba673aeab3b3c9dab7f20eaef86b0acb37145b33c41ccf0d754960.svg" class="inline-math"> and <img src="img-math/da6f42262b7bed8fc1e0b8ced99c90975d1d5d6f94f3e1b9a481ba4f5c078b24.svg" class="inline-math"> are equivalent categories.</div>
@@ -1189,7 +1195,7 @@ This is clear for <img src="img-math/0bd1dd014813dbf1a42b3c0b20825409b27936aa98f
 <div class="paragraph">
 Let <img src="img-math/ef78d28c51d284b15776c296491236ae10808cafb103fd4009453d8b412aa47f.svg" class="inline-math"> for <img src="img-math/8c5b9ef95642fa35f28af00188798861c718733b585ee23f7d91eaeb6cdb32e1.svg" class="inline-math">.
 Let <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> be a formula for the signature <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> and let <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> be an interpretation of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> in <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math">.
-Since the carriers of <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math"> are defined as quotients of those of <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">, every interpretation <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> in <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math"> lifts to an interpretation <img src="img-math/728249064090bd559518be7347eebaa2dc2c1b061c93be77f4aad85dcea5fe79.svg" class="inline-math"> of the same set of variables in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">, so that we have <img src="img-math/a861f195df7fa6e20a4b8997e76379eb4e4bbacd17a83e739f02269638d49b0e.svg" class="inline-math"> for all variables <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">.
+Since the carriers of <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math"> are defined as quotients of the carriers of <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">, every interpretation <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> in <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math"> lifts to an interpretation <img src="img-math/728249064090bd559518be7347eebaa2dc2c1b061c93be77f4aad85dcea5fe79.svg" class="inline-math"> of the same set of variables in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">, so that we have <img src="img-math/a861f195df7fa6e20a4b8997e76379eb4e4bbacd17a83e739f02269638d49b0e.svg" class="inline-math"> for all variables <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">.
 Note that <img src="img-math/728249064090bd559518be7347eebaa2dc2c1b061c93be77f4aad85dcea5fe79.svg" class="inline-math"> is an interpretation of the set of variables of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">, but not always of the formula <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
 Let <img src="img-math/f5224e46560312775de0cef6b6a0b6775bffbf0b0c48d6d096bcbc58bae0c9a8.svg" class="inline-math"> be the formula obtained from <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> by replacing every equality atom <img src="img-math/9cd2b0fcede7653e1b74d39d80f93075066d668d15e1482494016ff0f94e433f.svg" class="inline-math"> by the atom <img src="img-math/129ed8219a8ef54f3d860158e34778c66337a20ff447a8a78a403aa7b5625252.svg" class="inline-math">, where <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math"> is the sort of <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> and <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math">.
 We claim that <img src="img-math/728249064090bd559518be7347eebaa2dc2c1b061c93be77f4aad85dcea5fe79.svg" class="inline-math"> is an interpretation of <img src="img-math/f5224e46560312775de0cef6b6a0b6775bffbf0b0c48d6d096bcbc58bae0c9a8.svg" class="inline-math">.
@@ -1205,7 +1211,7 @@ Thus <img src="img-math/21c7ca77187d73e17f26435c4624e09f154dac8c7cdb37396eb22cbd
 If <img src="img-math/f5febbc7d312462849d99e73e174ee56e79ecbe6415706d50c28cae0a5045a78.svg" class="inline-math"> for some relation symbol <img src="img-math/3a1de76e144a3a79a90c93f2763a2b1a152e8321cc10b1b6949020cbdd8b3ff7.svg" class="inline-math">, then <img src="img-math/0c402e3f34984131ce441a02e422ad2834ed81c1b5a6dfc37a0eed22d98a1efd.svg" class="inline-math">.
 By definition of <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math">, there exist <img src="img-math/c9d52d356a758323c7792f80562f25f7c9ff5b52e39edd8bfadc5ec8a93c53b4.svg" class="inline-math"> such that <img src="img-math/df4c32305f80e68b4cc18ec3ed4e498994905d5500f48ced3b2384ca4003b764.svg" class="inline-math"> and <img src="img-math/320e3660b6689f272e73e4417ec601693f3520e68490349f1ea453d382918fca.svg" class="inline-math">.
 Thus <img src="img-math/5da7491024ddf286384db9043c2cfabd199a6ee3aa5d019e09828fca0db69e5a.svg" class="inline-math">, so we have <img src="img-math/7e1a35d3501513a15c73c98694885c20944b0ccfbe718e56d228920ed57078bb.svg" class="inline-math"> for all <img src="img-math/d42d5862aea05b2fd7aa9c5bb07e9c13754585c17cee2cf95c36c2d9fc35ebeb.svg" class="inline-math">.
-Since <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> satisfies the sequent <a href="#itm-setoid-theory-congruence">2</a>, <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math"> is closed under equivalence in each argument, hence <img src="img-math/5d5e7400e0ae4b3e42781bd90440e37d99d4d51d94bfcfc062e82583cc86c0bf.svg" class="inline-math">.
+Since <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> satisfies the congruence sequents <a href="#itm-setoid-theory-congruence">2</a>, <img src="img-math/4c2e65ce670f4149d053f1213ff22dff0c01c2cf47d67a61b068e5c8d29a6885.svg" class="inline-math"> is closed under equivalence in each argument, hence <img src="img-math/5d5e7400e0ae4b3e42781bd90440e37d99d4d51d94bfcfc062e82583cc86c0bf.svg" class="inline-math">.
 Thus <img src="img-math/728249064090bd559518be7347eebaa2dc2c1b061c93be77f4aad85dcea5fe79.svg" class="inline-math"> is an interpretation of <img src="img-math/f5224e46560312775de0cef6b6a0b6775bffbf0b0c48d6d096bcbc58bae0c9a8.svg" class="inline-math">.</div>
 </li>
 <li>
@@ -1229,7 +1235,7 @@ Thus <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1
 </div>
 <div id="cor-setoid-model-free" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Corollary 47.
+<h4>Corollary 48.
 </h4>
 Let <img src="img-math/72bb8e5b66461b29c01b0b449190df7b0e8b2c1c35997d0b3dbea7039d447f66.svg" class="inline-math"> be an RHL theory with setoid transformation <img src="img-math/ab3dd81a7c311e54dd69f2b81062eeb8280426c24928eae5ad6a08e457282453.svg" class="inline-math">.
 Then the reflection <img src="img-math/fd73116fad7fac50902e97636224bea3153d79e01f6e315eda6c37f50dade4b7.svg" class="inline-math"> can be computed as composite
@@ -1248,7 +1254,7 @@ where
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/bc68c787cde8c0c0c9b3196c249925ce3284ea5137a2a934782c7aa64629b489.svg" class="inline-math"> is one half of the equivalence constructed in Proposition <a href="#prop-setoid-model-equivalence">46</a>.</div>
+<img src="img-math/bc68c787cde8c0c0c9b3196c249925ce3284ea5137a2a934782c7aa64629b489.svg" class="inline-math"> is one half of the equivalence constructed in Proposition <a href="#prop-setoid-model-equivalence">47</a>.</div>
 </li>
 </ul>
 </div>
@@ -1261,19 +1267,19 @@ The composite of the respective right adjoints is the inclusion <img src="img-ma
 </div>
 <div class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 48.
+<h4>Remark 49.
 </h4>
-Proposition <a href="#prop-setoid-model-equivalence">46</a> shows that RHL can be reduced to Datalog (with minor extensions).
+Proposition <a href="#prop-setoid-model-equivalence">47</a> shows that RHL can be reduced to Datalog (with minor extensions).
 In practice, however, using the resulting Datalog programs to compute free models is often unfeasible even for small inputs.</div>
 <div class="paragraph">
 One issue is that storing the equivalence relations <img src="img-math/a50df76b8191bd8b36228fa54c137a70529eb4635e49a2a5f53174063bbebb78.svg" class="inline-math"> naively requires quadratic memory with respect to the size of equivalence classes.
-This issue can be largely addressed by using a union-find data structure, which only requires linear memory.
-Union-find data structures are available in the Souffle Datalog engine [<a href="#souffle-union-find">4</a>].</div>
+This problem can be largely addressed by using a union-find data structure, which only requires linear memory.
+Union-find data structures are available in the Souffle Datalog engine [<a href="#souffle-union-find">5</a>].</div>
 <div class="paragraph">
 A more significant issue are the congruence axioms <a href="#itm-setoid-theory-congruence">2</a>, which result in an exponential increase in memory requirements with respect to the arity of relations.
 Every equality inferred during evaluation can significantly increase the total size of the relational structure in the next stage.
 Semantically, however, every inferred equality should in fact <em>reduce</em> the size of the relational structure at the next stage.
-The eqlog tool, which evaluates RHL theories directly, takes advantage of this observation by maintaining a union-find data structure on each sort, allowing for a canonical representative of each equivalence class.
+The Eqlog engine, which evaluates RHL theories directly, takes advantage of this observation by maintaining a union-find data structure on each sort, allowing for a canonical representative of each equivalence class.
 The relations then contain entries only for these canonical representatives.
 An inferred equality results in a merge of two equivalence classes, with one of the canonical representatives ceasing to be representative.
 Eqlog then <em>canonicalizes</em> all tuples by replacing each occurrence of the old representative with the new representative.
@@ -1281,10 +1287,10 @@ Since relations are stored without duplicates, this often results in a decrease 
 </div>
 <div class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 49.
+<h4>Remark 50.
 </h4>
 The following alternative <em>sparse</em> setoid transformation <img src="img-math/d211001ebf41036de8bacdeb7246dfba4b1ef2895726d89445c12c2c7fb7f5ee.svg" class="inline-math"> of an RHL theory <img src="img-math/72bb8e5b66461b29c01b0b449190df7b0e8b2c1c35997d0b3dbea7039d447f66.svg" class="inline-math"> can result in a more efficient Datalog program.
-The signature <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> of the sparse setoid transformation is the same as in the standard setoid transformation (Definition <a href="#def-setoid-transformation">45</a>), so <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> contains additional equivalence relations <img src="img-math/a50df76b8191bd8b36228fa54c137a70529eb4635e49a2a5f53174063bbebb78.svg" class="inline-math"> for all sorts <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">.
+The signature <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> of the sparse setoid transformation is the same as in the standard setoid transformation (Definition <a href="#def-setoid-transformation">46</a>), so <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math"> contains additional equivalence relations <img src="img-math/a50df76b8191bd8b36228fa54c137a70529eb4635e49a2a5f53174063bbebb78.svg" class="inline-math"> for all sorts <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">.
 As before, <img src="img-math/70af2828b2e4d676a41d5df95e3c48bcb86dd3b65a268e8f5c14fd0c6aec78c7.svg" class="inline-math"> contains the equivalence relation axioms <a href="#itm-setoid-theory-equivalence">1</a>.
 However, the congruence axioms <a href="#itm-setoid-theory-congruence">2</a> are omitted.</div>
 <div class="paragraph">
@@ -1295,7 +1301,7 @@ We now replace the <img src="img-math/d42d5862aea05b2fd7aa9c5bb07e9c13754585c17c
 <div class="paragraph">
 The transformed premises <img src="img-math/ca7a980873f70e42e0bedce1bbd301f1a1a83e8a0255a8beda16592acdf664a2.svg" class="inline-math"> have the following property:
 If <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is a relational <img src="img-math/cbfabbb29da9f4535a9a58b92a3d92a678943b924cef71709a582e00078d4879.svg" class="inline-math">-structure that satisfies the equivalence relation axioms and <img src="img-math/d0b31c01839fd24e6dc36aeb07092113a56fd1d7f4fb25158fbf6eafa17b90c9.svg" class="inline-math"> is the relational structure over <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> that furthermore satisfies the congruence axioms, then maps <img src="img-math/09751aff796728dbcb5eabcdfd490cc6502ab739567ffc58b5047ec432dff724.svg" class="inline-math"> are in bijection to maps <img src="img-math/fd42e73c1bbd812131864ff03b2db1e852af33d152f5192ded02a824b437d14d.svg" class="inline-math"> up to setoid morphism equality.
-From this it follows that Corollary <a href="#cor-setoid-model-free">47</a> holds also for the sparse transformation <img src="img-math/d211001ebf41036de8bacdeb7246dfba4b1ef2895726d89445c12c2c7fb7f5ee.svg" class="inline-math">.</div>
+From this it follows that Corollary <a href="#cor-setoid-model-free">48</a> holds also for the sparse transformation <img src="img-math/d211001ebf41036de8bacdeb7246dfba4b1ef2895726d89445c12c2c7fb7f5ee.svg" class="inline-math">.</div>
 <div class="paragraph">
 The sparse transformation avoids duplication in many cases, but data that can be infered twice for different but equivalent elements is still duplicated.
 Furthermore, the transformed premises <img src="img-math/ca7a980873f70e42e0bedce1bbd301f1a1a83e8a0255a8beda16592acdf664a2.svg" class="inline-math"> can be more computationally expensive to match because all elements in an equivalence class must be considered for every occurence of a variable in the original premise <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.</div>
@@ -1304,42 +1310,39 @@ Furthermore, the transformed premises <img src="img-math/ca7a980873f70e42e0bedce
 4 Partial Horn Logic</h2>
 <div class="paragraph">
 Partial Horn logic is one of the many equivalent notions of essentially algebraic theory.
-It was initially defined by Palmgren and Vickers [<a href="#phl">5</a>], who proved its equivalence to essentially algebraic theories.
+It was initially defined by Palmgren and Vickers [<a href="#phl">6</a>], who proved its equivalence to essentially algebraic theories.
 Here we shall understand PHL as a syntactic extension, as <em>syntactic sugar</em>, over RHL.
-The advantages of PHL, then, are entirely syntactical.</div>
+The advantages of PHL, then, are entirely syntactical.
+</div>
 <div class="paragraph">
-First of all, composite terms allow expressing axioms more naturally.
-TODO: example here.</div>
-<div class="paragraph">
-The second advantage of PHL is that it can be used to easily characterize flub theories.
-Observe that it cannot be read off from the individual sequents whether or not an RHL theory is flub or not.
+Observe that it cannot be read off from the individual sequents whether or not an RHL theory is strong or not.
 Instead, one has to consider the interplay between the different sequents of the theory.
-As a result, it is computationally undecidable whether or not a given RHL theory is flub.</div>
+As a result, it is computationally undecidable whether or not a given RHL theory is strong.</div>
 <div class="paragraph">
 Our application for the semantics developed in this paper are tools that allow computations based on the small object argument.
 Such tools compute (fragments of) free models of user-defined theories that encode problem domains.
-It is highly desirable that these theories are flub, since otherwise the result of the computation is not uniquely determined.
-As flub RHL theories are difficult to recognize for both humans and computers, we argue that RHL is not directly suitable as an input theory language for this purpose.
-What is needed, then, is a language with the same expressive power of RHL, but where an easily recognizable subset allows axiomatizing all flub theories.</div>
+It is highly desirable that these theories are strong, since otherwise the result of the computation is not uniquely determined.
+As strong RHL theories are difficult to recognize for both humans and computers, we argue that RHL is not directly suitable as an input theory language for this purpose.
+What is needed, then, is a language with the same expressive power of RHL, but where an easily recognizable subset allows axiomatizing all strong theories.</div>
 <div class="paragraph">
 PHL is indeed such a language:
-Proposition <a href="#prop-flub-rhl-to-epic-phl">77</a> shows that every flub RHL theory is equivalent to a PHL theory containing <em>epic</em> sequents only.
-PHL sequents are epic if no new variables are introduced in the conclusion, which is a criterion that can be easily checked separately for each sequent, regardless of the theory the sequent appears in.
-If tools wish to allow only flub theories, they can use PHL as input language and reject non-epic sequents.
-Note that there exist PHL theories containing non-epic sequents which are nevertheless flub, but such theories can be equivalently axiomatized as epic PHL theories.
-Thus, no generality is lost compared to general flub theories when rejecting non-epic PHL theories.</div>
+Proposition <a href="#prop-strong-rhl-to-epic-phl">79</a> shows that every strong RHL theory is equivalent to a PHL theory containing <em>epic</em> sequents only.
+PHL sequents are epic if no new variables are introduced in the conclusion, which is a criterion that can be easily checked separately for each sequent without regard for the theory the sequent appears in.
+If tools wish to allow only strong theories, they can use PHL as input language and reject non-epic sequents.
+Note that there exist PHL theories containing non-epic sequents which are nevertheless strong, but such theories can be equivalently axiomatized as epic PHL theories.
+Thus, no generality is lost compared to general strong theories when rejecting non-epic PHL theories.</div>
 <h3>
 4.1 Algebraic Structures</h3>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 50.
+<h4>Definition 51.
 </h4>
 An <em>algebraic signature</em> is a relational signature <img src="img-math/eaa90800500b39e1f64c7a4f56fc6d8fb4406167432d98ed4345fa3b623ce3a6.svg" class="inline-math"> equipped with a partition <img src="img-math/b22d1b8a5b58da4fa7917fcec6da2e4a6f29cba20c2da6b72808cecd3ecfa7be.svg" class="inline-math"> of the set of relation symbol into disjoint sets <img src="img-math/43f1b852b27a5479cbe90e9235d0656d0c5b9d6646a83a61a3a05312babfdcca.svg" class="inline-math"> of <em>predicate symbols</em> and <img src="img-math/0bd1dd014813dbf1a42b3c0b20825409b27936aa98f9d794ad95bf959fb2d714.svg" class="inline-math"> of <em>function symbols</em> such that the arity of every function symbol is non-empty.
 If <img src="img-math/cebe1a6f2576c629b07e31999a198208dbdbcc147ec0905280df3d1a3db280b4.svg" class="inline-math"> is a function symbol, then we write <img src="img-math/5ee8866e1dfe3865555727ff685371b3eb0ce586e23dd774ddbb5f80fde0ee5a.svg" class="inline-math"> if the arity of <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> as a relation symbol is <img src="img-math/85b7fe30ab12e9ccee0c8e2280e633cc1d6cea397a57863c7d413847ef06ec6f.svg" class="inline-math">.</div>
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 51.
+<h4>Definition 52.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 An <em>algebraic structure</em> for <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> is a relational structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> for <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> such that <img src="img-math/c0f5b52488e5c9a32f7ab912cf91d0a000f24683591ad980a99149718e77b10e.svg" class="inline-math"> is the graph of a partial function for all <img src="img-math/cebe1a6f2576c629b07e31999a198208dbdbcc147ec0905280df3d1a3db280b4.svg" class="inline-math">.
@@ -1352,7 +1355,7 @@ The <em>category of algebraic structures</em> is denoted by <img src="img-math/e
 If the algebraic signature <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math"> is clear from context, we abbreviate <img src="img-math/e98208345d01f594a884d2497b3e2bc1c7692123a6ab42972037403c4772dea0.svg" class="inline-math"> as <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math">.</div>
 <div id="prop-functionality-axioms" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 52.
+<h4>Proposition 53.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be a relational structure.
 Then <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is an algebraic structure if and only if it satisfies the relational sequent
@@ -1370,7 +1373,7 @@ The relational structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e1
 </div>
 <div class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Corollary 53.
+<h4>Corollary 54.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 The category of algebraic structures is a reflective subcategory of the category of relational structures.
@@ -1385,7 +1388,7 @@ That every reflection is an effective epimorphisms follows from the fact that th
 We denote the free algebraic structure functor by <img src="img-math/f74750395f237b5a9f0224c2148d5f8b7d7a1991fe3517416ccc09dadf0e8c2a.svg" class="inline-math">.</div>
 <div class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Corollary 54.
+<h4>Corollary 55.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 The category of algebraic structures is complete and cocomplete.</div>
@@ -1400,14 +1403,14 @@ They are stable under limits, and colimits are computed by reflecting colimits o
 4.2 Syntax and Semantics</h3>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 55.
+<h4>Definition 56.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 The set of <em>terms</em> and a sort assigned to each term is given by the following recursive definition:
 <ol>
 <li>
 <div class="paragraph">
-If <img src="img-math/80b62814a2107cccf2b62c4fc766ccca3986bf3a34e18eed5a6a6c540fcf8a24.svg" class="inline-math"> is a variable of sort <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">, then <img src="img-math/80b62814a2107cccf2b62c4fc766ccca3986bf3a34e18eed5a6a6c540fcf8a24.svg" class="inline-math"> is a term of sort <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">.</div>
+If <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math"> is a variable of sort <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">, then <img src="img-math/35611dd170074cd8301fedd4d5924c6cebf1fa1d77e601af80bff825c42676a9.svg" class="inline-math"> is a term of sort <img src="img-math/c97a8fe633f85e531699955fb905d5a68ebdd81d9622ddcedb8f550da2473f85.svg" class="inline-math">.</div>
 </li>
 <li>
 <div class="paragraph">
@@ -1430,7 +1433,7 @@ An algebraic atom <img src="img-math/08d361dc22717c20069bd1af2506dac0ee7d0ca6824
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 56.
+<h4>Definition 57.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be an algebraic structure.
 An <em>interpretation of a term <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"></em> in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is an interpretation <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> of the variables occuring in <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> such that the following recursive extension of <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> is well-defined on <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math">:
@@ -1446,7 +1449,7 @@ An algebraic structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e141
 </div>
 <div id="def-flattening" class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 57.
+<h4>Definition 58.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature, and let <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> be a term.
 The <em>flattening</em> of <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> consists of a relational formula <img src="img-math/2f1dd51301ae27d7d631aee8a794dee09e3582cfe8c1b00b59cba15224b368ce.svg" class="inline-math"> and a result variable <img src="img-math/86dc413d906dff81429b248a541a2bd53eefc427a941ec9c2f64c31e365ae8f4.svg" class="inline-math">.
@@ -1498,12 +1501,12 @@ The flattening of an algebraic sequent is given by flattening premise and conclu
 </div>
 <div id="rem-flattening" class="theorem-like theorem-style-remark">
 <div class="paragraph">
-<h4>Remark 58.
+<h4>Remark 59.
 </h4>
 The flattening of a composite term <img src="img-math/71b5cf35064b69f413c0f29204914e3dd48ff516bf15e110d0221080ffec01a1.svg" class="inline-math"> involves the choice of a ``fresh'' variable <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math">.
-This notion can be made mathemtically precise as follows:
-The flattening operations take as additional parameter a sequence <img src="img-math/29ed1638d243440747531d0779d650c73fd2786182bbff24fe70ca52cd1e8415.svg" class="inline-math"> of variables, and we always assume that the variables <img src="img-math/92aef94bb94f1b17e863339581397814faa1407fb1e5bbef421c1d81ba717570.svg" class="inline-math"> do not occur in any of the syntactic objects in the current scope.
-Picking a ``fresh'' variable <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> now means that we set <img src="img-math/9acec921a00dcc1a4a1ee19ebc4f0d0b2804191a241853acdd8d0cd02bf669fb.svg" class="inline-math">, and for all further flattening operations we pass the sequence <img src="img-math/eab22a3fa3822e2f9c62a06bdcc9aca23eb49d095b92bfe185cd1fdb37b7fd87.svg" class="inline-math">.</div>
+This notion can be made precise as follows:
+The flattening operations take as additional parameter a sequence <img src="img-math/29ed1638d243440747531d0779d650c73fd2786182bbff24fe70ca52cd1e8415.svg" class="inline-math"> of variables, such that the variables <img src="img-math/92aef94bb94f1b17e863339581397814faa1407fb1e5bbef421c1d81ba717570.svg" class="inline-math"> do not occur in the syntactic objects that should be flattened.
+Choosing a ``fresh'' variable <img src="img-math/3fc9857a0a4cb8aa18910afc040daa9ceaa9be94fb1f436d1beef9da603fae45.svg" class="inline-math"> now means that we set <img src="img-math/9acec921a00dcc1a4a1ee19ebc4f0d0b2804191a241853acdd8d0cd02bf669fb.svg" class="inline-math">, and for all further flattening operations we pass the sequence <img src="img-math/eab22a3fa3822e2f9c62a06bdcc9aca23eb49d095b92bfe185cd1fdb37b7fd87.svg" class="inline-math">.</div>
 <div class="paragraph">
 Note that a term <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> that appears twice in the same formula <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> will be flattened twice with different choices of fresh variables.
 For example, if <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> is a binary function symbol and <img src="img-math/0749cd9a0de52fcf56c833781baba5d3e050a3a389bf11ebae3edcbee87a1584.svg" class="inline-math"> are variables, then the flattening of the algebraic formula
@@ -1518,19 +1521,19 @@ where <img src="img-math/2b6bf2bc85d054f31656a3b4205c98de03aaebc6f57a24673e05222
 </div>
 <div id="prop-flattening-versus-interpretation" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 59.
+<h4>Proposition 60.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be an algebraic structure.
 <ol>
 <li>
 <div class="paragraph">
-Let <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> be a term and let <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> be an interpretation of the variables occuring in <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.
+Let <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> be a term and let <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> be an interpretation of the variables of <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.
 Then <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> can be extended to the term <img src="img-math/18e5e78375303bc5487910c10a2ce9e156e961a4865f78069b5e5d98e4281061.svg" class="inline-math"> if and only if <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> can be extended to an interpretation of the relational formula <img src="img-math/2f1dd51301ae27d7d631aee8a794dee09e3582cfe8c1b00b59cba15224b368ce.svg" class="inline-math">.
 In either case, if an extension <img src="img-math/85d617f9ec5b3c3579342ff68281cc3c898f2ed55d8dc66f8323c228b5577eaf.svg" class="inline-math"> exists, then it exists uniquely, and <img src="img-math/f094864556ce3ded74f0a5f5ccfc0d4632d1b8fb6c66fa7b84da0ecc5c1e4b7b.svg" class="inline-math">.</div>
 </li>
 <li>
 <div class="paragraph">
-Let <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> be an algebraic atom and let <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> be an interpretation of the variables occuring in <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.
+Let <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> be an algebraic atom and let <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> be an interpretation of the variables of <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> in <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.
 Then <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> is an interpretation of <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> if and only if <img src="img-math/f6cf97bfa9e50ab18203d10ce01677a20c00e3c84b54146a8e4d73ea55dc8db9.svg" class="inline-math"> can be extended to an interpretation <img src="img-math/85d617f9ec5b3c3579342ff68281cc3c898f2ed55d8dc66f8323c228b5577eaf.svg" class="inline-math"> of the relational formula <img src="img-math/b87d98185f0a71706ca8c4c7a20066e84dbc6d980334a86f8034a07bde48b2f1.svg" class="inline-math">.
 If <img src="img-math/85d617f9ec5b3c3579342ff68281cc3c898f2ed55d8dc66f8323c228b5577eaf.svg" class="inline-math"> exists, then it exists uniquely.</div>
 </li>
@@ -1549,7 +1552,7 @@ By construction.</div>
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 60.
+<h4>Definition 61.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 We associate to each algebraic formula <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> the following <em>classifying algebraic structure</em>:
@@ -1558,12 +1561,10 @@ We associate to each algebraic formula <img src="img-math/49d82e153ba9554774e5cf
 </div>
 The composition of the generic interpretion <img src="img-math/8680f760a5308eeac4b80d756502f95dccdb3d0f8daadffe6cd2a098fed90892.svg" class="inline-math"> with the reflection into <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math"> induces an interpretation of <img src="img-math/0b476c70de0abb0dd00c9aae0734cc029eba3728d657ce50f464f93b4042455c.svg" class="inline-math"> in <img src="img-math/38ea0a85e8e091acaa0053b546b0f55124854385b49fe559e3e52dcba18a1abd.svg" class="inline-math">, which then restricts to an interpretation <img src="img-math/deeb4f21ec9b0e5fe23f759e86556b7237699475494e8bfa016238422cae44b4.svg" class="inline-math"> of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> in <img src="img-math/38ea0a85e8e091acaa0053b546b0f55124854385b49fe559e3e52dcba18a1abd.svg" class="inline-math">.
 We call <img src="img-math/deeb4f21ec9b0e5fe23f759e86556b7237699475494e8bfa016238422cae44b4.svg" class="inline-math"> the <em>generic interpretation</em> of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.</div>
-<div class="paragraph">
-If <img src="img-math/121cfe734ff5ad02c5c220036e8387f3cd32c0d74ea3fcafefc50437b8f7e11e.svg" class="inline-math"> is an algebraic sequent, then we call the canonical map <img src="img-math/b233a0fcd60a22ab3cc8d2226ae42417d975edb981572136b147dac6a7ae7a18.svg" class="inline-math"> the <em>classifying morphism</em> of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">.</div>
 </div>
 <div id="prop-algebraic-formula-structure-universal" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 61.
+<h4>Proposition 62.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 Let <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> be an algebraic formula and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be an algebraic structure.
@@ -1572,11 +1573,18 @@ Then there is a bijection between interpretations of <img src="img-math/49d82e15
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
-This follows by combining Proposition <a href="#prop-flattening-versus-interpretation">59</a>, Proposition <a href="#prop-algebraic-formula-structure-universal">61</a> and the universal property of the free algebraic structure functor.</div>
+This follows by combining Proposition <a href="#prop-flattening-versus-interpretation">60</a>, Proposition <a href="#prop-algebraic-formula-structure-universal">62</a> and the universal property of the free algebraic structure functor.</div>
+</div>
+<div class="theorem-like theorem-style-definition">
+<div class="paragraph">
+<h4>Definition 63.
+</h4>
+Let <img src="img-math/3ee054267b2482dd601e7989eee8fddbaed341d4d976512c352d54149be9a72a.svg" class="inline-math"> be an algebraic sequent.
+The <em>classifying morphism</em> of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is the map <img src="img-math/ce36923cecd5df0297700ff93246be0de597221ec59f3f304daa8f7ddd542e9b.svg" class="inline-math"> that is induced by the canonical interpretation of <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> in <img src="img-math/5e54a1f805cc1db6c174c02a8b23256b39f57a019f0c0495e7e15122c76ff08e.svg" class="inline-math">.</div>
 </div>
 <div class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 62.
+<h4>Proposition 64.
 </h4>
 Let <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> be an algebraic sequent and let <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> be an algebraic structure.
 Then <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> satisfies <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> if and only if <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is injective to <img src="img-math/6ff9f6433f9a2ff1291b28de007b9ce9524af3cd4449c64a6f2fa0a7e855b7c1.svg" class="inline-math">.</div>
@@ -1584,11 +1592,11 @@ Then <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfef
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
-Analogous to the proof of Proposition <a href="#prop-relational-sequent-morphism-lifts">28</a>.</div>
+Analogous to the proof of Proposition <a href="#prop-relational-sequent-morphism-lifts">29</a>.</div>
 </div>
 <div id="prop-phl-models" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 63.
+<h4>Proposition 65.
 </h4>
 Let <img src="img-math/4e5b4bad957cd570519bf7c2ccc79708841c401e107a29138dcdf3074f76551e.svg" class="inline-math"> be an algebraic theory.
 Denote the functionality sequent <a href="#eq-functionality-axiom">(4)</a> for function symbols <img src="img-math/cebe1a6f2576c629b07e31999a198208dbdbcc147ec0905280df3d1a3db280b4.svg" class="inline-math"> by <img src="img-math/3f634d8383b3e083c7f11b6c5e6b5cdbb11a3bf9553e6fc40a612a81a33f176a.svg" class="inline-math">.
@@ -1611,16 +1619,16 @@ Then <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9
 Here <img src="img-math/6ff9f6433f9a2ff1291b28de007b9ce9524af3cd4449c64a6f2fa0a7e855b7c1.svg" class="inline-math"> in the definition of <img src="img-math/1da1cf7a07ca08aeae7dd849c554d69210af68f91f080f37b9f2a939e205debe.svg" class="inline-math"> denotes the classifying morphism of the algebraic sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">, which we regard as a morphism of relational structures, and <img src="img-math/2aebef4ed3b1334a8bca42896cb7698ab5448785bebcf91bc2353ec517483074.svg" class="inline-math"> denotes the classifying morphism of the relational sequent <img src="img-math/9f4bed5ef6a2a0d02f0e4ee6205c4681072f29910b38ba97d5bdd699e6c39fae.svg" class="inline-math">.</div>
 <div class="paragraph">
 In particular, <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9189e3672.svg" class="inline-math"> is a weakly reflective subcategory of both <img src="img-math/2a848f9d861e1b801356d9c69359f0c93fb8118e315aedabba7031e6457792c7.svg" class="inline-math"> and <img src="img-math/e98208345d01f594a884d2497b3e2bc1c7692123a6ab42972037403c4772dea0.svg" class="inline-math">.
-If any one of <img src="img-math/af15e9fd36132640edb137d3b9e9e94069c1e19c1221cecfa476b0689cf66676.svg" class="inline-math"> or <img src="img-math/d8c177b04f2f9eb6b9538a884664508a6cc114b5fb30db229fe6deae123f55f0.svg" class="inline-math"> are flub, then all are, and <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9189e3672.svg" class="inline-math"> is a reflective subcategory of <img src="img-math/2a848f9d861e1b801356d9c69359f0c93fb8118e315aedabba7031e6457792c7.svg" class="inline-math"> and <img src="img-math/e98208345d01f594a884d2497b3e2bc1c7692123a6ab42972037403c4772dea0.svg" class="inline-math">.</div>
+If any one of <img src="img-math/af15e9fd36132640edb137d3b9e9e94069c1e19c1221cecfa476b0689cf66676.svg" class="inline-math"> or <img src="img-math/d8c177b04f2f9eb6b9538a884664508a6cc114b5fb30db229fe6deae123f55f0.svg" class="inline-math"> are strong, then all of them are strong, and <img src="img-math/00113b2831f32d64f7bfe0edd7dfe73ea690eddf255baee2f18a00b9189e3672.svg" class="inline-math"> is a reflective subcategory of <img src="img-math/2a848f9d861e1b801356d9c69359f0c93fb8118e315aedabba7031e6457792c7.svg" class="inline-math"> and <img src="img-math/e98208345d01f594a884d2497b3e2bc1c7692123a6ab42972037403c4772dea0.svg" class="inline-math">.</div>
 </div>
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
-<a href="#itm-phl-models-in-alg">1</a> follows from Proposition <a href="#prop-algebraic-formula-structure-universal">61</a>, and then <a href="#itm-phl-models-in-rel-alg-sequents">2</a> and <a href="#itm-phl-models-in-rel-rel-sequents">3</a> follow from Proposition <a href="#prop-reflection-vs-injectivity">17</a>.</div>
+<a href="#itm-phl-models-in-alg">1</a> follows from Proposition <a href="#prop-algebraic-formula-structure-universal">62</a>, and then <a href="#itm-phl-models-in-rel-alg-sequents">2</a> and <a href="#itm-phl-models-in-rel-rel-sequents">3</a> follow from Proposition <a href="#prop-reflection-vs-injectivity">17</a>.</div>
 </div>
 <div id="prop-unflatten" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 64.
+<h4>Proposition 66.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 Let <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> be a relational formula.
@@ -1645,7 +1653,7 @@ Replace every relational atom of the form <img src="img-math/ffa9dadb4f535fa1588
 </div>
 <div id="prop-composition-algebraic-sequent-morphisms" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 65.
+<h4>Proposition 67.
 </h4>
 Let <img src="img-math/3ee054267b2482dd601e7989eee8fddbaed341d4d976512c352d54149be9a72a.svg" class="inline-math"> and <img src="img-math/c63b051b50b2ce2aefe9544cfd0689d49cfb555a0396eff512bed5ed02cc4026.svg" class="inline-math"> be algebraic sequents.
 Then
@@ -1656,13 +1664,13 @@ Then
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
-This follows from Proposition <a href="#prop-algebraic-formula-structure-universal">61</a>.</div>
+This follows from Proposition <a href="#prop-algebraic-formula-structure-universal">62</a>.</div>
 </div>
 <h3>
 4.3 Completeness Results</h3>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 66.
+<h4>Definition 68.
 </h4>
 Let <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> be an algebraic sequent.
 We say that <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is <em>epic</em> if every variable in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> also occurs in the premise.
@@ -1670,22 +1678,23 @@ We say that <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b4
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 67.
+<h4>Definition 69.
 </h4>
 Let <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> be a function symbol.
 The <em>totality sequent</em> <img src="img-math/0f7c4ff33b9847cee9a20ec653e079b4991038a883a60d5fb273fd90a36d1e12.svg" class="inline-math"> is given by
 <div class="display-math-row">
 <img src="img-math/bd1a933394d7acc5e0841dbc4d883fe4446770b05b564ff7d4ae0821f5828468.svg">
 </div>
+
 We denote by
 <div class="display-math-row">
 <img src="img-math/528f48ca35aa7bcd9904adba7d13f209c6e88ddae5cb4c3baf12d9365c2a8e38.svg">
 </div>
-the set of morphisms of algebraic structures corresponding to all <img src="img-math/0f7c4ff33b9847cee9a20ec653e079b4991038a883a60d5fb273fd90a36d1e12.svg" class="inline-math"> for all <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math">.</div>
+the set of classifying morphisms of totality sequents.</div>
 </div>
 <div class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 68.
+<h4>Proposition 70.
 </h4>
 Let <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> be a function symbol.
 <ol>
@@ -1703,14 +1712,14 @@ An algebraic structure <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e141
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 69.
+<h4>Definition 71.
 </h4>
 Let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of algebraic structures.
 We say that <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is <em>total over Y</em> (with respect to <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math">) if and only if for all function symbols <img src="img-math/f2738b187b384a32bc0ae64c168ec48b7bb1dcd95d507720952f97e1cfe178ee.svg" class="inline-math"> and elements <img src="img-math/c9d52d356a758323c7792f80562f25f7c9ff5b52e39edd8bfadc5ec8a93c53b4.svg" class="inline-math">, if <img src="img-math/2fd5a72653586cf2b57f23e43805c163273d1e10c967f5ef08726dc292cc54d6.svg" class="inline-math"> is defined, then <img src="img-math/1563e96948000a7f3cedddf12b2ec0095cedcaa49507c77a0cd275f12824f248.svg" class="inline-math"> is defined.</div>
 </div>
 <div id="prop-saturation" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 70.
+<h4>Proposition 72.
 </h4>
 Let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of algebraic structures.
 Then there exists a factorization
@@ -1728,7 +1737,7 @@ Consider the set <img src="img-math/39895b75fd43d0b5d9eede73b598cd286d88539de29a
 <img src="img-math/c67cef31f93bc3c60a784c2a08f93ba1f1756eb331e7fb1b056d904a2ec77be0.svg">
 </div>
 <img src="img-math/39895b75fd43d0b5d9eede73b598cd286d88539de29adb9b42ac1ed26301ee81.svg" class="inline-math"> is a set of epimorphisms in the slice category <img src="img-math/ececdec573c37e956f1fe6f9fb45574c3a245da66037131d6655292aac2c0585.svg" class="inline-math">.
-It follows that <img src="img-math/39895b75fd43d0b5d9eede73b598cd286d88539de29adb9b42ac1ed26301ee81.svg" class="inline-math"> is flub, so <img src="img-math/4e45242d0d85b43881707b8c0816c5db8e81797eb811048f8aff2b88702dda5b.svg" class="inline-math"> is a reflective subcategory of <img src="img-math/ececdec573c37e956f1fe6f9fb45574c3a245da66037131d6655292aac2c0585.svg" class="inline-math">.
+It follows that <img src="img-math/39895b75fd43d0b5d9eede73b598cd286d88539de29adb9b42ac1ed26301ee81.svg" class="inline-math"> is strong, so <img src="img-math/4e45242d0d85b43881707b8c0816c5db8e81797eb811048f8aff2b88702dda5b.svg" class="inline-math"> is a reflective subcategory of <img src="img-math/ececdec573c37e956f1fe6f9fb45574c3a245da66037131d6655292aac2c0585.svg" class="inline-math">.
 Partial algebras over <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math"> are total over <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math"> if and only if they are injective to <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math">.
 It follows that the triple <img src="img-math/e7cd052785871935e363d4cb32bdd444182bed53a823caef76fe405df82e5f33.svg" class="inline-math"> exists and is unique up to unique isomorphism, and that <img src="img-math/a377d23a5d42b7385429fc05b94bb6baf3dc6e993286ea1099d657ce9f31543e.svg" class="inline-math"> is a relative <img src="img-math/39895b75fd43d0b5d9eede73b598cd286d88539de29adb9b42ac1ed26301ee81.svg" class="inline-math">-cell complex.</div>
 <div class="paragraph">
@@ -1740,16 +1749,16 @@ In particular, <img src="img-math/a377d23a5d42b7385429fc05b94bb6baf3dc6e993286ea
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 71.
+<h4>Definition 73.
 </h4>
 Let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of algebraic structures.
-We call the unique factorization <img src="img-math/4cbfb4e377575461eefce04e607991a8474af82e9e115b27ee4c2324a660795a.svg" class="inline-math"> as in Proposition <a href="#prop-saturation">70</a> the <em>relative totalization</em> of <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.</div>
+We call the unique factorization <img src="img-math/4cbfb4e377575461eefce04e607991a8474af82e9e115b27ee4c2324a660795a.svg" class="inline-math"> as in Proposition <a href="#prop-saturation">72</a> the <em>relative totalization</em> of <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.</div>
 </div>
 <div id="prop-relatively-total-epis" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 72.
+<h4>Proposition 74.
 </h4>
-Let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of partial algebras such that <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is total over <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math">.
+Let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of algebraic structures such that <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is total over <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc29433ac30f5146.svg" class="inline-math">.
 Then <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is an epimorphism in <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math"> if and only if it is an epimorphism in <img src="img-math/dab63d9c5701419f4cd81f9adf6ffc5497518985f4e3b89083ac6364af084db1.svg" class="inline-math">.</div>
 </div>
 <div class="proof">
@@ -1772,7 +1781,7 @@ We need to show that <img src="img-math/b84e43197f188e843e7d9393e26f871f35821549
 If <img src="img-math/0dbc844add94a1305152e744e4e60f6353aa313774b105ee9801b5ad33be7b21.svg" class="inline-math"> or <img src="img-math/cabef2adaa1ef4aa8866458e9a4372a030f326dea96da0e3c4e6da5d2af249a5.svg" class="inline-math"> this follows from the fact that <img src="img-math/d4262abaf5768456259a1dece1893965b784980545764a26e7cd4f0050dd6067.svg" class="inline-math"> is an algebraic structure.
 We may thus (by symmetry) assume that <img src="img-math/9c0915dc081f89473c63257eb5d18f7e3b82c502cab939bc75e39993f2be4198.svg" class="inline-math"> and <img src="img-math/56c03bf8b621902a3c8368e86a4979daca6c83579fc7d2a430a460bf0dae92b1.svg" class="inline-math">.
 Because the first <img src="img-math/509fe7e8ba852248c1de4dfc8c752f04a501aa15dc740f89268b2dd4cb0e9155.svg" class="inline-math"> projections of <img src="img-math/52825f43140127e52996cca8fa912d9aa890918845f0e262256feea67ecae6bf.svg" class="inline-math"> and <img src="img-math/17126b749238f6da586d6c58765c0a57d8ebd35829d3910e9ff3c0104d10952c.svg" class="inline-math"> agree, we have <img src="img-math/b61d3a763f3d5f496201d3a05c4eb6e0f75d02079cf127a8f60de212b16188ed.svg" class="inline-math">, hence <img src="img-math/0a0b03c0149f5b4cfd7d78ce9f085a887cac9cf1de8f0fb2bc5f4785483f976e.svg" class="inline-math"> for <img src="img-math/f814716a6c3e175327354b0888f1f31a9b1cf296fb883ec3bf36cbfbde9a5ceb.svg" class="inline-math">.
-Because the inclusions <img src="img-math/cd5bd6b63f90e014d7dccdf5ba3405923e5e67dda54ba86cf492cb07823710c2.svg" class="inline-math"> are saturated, we have <img src="img-math/361f65b29c2eddaa56292a6ef4103eda135d29a56f9aa2855fbf2e8f1648a614.svg" class="inline-math"> for some <img src="img-math/83b5574846b2f6e0237dfff3fc29ee399e809a76483ba7a5bebf77f4f7852c4c.svg" class="inline-math">.
+Because <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math"> is total over the <img src="img-math/084fc6700584e797b034e4c699c1c15a5d32981708cf51f81391d75907522abd.svg" class="inline-math"> with respect to the inclusions <img src="img-math/cd5bd6b63f90e014d7dccdf5ba3405923e5e67dda54ba86cf492cb07823710c2.svg" class="inline-math">, we have <img src="img-math/361f65b29c2eddaa56292a6ef4103eda135d29a56f9aa2855fbf2e8f1648a614.svg" class="inline-math"> for some <img src="img-math/83b5574846b2f6e0237dfff3fc29ee399e809a76483ba7a5bebf77f4f7852c4c.svg" class="inline-math">.
 It follows that <img src="img-math/441754ab4f97deffae06b52c43476d9171860badf8224a72a065c7374ec24830.svg" class="inline-math"> and <img src="img-math/9a73afd466464fc9d47e1c58018d1e90423df5135d2efcdf4bc9bd39f52c2d0f.svg" class="inline-math">, hence <img src="img-math/b84e43197f188e843e7d9393e26f871f3582154975c1f2d472d4cfd3b0235a22.svg" class="inline-math">.</div>
 <div class="paragraph">
 As in every category with colimits, <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is an epimorphism if and only if the two maps <img src="img-math/81796b1ca76b052aad5b4b94b28317273d07489a51c0bfae8682a05e512576b2.svg" class="inline-math"> agree.
@@ -1781,7 +1790,7 @@ Thus <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c
 </div>
 <div id="prop-algebraic-epis" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 73.
+<h4>Proposition 75.
 </h4>
 Let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of algebraic structures.
 Let <img src="img-math/3cd2844b3218b1a0923261fb6f417035ce21a807fe701c9d97a63e34247a4bfb.svg" class="inline-math"> be the relative totalization of <img src="img-math/058a0e00a68e1131c9aa4f8bd9d0e56f03e14180114befecf4eccfefb05fb83d.svg" class="inline-math">.
@@ -1805,21 +1814,21 @@ Then the following holds:
 Every morphism in <img src="img-math/a37180210ed860fcfebbfb3d623c9322ee0fae718c71a2c628fc400331b29b96.svg" class="inline-math"> is an epimorphism.
 Since epimorphisms are stable under pushouts and transfinite compositions, every relative <img src="img-math/a37180210ed860fcfebbfb3d623c9322ee0fae718c71a2c628fc400331b29b96.svg" class="inline-math">-cell complex and in particular <img src="img-math/a377d23a5d42b7385429fc05b94bb6baf3dc6e993286ea1099d657ce9f31543e.svg" class="inline-math"> is an effective epimorphism.
 Thus <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is an epimorphism in <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math"> if and only if <img src="img-math/740647c4545c4e5b0908ae677b686487f1012afaac2d755ef836742bb35e1abf.svg" class="inline-math"> is an epimorphism in <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math">.
-We conclude with Proposition <a href="#prop-relatively-total-epis">72</a>.</div>
+We conclude with Proposition <a href="#prop-relatively-total-epis">74</a>.</div>
 <div class="paragraph">
 <a href="#itm-algebraic-effective-epimorphisms">2</a>.
 This follows from general properties of colimits and reflective subcategories.</div>
 </div>
 <div class="theorem-like theorem-style-definition">
 <div class="paragraph">
-<h4>Definition 74.
+<h4>Definition 76.
 </h4>
 An algebraic sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is called <em>epic</em> if every variable that occurs in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> also occurs in the premise.
 <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is called <em>effectively epic</em> if every atom in the conclusion of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is of the form <img src="img-math/d71ee7b8667326fea8d3f479cb62e851d0436b41a7ea442ee2a54528268e3139.svg" class="inline-math">, where <img src="img-math/e8a0d3021220171c26623abd4719992d4125bbee4a1e254787570448cec09d0c.svg" class="inline-math"> and <img src="img-math/370616599a6791ae5d02aa20608a18751cfb4abde8db3166cee129fa198b1ac6.svg" class="inline-math"> are terms that occur in the premise of <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">.</div>
 </div>
 <div id="prop-flattening-atoms" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 75.
+<h4>Proposition 77.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 Let <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math"> be an algebraic formula and let <img src="img-math/097341643da03f834dcfc1c269e14dd1882b799fef693ffd387bad12e0df2571.svg" class="inline-math"> be the set of variables that occur in <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
@@ -1852,11 +1861,11 @@ Then <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d
 <div class="proof">
 <div class="paragraph">
 <i class="proof">Proof.</i>
-Follows inductively from the definition of flattening; see also Remark <a href="#rem-flattening">58</a>.</div>
+Follows inductively from the definition of flattening; see also Remark <a href="#rem-flattening">59</a>.</div>
 </div>
 <div id="prop-semantics-algebraic-sequents" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 76.
+<h4>Proposition 78.
 </h4>
 Let <img src="img-math/57be56542331f5965669fd42c05dc9eb578780d6a00c512ae9563f7bcb9c1a48.svg" class="inline-math"> be an algebraic signature.
 The image of (epic, effectively epic) algebraic sequents under the assignment <img src="img-math/ef9a5d285c5aa120ef228ab92938f55dc21eef66b38d2b11694f1f3dfe05dbef.svg" class="inline-math"> can be described as follows:
@@ -1883,32 +1892,32 @@ Conversely, every effective epimorphism of finite relational structures is isomo
 <div class="paragraph">
 <i class="proof">Proof.</i>
 <a href="#itm-semantics-arbitrary-algebraic-sequent">1</a>.
-If <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is an algebraic sequent, then by Proposition <a href="#prop-semantics-relational-sequents">35</a>, <img src="img-math/2aebef4ed3b1334a8bca42896cb7698ab5448785bebcf91bc2353ec517483074.svg" class="inline-math"> is a map of finite relational structures, hence <img src="img-math/fcb56ab581636942055929889018bbb404b73b11b56ced2c98b80a0917b8fa20.svg" class="inline-math"> is a map of finite algebraic structures.</div>
+If <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is an algebraic sequent, then by Proposition <a href="#prop-semantics-relational-sequents">36</a>, <img src="img-math/2aebef4ed3b1334a8bca42896cb7698ab5448785bebcf91bc2353ec517483074.svg" class="inline-math"> is a map of finite relational structures, hence <img src="img-math/fcb56ab581636942055929889018bbb404b73b11b56ced2c98b80a0917b8fa20.svg" class="inline-math"> is a map of finite algebraic structures.</div>
 <div class="paragraph">
 Conversely, let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be a map of finite algebraic structures.
 Then <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is, in particular, a map of finite relational structures.
-By Proposition <a href="#prop-semantics-relational-sequents">35</a>, there exists a relational sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> such that <img src="img-math/6679c81f78ba0430135d823ae8da533e24d9e206ee9de27d707603d841500334.svg" class="inline-math">.
-We now invoke Proposition <a href="#prop-unflatten">64</a> to obtain an algebraic sequent <img src="img-math/3a7e1984242df88330a40dcb69619633825471746f28a53a2f537ea36bad7073.svg" class="inline-math"> such that <img src="img-math/0876f702903846bce8eed3d6b047424a33870fe4d2d574ff682fe84c299f22ee.svg" class="inline-math">.</div>
+By Proposition <a href="#prop-semantics-relational-sequents">36</a>, there exists a relational sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> such that <img src="img-math/6679c81f78ba0430135d823ae8da533e24d9e206ee9de27d707603d841500334.svg" class="inline-math">.
+We now invoke Proposition <a href="#prop-unflatten">66</a> to obtain an algebraic sequent <img src="img-math/3a7e1984242df88330a40dcb69619633825471746f28a53a2f537ea36bad7073.svg" class="inline-math"> such that <img src="img-math/0876f702903846bce8eed3d6b047424a33870fe4d2d574ff682fe84c299f22ee.svg" class="inline-math">.</div>
 <div class="paragraph">
 <a href="#itm-semantics-effectively-epic-algebraic-sequent">3</a>.
 Let <img src="img-math/3ee054267b2482dd601e7989eee8fddbaed341d4d976512c352d54149be9a72a.svg" class="inline-math"> be an effectively epic algebraic sequent.
-By Proposition <a href="#prop-composition-algebraic-sequent-morphisms">65</a>, we may assume by induction that the conclusion <img src="img-math/f01bc8a000c08d15aed25ef15f5acd71cf0134bc807b3f0564102b2ed8197abc.svg" class="inline-math"> consists of a single atom <img src="img-math/d71ee7b8667326fea8d3f479cb62e851d0436b41a7ea442ee2a54528268e3139.svg" class="inline-math"> for terms <img src="img-math/2fcf8905e4a666d53f7719d2da55b13ae9842eb14fd78282daea61774bc1cec4.svg" class="inline-math"> that also occur in the premise <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
+By Proposition <a href="#prop-composition-algebraic-sequent-morphisms">67</a>, we may assume by induction that the conclusion <img src="img-math/f01bc8a000c08d15aed25ef15f5acd71cf0134bc807b3f0564102b2ed8197abc.svg" class="inline-math"> consists of a single atom <img src="img-math/d71ee7b8667326fea8d3f479cb62e851d0436b41a7ea442ee2a54528268e3139.svg" class="inline-math"> for terms <img src="img-math/2fcf8905e4a666d53f7719d2da55b13ae9842eb14fd78282daea61774bc1cec4.svg" class="inline-math"> that also occur in the premise <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
 Let <img src="img-math/bd8b186867911bb5a46148657b27c336b796eb99cd8a6f0ef82eb1b4eec8f454.svg" class="inline-math"> and <img src="img-math/5dae280d83398bb41d8253df0f5953c6afd0f37851375b4d15f0610fe707843e.svg" class="inline-math"> be two variables corresponding to flattenings of <img src="img-math/e8a0d3021220171c26623abd4719992d4125bbee4a1e254787570448cec09d0c.svg" class="inline-math"> and <img src="img-math/370616599a6791ae5d02aa20608a18751cfb4abde8db3166cee129fa198b1ac6.svg" class="inline-math"> in the premise.
-Thus for the effectively epic relational sequent <img src="img-math/5b265c7e403380a8d0cdfe38254c590183fab18b76907cb3a661f748f4db71f8.svg" class="inline-math"> we have <img src="img-math/b6bff05b37152193d5d354a936f18b7233b88d569c6a32d9fbb22b98fe6da731.svg" class="inline-math">.
-By Proposition <a href="#prop-semantics-relational-sequents">35</a>, <img src="img-math/f07da69a013327617a242531976ea7cce957e54b3f3e640ab58a0cb3acdb74f5.svg" class="inline-math"> is an effective epimorphism of relational structures.
+Then for the effectively epic relational sequent <img src="img-math/5b265c7e403380a8d0cdfe38254c590183fab18b76907cb3a661f748f4db71f8.svg" class="inline-math"> we have <img src="img-math/b6bff05b37152193d5d354a936f18b7233b88d569c6a32d9fbb22b98fe6da731.svg" class="inline-math">.
+By Proposition <a href="#prop-semantics-relational-sequents">36</a>, <img src="img-math/f07da69a013327617a242531976ea7cce957e54b3f3e640ab58a0cb3acdb74f5.svg" class="inline-math"> is an effective epimorphism of relational structures.
 Because the free algebra functor is a left adjoint, it preserves effective epimorphisms.
 Thus <img src="img-math/3959abc83e99e09d84a33cf3fb070840b29418b758ff9babb192166287b3d7fa.svg" class="inline-math"> is an effective epimorphism of algebraic structures.</div>
 <div class="paragraph">
 Conversely, let <img src="img-math/d3abad5e64aeeeecff50126d1de6df888127072d59848851d723510e7d4e5bd2.svg" class="inline-math"> be an effective epimorphism of algebraic structures.
 Then <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is also effectively epic as morphism of relational structures.
-By clause <a href="#itm-semantics-quotient-relational-sequent">3</a> of Proposition <a href="#prop-semantics-relational-sequents">35</a>, we find an effectively epic relational sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> such that <img src="img-math/6679c81f78ba0430135d823ae8da533e24d9e206ee9de27d707603d841500334.svg" class="inline-math">.
+By clause <a href="#itm-semantics-quotient-relational-sequent">3</a> of Proposition <a href="#prop-semantics-relational-sequents">36</a>, we find an effectively epic relational sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> such that <img src="img-math/6679c81f78ba0430135d823ae8da533e24d9e206ee9de27d707603d841500334.svg" class="inline-math">.
 Then <img src="img-math/b54d600f0a0091ab97cf0e35b2e3404602811c28e69a5114f2c10396210bea30.svg" class="inline-math"> is an effectively epic algebraic sequent such that <img src="img-math/f89e65ec81295619c2aef50c6c421450473b10907f15fbb87f6df4fac1c1faeb.svg" class="inline-math"> as desired.</div>
 <div class="paragraph">
 <a href="#itm-semantics-epic-algebraic-sequent">2</a>.
 Let <img src="img-math/f7cd5dc99e61443fc9973ba797f23b4b3e9fffc7427f2defebc078e3e72a048f.svg" class="inline-math"> be the flattening of an epic algebraic formula.
 We need to show that <img src="img-math/fc4288e344e61e8544655efff123c244796d51fe3186bd7ac02ba206585c3a60.svg" class="inline-math"> is an epimorphism in <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math">.</div>
 <div class="paragraph">
-By Proposition <a href="#prop-composition-algebraic-sequent-morphisms">65</a>, we may without loss of generality assume that <img src="img-math/ac5c375642f1f44185a7c1e5412bd9ac7b2d0ead9364b5d727490bc04307b9f2.svg" class="inline-math"> is a relational atom of one of the types as in Proposition <a href="#prop-flattening-atoms">75</a>, where <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> is the set of variables in <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
+By Proposition <a href="#prop-composition-algebraic-sequent-morphisms">67</a>, we may without loss of generality assume that <img src="img-math/ac5c375642f1f44185a7c1e5412bd9ac7b2d0ead9364b5d727490bc04307b9f2.svg" class="inline-math"> is a relational atom of one of the types as in Proposition <a href="#prop-flattening-atoms">77</a>, where <img src="img-math/e6602cbfa7788f74e914319dd9b4cae6f7ab2eda9b10a1d27222a73d7ebff434.svg" class="inline-math"> is the set of variables in <img src="img-math/49d82e153ba9554774e5cf42f2a25ead34b1889dbce1ca32cde9582177e2e192.svg" class="inline-math">.
 In cases <a href="#itm-flattened-predicate-case">1</a>, <a href="#itm-flattened-defined-case">3</a> and <a href="#itm-flattened-equals-case">4</a>, the morphism <img src="img-math/0bf313ed9cb4b04b69bfef119c94a46f04793823bbf8a35762e3bcf7b467b9af.svg" class="inline-math"> of relational structures is surjective.
 Because the free algebraic structure functor preserves epimorphisms, this implies that <img src="img-math/de8bafb08cd35ac58b307b7a90e0d1dea651d504e0239e6801d511b14530889f.svg" class="inline-math"> is an epimorphism in <img src="img-math/54d26a1db1f4d0a8bcd7c74c824594696282b559cacb7a8b016d6dc5bfca1323.svg" class="inline-math">.
 In case <a href="#itm-flattened-predicate-case">1</a>, <img src="img-math/0bf313ed9cb4b04b69bfef119c94a46f04793823bbf8a35762e3bcf7b467b9af.svg" class="inline-math"> is a pushout of <img src="img-math/162d88314ff34c63b23415e87c95f85dfc7c5706add6b02ece6d016a5b05bca3.svg" class="inline-math"> in <img src="img-math/dab63d9c5701419f4cd81f9adf6ffc5497518985f4e3b89083ac6364af084db1.svg" class="inline-math">.
@@ -1939,7 +1948,7 @@ Because <img src="img-math/114fcb6328c864abf62596ade0d8558d94cfc13aad67dd29fc294
 <img src="img-math/374a55f8672bf0a564c56c9d1a4226a6373fc668ba7240e015ceb9032f39955c.svg">
 </div>
 is eventually stationary, say for <img src="img-math/11d22cc2ff505d88edc5ff4d0ee1617d90bae508d7dea04ec9f4927709588246.svg" class="inline-math">, and then <img src="img-math/b35d084b9f557fb114ab14e4f6da211533edaedd070f9d4289e867f6a60c4c11.svg" class="inline-math">.
-<img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is an epimorphism, hence <img src="img-math/740647c4545c4e5b0908ae677b686487f1012afaac2d755ef836742bb35e1abf.svg" class="inline-math"> is a surjection by Proposition <a href="#prop-algebraic-epis">73</a>, hence also <img src="img-math/1ce4658b77517af423587aa78f26dc2ea63adfa1c2381a7020ba49487492f1a9.svg" class="inline-math"> is a surjection.
+<img src="img-math/177573b798181d45acc4d40ee1d44a201a42e266a3bf77e23894840c697c4e3a.svg" class="inline-math"> is an epimorphism, hence <img src="img-math/740647c4545c4e5b0908ae677b686487f1012afaac2d755ef836742bb35e1abf.svg" class="inline-math"> is a surjection by Proposition <a href="#prop-algebraic-epis">75</a>, hence also <img src="img-math/1ce4658b77517af423587aa78f26dc2ea63adfa1c2381a7020ba49487492f1a9.svg" class="inline-math"> is a surjection.
 Thus <img src="img-math/13adaed903aae99f87149b918d12c89dd9731202342a2f7543eac8639d6b5f9c.svg" class="inline-math"> for some surjective relational sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">.
 Note that the algebraic sequent <img src="img-math/3a7e1984242df88330a40dcb69619633825471746f28a53a2f537ea36bad7073.svg" class="inline-math"> is epic because the relational sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math"> is surjective.</div>
 <div class="paragraph">
@@ -1949,11 +1958,11 @@ We have thus decomposed <img src="img-math/177573b798181d45acc4d40ee1d44a201a42e
 </div>
 in which each map is isomorphic to <img src="img-math/6ff9f6433f9a2ff1291b28de007b9ce9524af3cd4449c64a6f2fa0a7e855b7c1.svg" class="inline-math"> for some epic algebraic sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">.
 If <img src="img-math/121cfe734ff5ad02c5c220036e8387f3cd32c0d74ea3fcafefc50437b8f7e11e.svg" class="inline-math"> is an epic algebraic sequent and <img src="img-math/9e67f109a2b5464aea03b0322ca64216782fd78a4990944a62dd0461b102859c.svg" class="inline-math"> is an epic algebraic sequent for algebraic formulas <img src="img-math/fdc9944431efc46236f48b940dd629a5fd6eadabc071751f54417c48139c9ee2.svg" class="inline-math">, then also <img src="img-math/9e6c71ed1e938db6b412e522bdc40037104b38de97b05c109bb6c4e0124510d3.svg" class="inline-math"> is epic.
-Thus by Proposition <a href="#prop-composition-algebraic-sequent-morphisms">65</a>, <img src="img-math/16673c3bdf0117b1620696318feb9ab1317b53380e759e2746f562463693a2e7.svg" class="inline-math"> for some epic algebraic sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">.</div>
+Thus by Proposition <a href="#prop-composition-algebraic-sequent-morphisms">67</a>, <img src="img-math/16673c3bdf0117b1620696318feb9ab1317b53380e759e2746f562463693a2e7.svg" class="inline-math"> for some epic algebraic sequent <img src="img-math/f6d86a6f28fc28643c288e8b9fb3bcea657f2db64f517b5b434f99c922bf160d.svg" class="inline-math">.</div>
 </div>
-<div id="prop-flub-rhl-to-epic-phl" class="theorem-like theorem-style-theorem">
+<div id="prop-strong-rhl-to-epic-phl" class="theorem-like theorem-style-theorem">
 <div class="paragraph">
-<h4>Proposition 77.
+<h4>Proposition 79.
 </h4>
 Let <img src="img-math/e94a30cee0214f847bdd9fd94bd185ce58e109ee4c9196e76f806ead42454c79.svg" class="inline-math"> be a relational signature.
 Let <img src="img-math/33f0af6adb082f260ea68be9c97080c9a6c235a7dab602edf2e620f833b4a5e9.svg" class="inline-math"> be a set of morphisms of finite relational <img src="img-math/3f48b0f68758e065321bb41ffd846b3ae8096d7d26a252cc38ec1b01aaedf9a2.svg" class="inline-math">-structures.
@@ -2036,6 +2045,8 @@ This follows from the definition of the partial functions <a href="#eq-definitio
 </div>
 <h2>Bibliography</h2>
 <ol class="bibliography">
+<li id="souffle-choice">
+ The Choice Construct in the Souffl{\'{e}} Language. Programming Languages and Systems, pages 163–181, 2021.</li>
 <li id="milner-inference">
  A theory of type polymorphism in programming. Journal of Computer and System Sciences, 17(3):348–375, 1978.</li>
 <li id="steensgard">
