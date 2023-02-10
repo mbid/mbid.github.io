@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>An Evaluation Algorithm for Datalog with Equalities</title>
+<title>An Evaluation Algorithm for Datalog with Equality</title>
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
 <link rel="stylesheet" type="text/css" href="style.css">
 <link rel="stylesheet" type="text/css" href="img-math/geometry.css">
 </head>
 
 <body>
-<h1>An Evaluation Algorithm for Datalog with Equalities</h1>
+<h1>An Evaluation Algorithm for Datalog with Equality</h1>
 <h2>Abstract</h2>
 <div class="paragraph">
 We describe an evaluation algorithm for <em>relational Horn logic (RHL)</em>.
 RHL extends Datalog with quantification over sorts, existential quantification in conclusions and, crucially, the ability to infer <em>equalities</em>.
-These capabilities allow RHL evaluation to subsume and expand use-cases of Datalog and congruence closure algorithms.</div>
+These capabilities allow RHL evaluation to subsume and expand applications of Datalog and congruence closure algorithms.</div>
 <div class="paragraph">
 We explain how aspects of a fast congruence closure algorithm can be incorporated into Datalog evaluation to obtain an efficient RHL evaluation algorithm.
 We then sketch how Steensgard's points-to analysis and type inference can be implemented using RHL evaluation.
@@ -23,7 +23,9 @@ RHL and the evaluation algorithm described here are the foundation of the <em>Eq
 <h2>
 1 Introduction</h2>
 <div class="paragraph">
-Recent work has identified <em>relational Horn logic</em> (RHL) and <em>partial Horn logic</em> (PHL) as well-behaved extensions of Datalog.
+Recent work has identified <em>relational Horn logic</em> (RHL) and <em>partial Horn logic</em> (PHL) as a semantically well-behaved extensions of Datalog [<a href="#phl-theory">7</a>].
+This paper describes how the Datalog evaluation algorithm can be generalized to RHL evaluation.</div>
+<div class="paragraph">
 An RHL theory contains declarations of the following data:
 <ul>
 <li>
@@ -40,11 +42,11 @@ A set <img src="img-math/3d4cfdf3324a65af86b57efe48dca427753b5acb5fc2ea2a1c64695
 </li>
 <li>
 <div class="paragraph">
-A set of <em>sequents</em> (or <em>rules</em>, or <em>axioms</em>), each of the form <img src="img-math/1c6d4dc399e8ca55ea9267f47a246c1f9cf17d9d4b02461a8b97fa93c5971106.svg" class="inline-math">, where <img src="img-math/fa482bb5b2d9672c08fe8e59931ea26b049df537cab381cd79d6378fcfe831b3.svg" class="inline-math"> and <img src="img-math/00d9f6c9ae042bac4d8ad9d87e12d585fad117b01f0b02ebd7907deb77aedd74.svg" class="inline-math"> are conjunctions <img src="img-math/02a961998cda9d95c2c7a8c3eaa0096659f21064c250d8530326f4537c85d1dc.svg" class="inline-math"> of <em>atoms</em> <img src="img-math/c98ebda128f67bffc082b7c8e30a84eaf20f079d8b6cb2b486ab141cf156e5bb.svg" class="inline-math">.</div>
+A set of <em>sequents</em> (or <em>rules</em>, or <em>axioms</em>), each of the form <img src="img-math/847b69ad3f91f6e442df276d30fc5fc34f5d46e8bea788a2bef23db0ac822aac.svg" class="inline-math">, where <img src="img-math/fa482bb5b2d9672c08fe8e59931ea26b049df537cab381cd79d6378fcfe831b3.svg" class="inline-math"> and <img src="img-math/00d9f6c9ae042bac4d8ad9d87e12d585fad117b01f0b02ebd7907deb77aedd74.svg" class="inline-math"> are conjunctions <img src="img-math/02a961998cda9d95c2c7a8c3eaa0096659f21064c250d8530326f4537c85d1dc.svg" class="inline-math"> of <em>atoms</em> <img src="img-math/c98ebda128f67bffc082b7c8e30a84eaf20f079d8b6cb2b486ab141cf156e5bb.svg" class="inline-math">.</div>
 </li>
 </ul>
 
-Instead of sequents as above, Datalog engines typically accept rules of the following form:
+Instead of RHL sequents as above, Datalog engines typically accept rules of the following form:
 <div class="display-math-row">
 <img src="img-math/f3b868cfecf767d54239df7bfbe985d52e1c039aed0bf934301ef87b0ec954fe.svg">
 </div>
@@ -55,7 +57,7 @@ However, a single sequent with <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee
 Thus, no generality is gained solely from allowing general conjunctions as conclusions.</div>
 <div class="paragraph">
 Where RHL generalizes Datalog is in what kind of atoms it allows, and how variables are handled.
-In Datalog, each atom is of the form <img src="img-math/2bcd29a3ac78c67a1dbf5221794c1bf56f897a1aafe603301e0aee7ae5dbdc97.svg" class="inline-math"> where <img src="img-math/4264d5e958e1cd9eb2efafe60e385fd2f02a52b2744a30892b27162c493396b4.svg" class="inline-math"> is a relation symbol and the <img src="img-math/0d403d1c472bc86a62da55d3d7871bbe16c87d1654bdb13449a46326f9e49afa.svg" class="inline-math"> are variables whose sort match the arity of <img src="img-math/4264d5e958e1cd9eb2efafe60e385fd2f02a52b2744a30892b27162c493396b4.svg" class="inline-math">.
+In Datalog, each atom is of the form <img src="img-math/6ccc8bd6e4c8ba87f59257fc3daeee4cfcae8fef403fb736c0a5cc34c165116d.svg" class="inline-math"> where <img src="img-math/4264d5e958e1cd9eb2efafe60e385fd2f02a52b2744a30892b27162c493396b4.svg" class="inline-math"> is a relation symbol and the <img src="img-math/0d403d1c472bc86a62da55d3d7871bbe16c87d1654bdb13449a46326f9e49afa.svg" class="inline-math"> are variables whose sort match the arity of <img src="img-math/4264d5e958e1cd9eb2efafe60e385fd2f02a52b2744a30892b27162c493396b4.svg" class="inline-math">.
 In addition to such <em>relation atoms</em>, RHL recognizes also the following types of atoms:
 <ol>
 <li>
@@ -79,18 +81,18 @@ If the sort of <img src="img-math/396e98ebde8acc48a23d704a89b3d6acaf333574894427
 </ol>
 
 If an equality atom <img src="img-math/2bf24cf79b96303a938e4c5ddde6f2235f269a8022715461eedf23fc7d6e704f.svg" class="inline-math"> occurs in the premise of a sequent, then matches of the premise are only valid if <img src="img-math/39816dc1ee34daf89cace37b66e970fb4af614a63e7257a46f6e74aa6c64f24e.svg" class="inline-math"> and <img src="img-math/396e98ebde8acc48a23d704a89b3d6acaf333574894427d321eb8b9a96edb312.svg" class="inline-math"> are interpreted as the same constant.
-Thus, equality atoms in a premise can be eliminated by removing all occurences of one of the two variables in the sequent by the other variable.</div>
+Thus, equality atoms in a premise can be eliminated by removing all occurrences of one of the two variables in the sequent by the other variable.</div>
 <div class="paragraph">
 The semantics of an equality atom <img src="img-math/2bf24cf79b96303a938e4c5ddde6f2235f269a8022715461eedf23fc7d6e704f.svg" class="inline-math"> in the conclusion of a sequent are non-trivial, however:
 Whenever the premise of such a sequent matches such that <img src="img-math/39816dc1ee34daf89cace37b66e970fb4af614a63e7257a46f6e74aa6c64f24e.svg" class="inline-math"> is interpreted as a constant <img src="img-math/890e47a0709b405fbb20dbaeeb232ef563e74248323a247c51fef5264354e670.svg" class="inline-math"> and <img src="img-math/396e98ebde8acc48a23d704a89b3d6acaf333574894427d321eb8b9a96edb312.svg" class="inline-math"> is interpreted as constant <img src="img-math/a60ec9feb8ca0cd66dbc14db573bd1fa64c1ca0b4f78c309da88ab3493682462.svg" class="inline-math">, then we expect the evaluation engine to identify <img src="img-math/890e47a0709b405fbb20dbaeeb232ef563e74248323a247c51fef5264354e670.svg" class="inline-math"> and <img src="img-math/a60ec9feb8ca0cd66dbc14db573bd1fa64c1ca0b4f78c309da88ab3493682462.svg" class="inline-math"> in all contexts henceforth.
-For example, the premise of the transitivity axiom <img src="img-math/66936cdd43e59480941f640f0ab0336de047fee42f8bad4f2bdf6d15f043f3c7.svg" class="inline-math"> should match tuples <img src="img-math/b5e23b05dcb4fe440eca30671b38fe0f7fb22581faafb8b1cf08d640b1056f90.svg" class="inline-math"> if an equality <img src="img-math/c7a98250fd6bc8f79350075aa1b40a9ba028e6b5854cf921fbffd5080c7187fd.svg" class="inline-math"> has been inferred previously.</div>
+For example, the premise of the transitivity axiom <img src="img-math/096c3f2980e7cac8d5a0ccaa451d8c27762215d3545d9ae06e5f6f8a39936706.svg" class="inline-math"> should match tuples <img src="img-math/b5e23b05dcb4fe440eca30671b38fe0f7fb22581faafb8b1cf08d640b1056f90.svg" class="inline-math"> if an equality <img src="img-math/c7a98250fd6bc8f79350075aa1b40a9ba028e6b5854cf921fbffd5080c7187fd.svg" class="inline-math"> has been inferred previously.</div>
 <div class="paragraph">
 Partial functions can be encoded in RHL using relations representing the graphs of partial functions.
 Thus one identifies partial functions <img src="img-math/ae8559113b57421849f744a5213753f59949f3ee77d7bd66b567a4b5fc76beec.svg" class="inline-math"> with relations <img src="img-math/110aae535232970d7cdec8ad541c2fee859afb63e37a5781cdda5c53b412275b.svg" class="inline-math"> where the first <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math"> components of each entry represent an element in the domain of the function and the last component represents the value of the function.
 The <em>functionality axiom</em>
 <div id="eq-functionality" class="display-math-row">
 <span>(1)</span>
-<img src="img-math/a22279d9a52309093820cad38921248f773d64c278bf87c0ac142d31e2465c28.svg">
+<img src="img-math/56020f1067de39192f9abcc653d0127a81532464787951866d792f9797dadde9.svg">
 <span>(1)</span>
 </div>
 enforces that the relation <img src="img-math/023e9be9c1d8fc35bb86fdb02f2305a9f5cb2bbdc770565d7e2be47e516abf2e.svg" class="inline-math"> does indeed correspond to a well-defined partial function.</div>
@@ -99,27 +101,28 @@ Sort quantifications <img src="img-math/866acb5d9f9f3c022e28f74a712769bd755d7734
 In standard Datalog, all variables in the head of a sequent must also appear in the body.
 This requirement is removed in RHL.
 Variables that only appear in the conclusion are implicitly existentially quantified.
-If the premise of a sequent matches, then the evaluation engine must extend the match to the conclusion by finding an interpretations of variables that occur only in the conclusion such that the conclusion holds.
-If no such extension exists, then the evaluation engine must create new identifiers to interpret variables that only occur in the conclusion, and enforce that the atoms of the conclusion hold for this interpretion.
+If the premise of a sequent matches, then the evaluation engine must extend the match to the conclusion by finding an interpretation of variables that occur only in the conclusion such that the conclusion holds.
+If no such extension exists, then the evaluation engine must create new identifiers to interpret variables that only occur in the conclusion, and enforce that the atoms of the conclusion hold for this interpretation.
 We expect the evaluation engine to output a list of identifiers of each sort, including those identifiers that were created during evaluation.
 An RHL sequent in which all conclusion variables also occur in the premise is called <em>surjective</em>.
-If an RHL theory contains non-surjective sequents, then evaluation need to terminate.</div>
+If an RHL theory contains non-surjective sequents, then evaluation need not terminate.
+The Souffle Datalog engine implements a similar mechanism in the form of its choice construction [<a href="#souffle-choice">2</a>].</div>
 <div class="paragraph">
 The presence of non-surjective sequents can not only lead to non-termination but also to non-deterministic results, in the sense that the result depends on the order in which sequents are matched.
-This is not the case for <em>strong</em> RHL theories, in which the interpretion of conclusion variables is uniquely determined once all sequents are satisfied (TODO: cite).
+This is not the case for <em>strong</em> RHL theories, in which the interpretion of conclusion variables is uniquely determined once all sequents are satisfied.
 For example, the RHL theory given by the functionality sequent <a href="#eq-functionality">(3)</a> and the sequent
 <div id="eq-totality" class="display-math-row">
 <span>(2)</span>
-<img src="img-math/690ba0886175ff74736a673943e60133517b0265c14bad93bbc0319476880d10.svg">
+<img src="img-math/40a5add836f777215ecc84ebe4160adbacd144a0b2c5b4a9a31c3ae0a69713ec.svg">
 <span>(2)</span>
 </div>
-is strong, since if functionality axiom is satisfied, then the interpretation of the variable <img src="img-math/396e98ebde8acc48a23d704a89b3d6acaf333574894427d321eb8b9a96edb312.svg" class="inline-math"> in sequent <a href="#eq-totality">(2)</a> is uniquely determined.
+is strong, since if the functionality axiom is satisfied, then the interpretation of the variable <img src="img-math/396e98ebde8acc48a23d704a89b3d6acaf333574894427d321eb8b9a96edb312.svg" class="inline-math"> in sequent <a href="#eq-totality">(2)</a> is uniquely determined.
 Unfortunately, it is undecidable whether a given RHL theory is strong.</div>
 <div class="paragraph">
 A further problem with RHL is that functions must be encoded via their graphs.
 This leads to excessive verbosity when formulating axioms involving complex expressions built up from function symbols.</div>
 <div class="paragraph">
-<em>Partial Horn logic</em> (PHL) is a syntactic layer on top of RHL that rectifies these shortcomings.
+<em>Partial Horn logic</em> (PHL) [<a href="#phl">5</a>] is a syntactic layer on top of RHL that rectifies these shortcomings.
 In partial Horn logic, relations must be explicitly declared as predicates or partial functions.
 Predicates correspond directly to RHL relations, whereas functions are lowered into a relation corresponding to the graph of the function and the implicit functionality axiom <a href="#eq-functionality">(3)</a>.</div>
 <div class="paragraph">
@@ -129,7 +132,7 @@ In positions where RHL accepts variables, PHL also allows composite terms
 </div>
 which are recursively defined from variables and application of partial function symbols to terms whose sorts match the function signature.
 When lowering PHL to RHL, composite terms <img src="img-math/5c09a2c5467f21a3fb63585429fa6ef1bd9843980d36ca2645dcf5466be04616.svg" class="inline-math"> are recursively lowered into a result variable representing the term <img src="img-math/5c09a2c5467f21a3fb63585429fa6ef1bd9843980d36ca2645dcf5466be04616.svg" class="inline-math"> and additional RHL atoms.
-These additonal atoms are inserted into premise or conclusion of the sequent, depending on where <img src="img-math/5c09a2c5467f21a3fb63585429fa6ef1bd9843980d36ca2645dcf5466be04616.svg" class="inline-math"> appears.
+These additional atoms are inserted into premise or conclusion of the sequent, depending on where <img src="img-math/5c09a2c5467f21a3fb63585429fa6ef1bd9843980d36ca2645dcf5466be04616.svg" class="inline-math"> appears.
 To lower a composite term <img src="img-math/b830b0172af289951b7e7a50949efc6cdcee1cf344ce0c680299e27c2941006e.svg" class="inline-math">, we may assume that <img src="img-math/ef37f827852693f7f2346c1b62330568c09fc800b8758d4464fa0f9f161047e7.svg" class="inline-math"> for variables <img src="img-math/0d403d1c472bc86a62da55d3d7871bbe16c87d1654bdb13449a46326f9e49afa.svg" class="inline-math"> by recursively lowering the arguments <img src="img-math/2e794f07c8f0bbecbb5dda8cdf2e1376d0c68486c4cd22ee064bf49a787eed3e.svg" class="inline-math"> first.
 We now choose a fresh variable <img src="img-math/396e98ebde8acc48a23d704a89b3d6acaf333574894427d321eb8b9a96edb312.svg" class="inline-math"> representing <img src="img-math/5c09a2c5467f21a3fb63585429fa6ef1bd9843980d36ca2645dcf5466be04616.svg" class="inline-math"> and add the RHL atom <img src="img-math/1514517f70812d7acce9d1565d645e309ab66869049065a903fb3ceeb68630c1.svg" class="inline-math">.
 Since lowering a PHL formula reduces nested expressions into a flat sequence of atoms, the process of lowering PHL to RHL is also called <em>flattening</em>.</div>
@@ -137,34 +140,44 @@ Since lowering a PHL formula reduces nested expressions into a flat sequence of 
 PHL sequents are <em>epic</em> if all variables in the conclusion are already introduced in the premise.
 Note that lowering epic PHL sequents can result in non-surjective RHL sequents, because lowering composite terms can introduce fresh variables.
 Nevertheless, the lowered RHL theory resulting from an epic PHL theory (i.e. a PHL theory containing epic sequents only) is strong.
-Conversely, every strong RHL theory is equivalent to an epic PHL theory; see TODO for details.
+Conversely, every strong RHL theory is equivalent to an epic PHL theory; see [<a href="#phl-theory">7</a>, Section 4.3] for details.
 Thus, epic PHL has the same descriptive strength as strong RHL.
 On the other hand, checking whether a PHL sequent is epic is trivial, whereas checking whether an RHL theory is strong is undecidable.
-This makes PHL more suitable as human-facing input language of an evaluation engine compared to RHL.</div>
+This makes PHL more suitable as human-facing input language to an evaluation engine compared to RHL.</div>
 <div class="paragraph">
 The <em>Eqlog</em> engine, whose underlying algorithm is described in this paper, accepts epic PHL as input language.
 Eqlog lowers a user-provided epic PHL theory to RHL, which is then transpiled to a Rust module.
 This is similar to the Souffle Datalog engine, which transpiles Datalog to C++.
 In contrast to Souffle, Eqlog is meant to be used as part of a larger project and not as standalone tool.
-Similarly to the <em>egg</em> equality saturation library [<a href="#egg">5</a>], Eqlog supports online use-cases in which one alternates inserting new ground facts into the model and closing the model under PHL sequents.
-Refer to the Eqlog <a href="https://github.com/eqlog/eqlog">project homepage</a> for details.</div>
+Similarly to the <em>egg</em> equality saturation library [<a href="#egg">11</a>], Eqlog supports online use-cases in which one alternates inserting new ground facts into the model and closing the model under PHL sequents.
+Refer to the Eqlog project homepage [<a href="#eqlog-homepage">1</a>] for details.</div>
 <div class="paragraph">
 Independently of the work on Eqlog presented in this article, members of the Egg community have created a very similar tool that combines e-graphs with Datalog, which will be reported on in an upcoming article.</div>
-<h2>
+<div class="paragraph">
+<strong>Outline.</strong>
+In Section <a href="#sec-rhl-evaluation">2</a>, we describe a basic algorithm to evaluate RHL, and a technique to detect termination in many circumstances.
+Then, in Section <a href="#sec-optimizations">3</a>, we discuss optimizations of the RHL evaluation algorithm.
+Finally, in Section <a href="#sec-applications">4</a>, we sketch applications of PHL and RHL evaluation to the implementation of programming languages.
+Section <a href="#sec-conclusion">5</a> concludes.</div>
+<div class="paragraph">
+<strong>Acknowledgements.</strong>
+Jakob Botsch Nielsen contributed significantly to previous versions of the implementation of the Eqlog tool and its application to an experimental type checker for a dependently typed proof assistant.
+My own work on Eqlog and the algorithm presented in this paper commenced during my time as PhD student at Aarhus University, where I was advised by Bas Spitters and supported by the Air Force Office and Scientific Research project “Homotopy Type Theory and Probabilistic Computation”, grant number 12595060.</div>
+<h2 id="sec-rhl-evaluation">
 2 RHL Evaluation</h2>
 <div class="paragraph">
 In this section, we describe a basic algorithm to evaluate RHL theories.
 The input to the evaluation algorithm is a list of RHL sequents and a <em>relational structure</em> representing ground facts.
-A relational structure sets of numerical identifiers for each sort, representing the elements of the sort, and sets of tuples for each relation.
+A relational structure is given by sets of numerical identifiers for each sort, representing the elements of the sort, and sets of tuples for each relation.
 From Section <a href="#subsec-naive-rhl-evaluation">2.2</a> onward, we assume that relational structures contain also union-find data structures for each sort, representing semantic equality of sort elements.</div>
 <div class="paragraph">
-If RHL evaluation terminates, then we require that the output is a relational structure that is <em>weakly free</em> with respect to the list of RHL sequents over the input relational structure. 
-Intuitively, this means that the output must satisfy all sequents in the RHL theory, and it must be obtained from the input relational structure only from matching sequent premises and adjoining data corresponding to conclusions.</div>
+If RHL evaluation terminates, then we require that the output is a relational structure that is <em>weakly free</em> with respect to the list of RHL sequents over the input relational structure [<a href="#phl-theory">7</a>].
+Intuitively, this means that the output must satisfy all sequents in the RHL theory, and that it must be obtained from the input relational structure only from matching sequent premises and adjoining data corresponding to conclusions.</div>
 <div class="paragraph">
 Weak freeness does not uniquely characterize a relational structure.
 In general, the output relational structure depends on the order of matching premises of RHL sequents.
 However, if the RHL theory is strong, then the output relational structure is <em>(strongly) free</em> over the input relational structure, which determines it uniquely up to unique isomorphism (i.e. renaming of identifiers).
-Relevant classes of strong RHL theories are theories containing surjective sequents only, and theories that are obtained from lowering epic PHL theories.</div>
+Relevant classes of strong RHL theories are theories containing surjective sequents only, and theories that are obtained from lowering epic PHL theories [<a href="#phl-theory">7</a>].</div>
 <div class="paragraph">
 In Section <a href="#subsec-naive-datalog">2.1</a>, we discuss the naive algorithm for Datalog evaluation and amend it with support for non-surjective sequents and sort quantification, but not equality.
 Then, in Section <a href="#subsec-naive-rhl-evaluation">2.2</a>, we consider a well-known simple congruence closure algorithm, which we shall understand as a special-purpose algorithm for evaluation of functionality RHL sequents.
@@ -173,7 +186,7 @@ The conclusion of functionality sequents is an equality, which our naive Datalog
 We incorporate these into our naive Datalog algorithm to obtain a naive RHL evaluation algorithm.</div>
 <div class="paragraph">
 In Section <a href="#subsec-termination">2.3</a>, we discuss an example where our RHL evaluation algorithm does not terminate for a non-surjective RHL theory with finite free models.
-Based on the example, we show how the evaluation algorithm can be modified to terminate for this example and a wide range of other RHL theories.</div>
+Based on the example, we show how the evaluation algorithm can be modified to terminate for this particular example and also a wide range of other RHL theories.</div>
 <h3 id="subsec-naive-datalog">
 2.1 Naive Datalog evaluation</h3>
 <div class="paragraph">
@@ -189,7 +202,7 @@ The high-level structure of the algorithm can be expressed in Rust-like pseudo-c
     }
 
     // 2. Apply conclusions.
-    bool has_changed = false;
+    let has_changed = false;
     for (sequent, matches) in sequents.zip(matches) {
       for match in matches {
         if apply_conclusion(structure, sequent.conclusion, match) {
@@ -237,10 +250,10 @@ If no such extension exists, then we adjoin fresh elements to the relational str
 <h3 id="subsec-naive-rhl-evaluation">
 2.2 Congruence closure and naive RHL evaluation</h3>
 <div class="paragraph">
-RHL equality atoms can be reduced to Datalog by introducing binary equality relations on each sort representing inferred equality. 
-However, this <em>setoid reduction</em> typically leads to inefficient Datalog programs.
-Semantically, an inferred equality often reduces the size of the relational structure, since equalities can collapose two previously distinct tuples in a relation into a single tuple.
-Instead, the setoid reduction leads to signifcant duplication due to congruence axioms, which assert that all relations must be closed in each argument under inferred equality.
+RHL equality atoms can be reduced to Datalog by introducing binary equality relations on each sort representing inferred equality.
+However, this <em>setoid reduction</em> [<a href="#phl-theory">7</a>, Section 3.4] typically leads to inefficient Datalog programs.
+Semantically, an inferred equality often reduces the size of the relational structure, since equalities can collapse two previously distinct tuples in a relation into a single tuple.
+Instead, the setoid reduction leads to significant duplication due to congruence axioms, which assert that all relations must be closed in each argument under inferred equality.
 Our goal in this section is to rectify this deficiency:
 Every inferred equality should only shrink the relational structure.</div>
 <div class="paragraph">
@@ -249,14 +262,14 @@ Decide which equalities among a list <img src="img-math/2e794f07c8f0bbecbb5dda8c
 This problem can be encoded in RHL with a theory given by an <img src="img-math/281ab750a858b0288add94a600a759e21e62ab1f46b6af9932b3ef0c35ae57c7.svg" class="inline-math">-ary relation symbol <img src="img-math/023e9be9c1d8fc35bb86fdb02f2305a9f5cb2bbdc770565d7e2be47e516abf2e.svg" class="inline-math"> representing the graph of an <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math">-ary function symbol that occurs in the <img src="img-math/b5d5b5b2ba20d0a52f991cc3fdc8eb154958de7bbe5ff58b734e8a4fc3f08584.svg" class="inline-math"> and the <em>functionality axiom</em>
 <div id="eq-functionality" class="display-math-row">
 <span>(3)</span>
-<img src="img-math/a213ef44167c9f61430fb0724d51aeac361db84ea61efa0fdb925db146ab5bf9.svg">
+<img src="img-math/fbc2f35475354c7ed6a9f602f5b083908471b378bef0d30492a296cbededc31a.svg">
 <span>(3)</span>
 </div>
 One then inserts data corresponding to the <img src="img-math/b5d5b5b2ba20d0a52f991cc3fdc8eb154958de7bbe5ff58b734e8a4fc3f08584.svg" class="inline-math"> into a relational structure, imposes equalities among subexpressions, and closes the structure under functionality axioms.
 We may thus understand congruence closure algorithms as special-purpose evaluation algorithms for functionality RHL sequents, and try to generalize existing congruence closure algorithms to general RHL evaluation.</div>
 <div class="paragraph">
-Our inspiration here is the congruence closure algorithm described in [<a href="#congruence-closure">1</a>].
-Consider the following version of their naive algorithm 2.1, which they attribute to [<a href="#naive-congruence-closure">2</a>].
+Our inspiration here is the congruence closure algorithm described in [<a href="#congruence-closure">3</a>].
+Consider the following version of their naive algorithm 2.1, which they attribute to [<a href="#naive-congruence-closure">8</a>].
 The version presented here is specialized to a single binary function.
 The input of the algorithm is a list of triples representing the graph of the function.
 <pre>
@@ -275,18 +288,18 @@ The input of the algorithm is a list of triples representing the graph of the fu
       }
 
       // 2. Apply equalities.
-      changed = false;
+      let has_changed = false;
       for (lhs, rhs) in eqs {
         lhs = uf.find(lhs);
         rhs = uf.find(rhs);
         if lhs != rhs {
           uf.union(lhs, rhs);
-          changed = true;
+          has_changed = true;
         }
       }
 
-      // Terminate if nothing changed.
-      if !changed {
+      // Terminate if nothing has changed.
+      if !has_changed {
         break;
       }
 
@@ -319,7 +332,7 @@ Because of the use of the union-find data structure, only comparisons among cano
 Note that, instead of the normalization step, we could also consult the union-find data structure in step 1 during premise matching when comparing elements.
 However, a separate normalization step makes the use of a number of optimizations possible, which we discuss in Section <a href="#sec-optimizations">3</a>.</div>
 <div class="paragraph">
-By incorporating aspects of the congruence closure algorithm that deal with equalities into our naive Datalog evaluation algorithm, we now obtain our <em>naive RHL evaluation algorithm</em>:
+By incorporating aspects of the congruence closure algorithm that deal with equalities into the naive Datalog evaluation algorithm of Section <a href="#subsec-naive-datalog">2.1</a>, we now obtain our <em>naive RHL evaluation algorithm</em>:
 <ol>
 <li>
 <div class="paragraph">
@@ -332,11 +345,13 @@ We maintain the invariant that the relations in the relational structure contain
 </li>
 <li>
 <div class="paragraph">
-Before the end of the loop body, we insert a normalization step, which replaces each element in each relations with its canonical representative by calling <code>find</code>.</div>
+Before the end of the loop body, we insert a normalization step, which replaces each element in a tuple in any relation with its canonical representative by calling <code>find</code>.</div>
 </li>
 </ol>
 
 Since relational structures store relations as sets without duplication, normalization can potentially reduce the number of elements of relations.</div>
+<div class="paragraph">
+The Souffle Datalog engine provides an efficient implementation of equivalence relations using union-find data structures [<a href="#souffle-union-find">4</a>], but it does not implement normalization.</div>
 <h3 id="subsec-termination">
 2.3 Detecting termination</h3>
 <div class="paragraph">
@@ -346,24 +361,25 @@ In these situations, RHL evaluation can thus not terminate and must instead be a
 Nevertheless, there are RHL theories for which free models over finite relational structures are again finite despite the presence of non-surjective sequents.
 But even in these situations, the RHL evaluation algorithm we have discussed so far need not terminate.</div>
 <div class="paragraph">
-Consider, for example, the following theory that axiomatizes pairs of maps <img src="img-math/6f2e8d61b298b3a0a3239158e4bcbefe754ee32975f504526d07a52ac0ed9061.svg" class="inline-math"> such that <img src="img-math/6edadaa5c176628f8be0c0bb10831da1aef4187fcca72455e6424811e6d5474f.svg" class="inline-math"> for all <img src="img-math/1d5f137e02b99469b8740d66c9fc77b554cae8c5439ce728acc42a46985d4d7d.svg" class="inline-math">:
+Consider, for example, the following PHL theory that axiomatizes pairs of maps <img src="img-math/6f2e8d61b298b3a0a3239158e4bcbefe754ee32975f504526d07a52ac0ed9061.svg" class="inline-math"> such that <img src="img-math/6edadaa5c176628f8be0c0bb10831da1aef4187fcca72455e6424811e6d5474f.svg" class="inline-math"> for all <img src="img-math/1d5f137e02b99469b8740d66c9fc77b554cae8c5439ce728acc42a46985d4d7d.svg" class="inline-math">:
 <ol>
 <li id="itm-f-total">
 <div class="paragraph">
-<img src="img-math/2ca84f38a8a9bc866c3fc1effece38854109133552c9d9711d33f222a4273251.svg" class="inline-math"></div>
+<img src="img-math/d2aac868faa3900e3638e521009eb7baf011498ac71237cb9cd4825ff04e30c0.svg" class="inline-math"></div>
 </li>
 <li id="itm-g-total">
 <div class="paragraph">
-<img src="img-math/a8a4550ce308bfe0d4a96043e1dc1a6db99bda3e5c618d2cf5f09fd35b6f0a8b.svg" class="inline-math"></div>
+<img src="img-math/82a9b99aa5a621b4751569f904d9c1619beabbd10e85e3226e1f568a580f856b.svg" class="inline-math"></div>
 </li>
 <li id="itm-retract">
 <div class="paragraph">
-<img src="img-math/cc2e599bf476a4cb1018a7c0914760722594997bd65518928012166008d240d2.svg" class="inline-math"></div>
+<img src="img-math/d425a3ff511d40b08934cb3e7ceddb466712e66ce2af7f42fd0012e5bceda480.svg" class="inline-math"></div>
 </li>
 </ol>
 </div>
 <div class="paragraph">
-Axiom <a href="#itm-retract">3</a> is surjective, but axioms <a href="#itm-f-total">1</a> and <a href="#itm-g-total">2</a> are non-surjective.
+Axiom <a href="#itm-retract">3</a> is lowered to the RHL axiom <img src="img-math/22f28781878be5a250aad6b88758c39a4636d45514fc7b2a9a2b924a936b62b8.svg" class="inline-math">, which is surjective.
+Axioms <a href="#itm-f-total">1</a> and <a href="#itm-g-total">2</a>, however, are non-surjective.
 Nevertheless, free models of this theory over finite relational structures are always finite, as the following construction of free models proves:
 Given sets <img src="img-math/0e83c5ecbbb06866c9357eb33e6b15526d6a675e1c5fd2f3ca9eadfac3c671a8.svg" class="inline-math"> and relations <img src="img-math/c64d96ade1a0a75dcc577fe0b5e1d355eb6f2bac6cb8ce7d92df8224e2c75e57.svg" class="inline-math">, one first identifies elements within <img src="img-math/4af4a66bf0124d6a0e7eee4bc4d20ee0c2747ddba2896c17ac568c03347bf702.svg" class="inline-math"> and <img src="img-math/1f63f2dbdfd1016a168d6a233155e05f2402f38216ce84d5a872ef674887987a.svg" class="inline-math"> according to the functionality axioms for <img src="img-math/023e9be9c1d8fc35bb86fdb02f2305a9f5cb2bbdc770565d7e2be47e516abf2e.svg" class="inline-math"> and <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> and axiom <a href="#itm-retract">3</a>.
 For each element <img src="img-math/91d729bd57d8fb02ae655a9b7794537e75c7364a3aa2031fd93d4cc9334f213c.svg" class="inline-math"> on which <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> is not defined, we then adjoin new elements to <img src="img-math/4af4a66bf0124d6a0e7eee4bc4d20ee0c2747ddba2896c17ac568c03347bf702.svg" class="inline-math"> and extend <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> accordingly to a total function by axiom <a href="#itm-g-total">2</a>.
@@ -371,7 +387,7 @@ Similarly, we then adjoin for each <img src="img-math/5df1e94706f9b0f45b89ff53a7
 Now every element in <img src="img-math/1f63f2dbdfd1016a168d6a233155e05f2402f38216ce84d5a872ef674887987a.svg" class="inline-math"> on which <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> is not defined is of the form <img src="img-math/1de2a071a4845d483175b7967f1071485d2142583925c70c18898b7a58df0ee6.svg" class="inline-math"> for some unique <img src="img-math/5df1e94706f9b0f45b89ff53a7689ae3cd93610387a57648d42a069e81086fda.svg" class="inline-math">, so by axiom <a href="#itm-retract">3</a>, we may extend <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> to a total function by setting <img src="img-math/936c28a8bbc48bcaf7ab974f1c3e4e44f0be1a10e15c4aa3548b53540649cd1d.svg" class="inline-math">.
 Now <img src="img-math/023e9be9c1d8fc35bb86fdb02f2305a9f5cb2bbdc770565d7e2be47e516abf2e.svg" class="inline-math"> and <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> are total functions and <img src="img-math/646b4f14f9713a63223f27b444a23f66c057c1922eec20c51ec32b2d7861397e.svg" class="inline-math"> is the identity function on <img src="img-math/4af4a66bf0124d6a0e7eee4bc4d20ee0c2747ddba2896c17ac568c03347bf702.svg" class="inline-math">.</div>
 <div class="paragraph">
-On first thought, we might thus hope RHL evaluation for this theory to eventually reach a fixed poined and terminate.
+On first thought, we might thus hope RHL evaluation for this theory to eventually reach a fixed point and terminate.
 Unfortunately, this is not the case for the RHL evaluation algorithm described in Section <a href="#subsec-naive-rhl-evaluation">2.2</a>.
 Consider the iterations of evaluation with initial relational structure given by <img src="img-math/a8e158157eab347379645adf1bbf86d5893a41416247e7c4cf577acbe3778f49.svg" class="inline-math">, <img src="img-math/156d7c2fa7c54e4507e346704ae60fd6ed5ef68afc9393e18dbc3bac5bb0bb5e.svg" class="inline-math"> and <img src="img-math/023e9be9c1d8fc35bb86fdb02f2305a9f5cb2bbdc770565d7e2be47e516abf2e.svg" class="inline-math"> and <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> entirely undefined:
 <ol>
@@ -381,11 +397,12 @@ Axiom <a href="#itm-f-total">1</a> matches on <img src="img-math/90e7a289b43bf67
 </li>
 <li>
 <div class="paragraph">
-Axiom <a href="#itm-g-total">2</a> matches on <img src="img-math/ca4b49df1f5b0b138b5b5996bb137e781214902dae507dc482a8a815c29a6934.svg" class="inline-math">, resulting in a new element <img src="img-math/c62e970cd75206a01de0b1ef7089ee279330bb53a124021ab0dab807b664bc02.svg" class="inline-math"> and the tuple <img src="img-math/2bb6a31c70d147e5973f7b672bf55617416505b6bbf1d51bd28f18f9322525cb.svg" class="inline-math">.</div>
+Axiom <a href="#itm-g-total">2</a> matches on <img src="img-math/ca4b49df1f5b0b138b5b5996bb137e781214902dae507dc482a8a815c29a6934.svg" class="inline-math">, and axiom <a href="#itm-retract">3</a> matches on <img src="img-math/502a72cc33ced28cb6adb0a6a300304f39bbd25843377d16efdd94f9d3606abb.svg" class="inline-math">.
+The former results in a new element <img src="img-math/c62e970cd75206a01de0b1ef7089ee279330bb53a124021ab0dab807b664bc02.svg" class="inline-math"> and the tuple <img src="img-math/2bb6a31c70d147e5973f7b672bf55617416505b6bbf1d51bd28f18f9322525cb.svg" class="inline-math">, while the latter results in the tuple <img src="img-math/e13626b9e5d5d9d4fb34053c70f86be1aea76ee97f741dd332f288247bdc49a1.svg" class="inline-math">.</div>
 </li>
-<li>
+<li id="itm-infinite-f-adjoining">
 <div class="paragraph">
-Axiom <a href="#itm-f-total">1</a> matches on <img src="img-math/c62e970cd75206a01de0b1ef7089ee279330bb53a124021ab0dab807b664bc02.svg" class="inline-math">, and axiom <a href="#itm-retract">3</a> matches on <img src="img-math/90e7a289b43bf670accf811276da2b068bf6ffcf694d8d305fc0c758f76b4da6.svg" class="inline-math">.
+Axiom <a href="#itm-f-total">1</a> matches on <img src="img-math/c62e970cd75206a01de0b1ef7089ee279330bb53a124021ab0dab807b664bc02.svg" class="inline-math">, and the implicit functionality axiom for <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> matches on <img src="img-math/85b549c21810ed29d65fb2f962d2a142bb69e94d14495c363130fe849b3faa84.svg" class="inline-math">.
 The former results in a new element <img src="img-math/2f67883d5a8a606843d1d8ba3c42a456a7cea7bb10bc7ab65666ddfacfa62073.svg" class="inline-math"> and the tuple <img src="img-math/cd03df718d1d71881c75d4a0500f88b23e798602a98b793fb5f953914edf3c0b.svg" class="inline-math">, while the latter results in the equality <img src="img-math/2ba2a54c2996791a7696a02e5009cc1640cd5040233a1b83dc73866d4c6e797b.svg" class="inline-math">.</div>
 </li>
 <li id="itm-infinite-g-adjoining">
@@ -393,20 +410,15 @@ The former results in a new element <img src="img-math/2f67883d5a8a606843d1d8ba3
 Axiom <a href="#itm-g-total">2</a> matches on <img src="img-math/2f67883d5a8a606843d1d8ba3c42a456a7cea7bb10bc7ab65666ddfacfa62073.svg" class="inline-math">, and the implicit functionality axiom for <img src="img-math/023e9be9c1d8fc35bb86fdb02f2305a9f5cb2bbdc770565d7e2be47e516abf2e.svg" class="inline-math"> matches on <img src="img-math/67a256c226a68e393cf5f0556ac6d988ca8add59855655ab9b6c240f07ad6c2f.svg" class="inline-math">.
 The former results in a new element <img src="img-math/956380fa02ed3848f586e1ab812dc14d47b579193bf366ec303ff9cecc597a7d.svg" class="inline-math"> and the tuple <img src="img-math/66c8daac451aca5bc25586b9ca26b21a820baa34b0f4d68560ad2586d1be7eb9.svg" class="inline-math">, while the latter results in the equality <img src="img-math/417ad34e0d4838a58de268df5675f1145ed15f9ebb82de19ecc37168a6259afd.svg" class="inline-math">.</div>
 </li>
-<li id="itm-infinite-f-adjoining">
-<div class="paragraph">
-Axiom <a href="#itm-f-total">1</a> matches on <img src="img-math/956380fa02ed3848f586e1ab812dc14d47b579193bf366ec303ff9cecc597a7d.svg" class="inline-math">, and the implicit functionality axiom for <img src="img-math/7b72b64dcf21fb49a6ee2095658996d16b0c8219c76bfbbb65f39198276a747a.svg" class="inline-math"> matches on <img src="img-math/b425033a64b02c0a9598c1f4c61d079ddc3b871f287a05f07e373e4452c739d6.svg" class="inline-math">.
-The former results in a new element <img src="img-math/7aeba53614ff3bdb611881719edf1ca75e91276070fd4103bc231828f6f57b02.svg" class="inline-math"> and the tuple <img src="img-math/472ab152421b3d32d47390beeb7d6fc095d184d8cee51766f3357ae69ccea70c.svg" class="inline-math">, while the latter results in the equality <img src="img-math/e6490e41137e400df68b1c3d4ff3ca90c43339224e23bf7ee1e68908f0171126.svg" class="inline-math">.</div>
-</li>
 <li>
 <div class="paragraph">
-All further iterations alternate between variations of <a href="#itm-infinite-g-adjoining">4</a> and <a href="#itm-infinite-f-adjoining">5</a>.</div>
+All further iterations alternate between variations of iterations <a href="#itm-infinite-f-adjoining">3</a> and <a href="#itm-infinite-g-adjoining">4</a>.</div>
 </li>
 </ol>
 
 What prevents termination for this theory is thus that the evaluation algorithm matches all sequents at once:
-Observe that our proof that of finiteness of free models relies on applying sequents in some particular order.
-For this particular theory, non-termination can be prevented by carefully stating axioms so as to avoid alternating states, for example by replacing axioms <a href="#itm-f-total">1</a> and <a href="#itm-retract">3</a> with <img src="img-math/b3c023e64e2deccf1c4d7e885769658ad34c7029fad278ff72b0e0b88072a746.svg" class="inline-math">.</div>
+Observe that our proof that free models are finite relies on applying sequents in some particular order.
+For this particular theory, non-termination can be prevented by carefully stating axioms so as to avoid alternating states, for example by replacing axioms <a href="#itm-f-total">1</a> and <a href="#itm-retract">3</a> with <img src="img-math/efe972296b35b30c7c31d175872c3006c52a704b19c634d7020f0165e672f0b4.svg" class="inline-math">.</div>
 <div class="paragraph">
 However, the following variant of the RHL evaluation algorithm described in Section <a href="#subsec-naive-rhl-evaluation">2.2</a> terminates on a wide range of RHL theories, including the theory above.
 One splits the top-level evaluation loop into an inner loop responsible for surjective sequents and an outer loop responsible for non-surjective sequents.
@@ -418,8 +430,8 @@ However, I expect there to be theories where termination depends on a particular
 3 Optimizations</h2>
 <div class="paragraph">
 In this section, we consider optimizations of the naive RHL algorithm that we discussed in Section <a href="#subsec-naive-rhl-evaluation">2.2</a>.
-Most of these techniques are adapted from optimizations that apply to Datalog evaluation, congruence closure or both.
-Implemented together, these optimizations allow us to recover the fast congruence closure algorithm due to [<a href="#congruence-closure">1</a>] as a special case of RHL evaluation for functionality axioms.</div>
+Most of these techniques are adapted from optimizations that apply to Datalog evaluation, to the congruence closure problem or to both.
+Implemented together, these optimizations allow us to recover the fast congruence closure algorithm due to [<a href="#congruence-closure">3</a>] as a special case of RHL evaluation for functionality axioms.</div>
 <h3 id="subsec-semi-naive">
 3.1 Semi-naive evaluation</h3>
 <div class="paragraph">
@@ -427,7 +439,7 @@ Semi-naive evaluation is a common Datalog evaluation optimization.
 It exploits the observation that matches of premises that were found in the previous iteration need not be considered again because conclusions to these matches have already been adjoined.
 A match has not been found in a previous iteration if at least one of the atoms in the premise is matched with new data, i.e. data was added only in the last iteration.
 To distinguish old data from new data, we store for each relation and each sort lists of tuples or elements that were added in the last iteration.
-An <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math">-fold nested loop that matches the premise of a sequent can now be prelaced with <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math"> copies, where in the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th copy the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th loop iterates over new data only.
+An <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math">-fold nested loop that matches the premise of a sequent can now be replaced with <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math"> copies, where in the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th copy the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th loop iterates over new data only.
 For example, the nested loop described in Section <a href="#subsec-naive-datalog">2.1</a> enumerating the premise of <img src="img-math/e761fad2d27044952fbf008fd103f84417ee23272908eda2abf3ca98e55b8dd9.svg" class="inline-math"> can be replaced by the following three nested loops:
 <pre>
   for (u, v) in structure.rels_new[Le] {
@@ -462,7 +474,7 @@ For example, the nested loop described in Section <a href="#subsec-naive-datalog
 Observe that not only the conclusion application phase but also the normalization phase can lead to new data:
 If an element in the tuple of some relation changes as a result of normalization, then the tuple must be considered as new tuple.</div>
 <div class="paragraph">
-The optimized congruence closure algorithm described by [<a href="#congruence-closure">1</a>] also implements semi-naive evaluation.
+The optimized congruence closure algorithm described by [<a href="#congruence-closure">3</a>] also implements semi-naive evaluation.
 Their <code>pending</code> list in algorithm 2.4 corresponds to our set of new tuples in the relation representing the graph of a function.</div>
 <div class="paragraph">
 Semi-naive evaluation is well-suited for online applications, where one alternates RHL evaluation and ad-hoc manipulation.
@@ -485,14 +497,14 @@ Semi-naive matching of the premise of the functionality axiom for a (binary) fun
   }
 </pre>
 
-On the other hand, the congruence closure algorithm described by [<a href="#congruence-closure">1</a>] requires only a single loop.
-Indeed, the second loop is unnecessary due to a <em>symmetry</em> in the functionality axiom <img src="img-math/657e376950b726ecb889484628c4d740b514a453b802bdcd9e829b46b1592a5b.svg" class="inline-math">.
+On the other hand, the congruence closure algorithm described by [<a href="#congruence-closure">3</a>] requires a single loop only.
+Indeed, the second loop is unnecessary due to a <em>symmetry</em> in the functionality axiom <img src="img-math/57525d2c87ba8ebba44de6418407fea8f37f7eb363cf2b69a5ab10412fa474d1.svg" class="inline-math">.
 The symmetry is given by swapping <img src="img-math/39816dc1ee34daf89cace37b66e970fb4af614a63e7257a46f6e74aa6c64f24e.svg" class="inline-math"> and <img src="img-math/b0d43f8d3907e3761ff95c7f2a83a374d47243294f1763ec64a7142957a21f80.svg" class="inline-math">.
 This results in a semantically equivalent premise, and swapping the variable has the same effect as swapping the two premise atoms.
 In such cases, it suffices to consider matches where the first of the two atoms is interpreted with new data.
-Another example where symmetries can be exploited is the anti-symmetry axiom <img src="img-math/1e4973f6745cca33b9dfec7f567a9b9d6cf1c4d73fc0caa5daedce991966b6a3.svg" class="inline-math">.</div>
+Another example where symmetries can be exploited is the anti-symmetry axiom <img src="img-math/bc4adbbf3637000beb72e3ead161a9cd33427847fae2a8891a84ca0b6d3c5aca.svg" class="inline-math">.</div>
 <h3 id="subsec-indices">
-3.3 Indices and occurence lists</h3>
+3.3 Indices and occurrence lists</h3>
 <div class="paragraph">
 Indices are meant to speed up the nested loops that enumerate matches of premises.
 The idea is to replace each inner loop by an efficient sublinear lookup with fixed projections.
@@ -516,34 +528,34 @@ If indices are maintained over all iterations, new tuples must also be inserted 
 For RHL evaluation, however, index maintenance is problematic due to the normalization phase, in which elements in relations are replaced by their canonical representatives if needed.
 When using indices, they require normalization, too.</div>
 <div class="paragraph">
-We turn again to the fast congruence closure algorithm described by [<a href="#congruence-closure">1</a>, Section 2.4] to implement index normalization efficiently.
+We turn again to the fast congruence closure algorithm described by [<a href="#congruence-closure">3</a>, Section 2.4] to implement index normalization efficiently.
 Their <em>signature table</em> is a hash map index that speeds up matching premises of functionality axioms.
 It is maintained throughout the iterations of the congruence closure algorithm.
-Efficient normalization is implemented using further data structures which we shall refer to as <em>occurence lists</em>.
-An occurence list contains for each equivalence class the expression nodes which have at least one child in the equivalence class.
-In the normalization step, it suffices to normalize those tuples that occur in occurence lists of elements that ceized to be canonical representatives.</div>
+Efficient normalization is implemented using further data structures which we shall refer to as <em>occurrence lists</em>.
+An occurrence list contains for each equivalence class the expression nodes which have at least one child in the equivalence class.
+In the normalization step, it suffices to normalize those tuples that occur in occurrence lists of elements that ceased to be canonical representatives.</div>
 <div class="paragraph">
-Occurence lists can be adapted to RHL evaluation as follows.
+Occurrence lists can be adapted to RHL evaluation as follows.
 We associate to each canonical representative a list of tuples in any relation in which the canonical representative occurs.
-Tuples in occurence lists need not be normalized.</div>
+Tuples in occurrence lists need not be normalized.</div>
 <div class="paragraph">
-In the conclusion application phase, we insert tuples also in the occurence lists of each element of the inserted tuple.
-When merging two equivalence classes, we save the element that ceizes to be a canonical representative along with its occurence list for use during the following normalization phase.
-The occurence lists of the element that remains a canonical representative is set to the concatenation of the two original occurence lists.
-Concatenation can be implemented asymptotically efficiently if occurence lists are realized as linked lists or rope data structures.
-In the normalization phase, we remove each tuple in one of the occurence lists we saved earlier, normalize the tuple and reinsert it into each index.</div>
+In the conclusion application phase, we insert tuples also in the occurrence lists of each element of the inserted tuple.
+When merging two equivalence classes, we save the element that ceases to be a canonical representative along with its occurrence list for use during the following normalization phase.
+The occurrence lists of the element that remains a canonical representative is set to the concatenation of the two original occurrence lists.
+Concatenation can be implemented asymptotically efficiently if occurrence lists are realized as linked lists or rope data structures.
+In the normalization phase, we remove each tuple in one of the occurrence lists we saved earlier, normalize the tuple and reinsert it into each index.</div>
 <div class="paragraph">
-When enforcing an equality during the conclusion phase, the algorithm described in [<a href="#congruence-closure">1</a>, Section 2.4] chooses the element that remains a canonical representative in a way that minimizes the amount of normalization necessary:
-Thus, the element with longer occurence lists should remain canonical.
-This applies directly also to occurence lists in RHL evaluation.</div>
+When enforcing an equality during the conclusion phase, the algorithm described in [<a href="#congruence-closure">3</a>, Section 2.4] chooses the element that remains a canonical representative in a way that minimizes the amount of normalization necessary:
+Thus, the element with longer occurrence lists should remain canonical.
+This applies directly also to occurrence lists in RHL evaluation.</div>
 <div class="paragraph">
-To avoid normalizing tuples that were inserted in the the current iteration, the conclusion application phase can be split into an <em>equality application phase</em>, where we only consider equalities in conclusions, and a <em>relation application phase</em>, where we only consider relation atoms.
+To avoid normalizing tuples that were inserted in the current iteration, the conclusion application phase can be split into an <em>equality application phase</em>, where we only consider equalities in conclusions, and a <em>relation application phase</em>, where we only consider relation atoms.
 We then normalize between the equality application phase and the relation application phase.
 This has the benefit that new tuples need not be normalized directly after insertion.</div>
 <h3>
 3.4 Functional projections</h3>
 <div class="paragraph">
-We say that the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th projection of a relation <img src="img-math/24d9dfbb1448fdcb91a3aa7ef79af026388fa7222dcabd67798f6422b9bc5eb9.svg" class="inline-math"> in an RHL theory is <em>functional</em> if the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th projection <img src="img-math/c47534bca7dfa1607a1f75bb7a530562998faacb321b0a1d34b159f2442beb08.svg" class="inline-math"> of tuples <img src="img-math/fbba7d9616cdac7516d4ce641cf751cf7ac773212c63bfa11e5e68419ecd3499.svg" class="inline-math"> is uniquely determined by the other components <img src="img-math/d82689f9ce1b82d02e44bd6a9739c0bbfc3033913ac817a365035f6ec3650695.svg" class="inline-math"> of the tuple.
+We say that the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th projection of a relation <img src="img-math/24d9dfbb1448fdcb91a3aa7ef79af026388fa7222dcabd67798f6422b9bc5eb9.svg" class="inline-math"> in an RHL theory is <em>functional</em> if the <img src="img-math/2814261aafa002e6c140eec238444a06e6d9974ac121fcdaa72fa615d39a0ddd.svg" class="inline-math">th projection <img src="img-math/c47534bca7dfa1607a1f75bb7a530562998faacb321b0a1d34b159f2442beb08.svg" class="inline-math"> of each tuple <img src="img-math/ed53800c7b6f11bd5c386396f99bc25185ea23680e7283793db7b977f3003078.svg" class="inline-math"> is uniquely determined by the other components <img src="img-math/d82689f9ce1b82d02e44bd6a9739c0bbfc3033913ac817a365035f6ec3650695.svg" class="inline-math"> of the tuple.
 More generally, we can consider a set <img src="img-math/7a8fdd0c7fea92ff932b2d714d8f45e3b93eea47c35e5af5aad5e0b490d61a17.svg" class="inline-math"> of projections which are uniquely determined by the complementary projections.
 As the name suggests, the functionality axiom for an <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math">-ary function asserts that the <img src="img-math/281ab750a858b0288add94a600a759e21e62ab1f46b6af9932b3ef0c35ae57c7.svg" class="inline-math">th projection of the graph of the function is functional.
 Another example are injective functions, where the first <img src="img-math/4eacec2e84f1bb0eb5b0e2491b19ee56ea1b153748b36a5dbc4c1ea1cd289f76.svg" class="inline-math"> projections of the graph depend functionally on the <img src="img-math/281ab750a858b0288add94a600a759e21e62ab1f46b6af9932b3ef0c35ae57c7.svg" class="inline-math">th projection.</div>
@@ -555,23 +567,26 @@ Due to the functional dependency, we can instead enforce that lookups result int
 Whenever a second tuple would be inserted into the index which would violate this property, then we generate equality constraints according to functional projections instead.
 These equalities are then enforced during the next conclusion application phase.</div>
 <div class="paragraph">
-The <em>signature table</em> hash map in the efficient congruence closure algorithm described by [<a href="#congruence-closure">1</a>, Section 2.4] can be understood as an index with functional projection optimization.</div>
-<h2>
+The <em>signature table</em> hash map in the efficient congruence closure algorithm described by [<a href="#congruence-closure">3</a>, Section 2.4] can be understood as an index with functional projection optimization.</div>
+<h2 id="sec-applications">
 4 Applications</h2>
-<h3>
+<div class="paragraph">
+In this Section, we discuss two applications of RHL and PHL evaluation to the implementation of programming languages:
+Steensgard's points-to analysis (Section <a href="#subsec-steensgard">4.1</a>) and type inference (Section <a href="#subsec-inference">4.2</a>).</div>
+<h3 id="subsec-steensgard">
 4.1 Steensgard's points-to analysis</h3>
 <div class="paragraph">
 Points-to-analysis aims to bound the set of heap objects a variable in a program can point to.
 The two well-known approaches are due to Andersen and Steensgard.
-Both algorithms identify heap objects with their allocation site, i.e. the program expression that allocate the object.
+Both algorithms identify heap objects with their allocation sites, i.e. the program expressions that allocate objects.
 The Andersen and Steensgard analyses thus give an over-approximating answer to the question of whether a given variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to an object that was allocated in expression <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math">.</div>
 <div class="paragraph">
 Both analyses must consider the case where a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> is a assigned to a variable <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.
-Andersen-style analysis computes for each variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> a set of objects <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math"> such that <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to such that the following properties hold:
+Andersen-style analysis computes for each variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> a set of objects <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math"> that <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to such that the following properties hold:
 <ol>
 <li>
 <div class="paragraph">
-If there is a statement that assigns an allocation expression <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math"> to a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math">, then <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math">.</div>
+If there is a statement that assigns an allocating expression <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math"> to a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math">, then <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math">.</div>
 </li>
 <li>
 <div class="paragraph">
@@ -579,16 +594,16 @@ If a variable <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988
 </li>
 </ol>
 
-A minimal implement implementation of Andersen-style analysis using Datalog populates input relations <img src="img-math/1f80e3c30507a82248ad5e84a7a4356ccffa5ed7074bb1c35c0f174977b5340e.svg" class="inline-math"> and <img src="img-math/e6e29f332623cc081f3aecb606866a72cea803306c6aa074b1b550cfac6bc229.svg" class="inline-math"> with data derived from the program source code.
+A minimal implementation of Andersen-style analysis using Datalog populates input relations <img src="img-math/1f80e3c30507a82248ad5e84a7a4356ccffa5ed7074bb1c35c0f174977b5340e.svg" class="inline-math"> and <img src="img-math/e6e29f332623cc081f3aecb606866a72cea803306c6aa074b1b550cfac6bc229.svg" class="inline-math"> with data derived from the program source code.
 The rules above governing the <img src="img-math/a0f7c1f9defef5342a6d3661dff22670e68f8993b1ef737da0e36af3eb44038a.svg" class="inline-math"> relation are then encoded in Datalog as follows:
 <ol>
 <li>
 <div class="paragraph">
-<img src="img-math/ecc3ad2c744c05e921781aea22dfe42aeaa0d1598e06e8e2a85019038a0d604d.svg" class="inline-math"></div>
+<img src="img-math/fd5c52d879473c1cc8c7faed3bc2ef875dd967790cff5d05453031a6054b82ce.svg" class="inline-math"></div>
 </li>
 <li id="itm-andersen-subset">
 <div class="paragraph">
-<img src="img-math/0a39fff9867956c804bc30a17e6f157ee98f67df5973a00aa6b97f8b1849871d.svg" class="inline-math"></div>
+<img src="img-math/82835f2a114163af605a3c1157af8c262abe8d4971d363797c17fab9b4524eae.svg" class="inline-math"></div>
 </li>
 </ol>
 
@@ -608,21 +623,21 @@ For each statement that assigns an allocation expression <img src="img-math/5225
 <li>
 <div class="paragraph">
 If a variable <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math"> can take the value of a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math">, unify the equivalence classes of <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> and <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.
-The points-to set of the unified equivalence class is the unioon of the points-to sets of the classes of <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> and <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.</div>
+The points-to set of the unified equivalence class is the union of the points-to sets of the classes of <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> and <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.</div>
 </li>
 </ol>
 
 Steensgard's algorithm is strictly less precise than Andersen's, but it typically requires less memory, since only one points-to set needs to be maintained for every equivalence class of variables.
 To encode Steensgard's algorithm in RHL, we can simply replace rule <a href="#itm-andersen-subset">2</a> above in Andersen's analysis with the rule
 <div class="display-math-row">
-<img src="img-math/21fe5e1161e0a3223e2e5abe22f05bd861a119d35e47cc7562e36577aebfc85b.svg">
+<img src="img-math/c742ca039db3e063e25f4ef9c1d514e838def1e6f01455fc108908dac31be1e0.svg">
 </div>
 to enforce equality constraints.</div>
 <h3 id="subsec-inference">
 4.2 Type inference</h3>
 <div class="paragraph">
 Type inference (or type reconstruction) is the task of assigning types to variables and expressions based on their usage in a program fragment.
-The constraint-based typing algorithm for the simply typed lambda calculus described in [<a href="#pierce-types-and-programming-languages">4</a>, 22.3, 22.4] assigns to each term a separate, initially unrestricted type variable.
+The constraint-based typing algorithm for the simply typed lambda calculus described in [<a href="#pierce-types-and-programming-languages">10</a>, 22.3, 22.4] assigns to each term a separate, initially unrestricted type variable.
 It then collects constraints on type variables according to the usage and definition of the corresponding terms.
 This is accomplished by considering typing rules and their inverses.
 For example, based on the application typing rule
@@ -653,7 +668,7 @@ Conversely, if <img src="img-math/9c2cb531949f7dd6fa3983a7b48dd00d5c9bee081ecdf8
 
 The implicit existentials in constraints <a href="#itm-infer-dom-from-arg">2</a> and <a href="#itm-infer-cod-from-result">4</a> generate new type variables <img src="img-math/d0f901916ccd39dd6918447083a22b629564dd414ad45872abe9dcb663272046.svg" class="inline-math"> and <img src="img-math/8d21621306200c7cb7f1c6cde5bf7d16722b79fada2650dafc31ff7183b3e3ef.svg" class="inline-math">, which must be chosen fresh for each instance of the constraint.
 In the following unification step, the generated constraints are checked for compatibility, and if so the most general substitution of type variables is created that satisfies all the constraints.
-For example, for the fragment <img src="img-math/63a5fc6a71967c3915095e87897cbdbd10def690d00c700faa3de92a9cd11f87.svg" class="inline-math"> for variables <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> and <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">, the algorithm outputs the substitution <img src="img-math/6e2294a534b071e1de5fda2377f22c44e8d11adb77e777ee48acdf06b9c46155.svg" class="inline-math">, where <img src="img-math/ebd8a52a21cb9655254677c63f1bba56b9aa04899fbec1ac40ad656d52b8071c.svg" class="inline-math"> and <img src="img-math/fee43fed1e99ddf62588f4a99948d4ec8e460a879745f84802fab00d3f2e2131.svg" class="inline-math"> are the type variables intially assigned to <img src="img-math/4cc9937b052826125405a52cfd271c1b551628b6073bdb5cff259e0dea42bea5.svg" class="inline-math"> and <img src="img-math/63a5fc6a71967c3915095e87897cbdbd10def690d00c700faa3de92a9cd11f87.svg" class="inline-math">.</div>
+For example, for the fragment <img src="img-math/63a5fc6a71967c3915095e87897cbdbd10def690d00c700faa3de92a9cd11f87.svg" class="inline-math"> for variables <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> and <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">, the algorithm outputs the substitution <img src="img-math/6e2294a534b071e1de5fda2377f22c44e8d11adb77e777ee48acdf06b9c46155.svg" class="inline-math">, where <img src="img-math/ebd8a52a21cb9655254677c63f1bba56b9aa04899fbec1ac40ad656d52b8071c.svg" class="inline-math"> and <img src="img-math/fee43fed1e99ddf62588f4a99948d4ec8e460a879745f84802fab00d3f2e2131.svg" class="inline-math"> are the type variables initially assigned to <img src="img-math/4cc9937b052826125405a52cfd271c1b551628b6073bdb5cff259e0dea42bea5.svg" class="inline-math"> and <img src="img-math/63a5fc6a71967c3915095e87897cbdbd10def690d00c700faa3de92a9cd11f87.svg" class="inline-math">.</div>
 <div class="paragraph">
 This inference procedure can be implemented in PHL as follows.
 We introduce sorts <img src="img-math/7ca37950bd625f2bbb1ff48d0bc711fbc6e3a91466af370c7abcc33ee6c7e48b.svg" class="inline-math"> of terms and <img src="img-math/0b84ac4ad9c3e697fdb2659622e09658337916284b341b1be9c1b76b5875e84a.svg" class="inline-math"> of types.
@@ -662,19 +677,19 @@ For example, function types are encoded as binary function symbol <img src="img-
 To enforce injectivity of type constructors, we introduce inverse functions for each parameter of a type constructor.
 For function types, we add functions <img src="img-math/f14685eafa16f3618955bc1296bd07a7dad1f8176320f70aef30ad8f33004fd2.svg" class="inline-math"> and <img src="img-math/e463b11b18f3a71ff3238621b7199325dbd6e8013a0be64fd50078576a41e057.svg" class="inline-math"> and enforce axioms that <img src="img-math/b4b9e697454686923d29cb614c41c8ea9c2c9e5d75d8efc0c6c818949f5ef559.svg" class="inline-math"> and <img src="img-math/469f0d97fb197567f9f1d42f2f702c7e96ace4a2faf240c08a88ff55de3948b3.svg" class="inline-math"> are indeed inverses to <img src="img-math/0b84ac4ad9c3e697fdb2659622e09658337916284b341b1be9c1b76b5875e84a.svg" class="inline-math">:
 <div class="display-math-row">
-<img src="img-math/6ec08403b66e3a07ef1c0367499df14653e110cd7f04a15278f4dc7c0c455184.svg">
+<img src="img-math/94e3957e4179a11805e3333de021cd1d098e28827f795a9fcbc0ac61755e3791.svg">
 </div>
 Thus <img src="img-math/b4b9e697454686923d29cb614c41c8ea9c2c9e5d75d8efc0c6c818949f5ef559.svg" class="inline-math"> and <img src="img-math/469f0d97fb197567f9f1d42f2f702c7e96ace4a2faf240c08a88ff55de3948b3.svg" class="inline-math"> are defined on the same set of types: Those of the form <img src="img-math/beede9367d94c9f32c76566262e3601dbf210bca38495e6fc2596b611bf6effb.svg" class="inline-math"> for types <img src="img-math/4d3d40ac6d8d7512d6a157e6f96e46731c14c48ca9a1c30012ef2d3d4c3abd6f.svg" class="inline-math"> and <img src="img-math/aff0fcfe668b6ed61dae3f8dc86f6284100fec64deb9b06158dc8d61fea9ad28.svg" class="inline-math">.</div>
 <div class="paragraph">
 To detect violations of joined injectivity of type constructors, we introduce a nullary predicate <img src="img-math/1af71ff94f2ce34cf56c27b4caad9689a8d8e6cc9e67471c4ead30dcb86351f5.svg" class="inline-math"> and rules such as
 <div class="display-math-row">
-<img src="img-math/6b7cde585fe4d815e0766a0ba6ce83c303b28eb8ae75ba107ef5cac32d98e392.svg">
+<img src="img-math/5c8ec547c64513fe3d10cc3b9b62004f46e0bbcbb08ec73a19c67ebf292b9f4e.svg">
 </div>
 for every pair of distinct type constructors, for example function types and list types.
 We always arrange <img src="img-math/1af71ff94f2ce34cf56c27b4caad9689a8d8e6cc9e67471c4ead30dcb86351f5.svg" class="inline-math"> to be empty before PHL evaluation, so that <img src="img-math/1af71ff94f2ce34cf56c27b4caad9689a8d8e6cc9e67471c4ead30dcb86351f5.svg" class="inline-math"> is inhabited after evaluation if and only if a violation of joined injectivity was inferred.</div>
 <div class="paragraph">
 We encode the typing relation <img src="img-math/ba9b3853aad36aa0bd2171b5a2a0ea369f866e6024cc95ff0bb9994cb1811eea.svg" class="inline-math"> as a function <img src="img-math/52fd08bd4ca45f4df73ad80233055ee047be2d98a39769db54791ff22ba902fa.svg" class="inline-math"> instead of a relation because each term has a unique type.
-The axiom <img src="img-math/3d3115761f1b2639d51c9f4879348e6b1ff30015cd8e6a6bf78392e29473ef5e.svg" class="inline-math"> enforces that each term has a type.
+The axiom <img src="img-math/0871fd533723f63a4db9d24e88d0c8601f026e9261613bb586b475936356eaf9.svg" class="inline-math"> enforces that each term has a type.
 During evaluation, this non-surjective rule introduces a fresh identifier as type of each term if necessary.</div>
 <div class="paragraph">
 Finally, we encode term constructors as PHL functions and add axioms according to inference rules and their inverses.
@@ -682,26 +697,26 @@ For example, the typing rule <a href="#eq-application-typing-rule">(4)</a> of fu
 <ol>
 <li>
 <div class="paragraph">
-<img src="img-math/1ba4a63eb10c2d4a3c1efcc3dc39a86e5bccce5a567cd04f5c0403a1088b519e.svg" class="inline-math"></div>
+<img src="img-math/e3cb44a48de5c02324e045bc1654ac7460fc9b023980f1e47475f598031ff889.svg" class="inline-math"></div>
 </li>
 <li id="itm-axiom-dom-exists">
 <div class="paragraph">
-<img src="img-math/13d213dbb508d9b827bd26cdc0ac2d9ff46975d7e5f4e89e9ffd48e0589c1eee.svg" class="inline-math"></div>
+<img src="img-math/c77497bb3f9545ada812496aa705965669404ab763bd39b339706df19831548a.svg" class="inline-math"></div>
 </li>
 <li>
 <div class="paragraph">
-<img src="img-math/12bffe09dbffd8a47c7b72b5c8c154e0a32beac6ae162a2ad8285daedaccaa52.svg" class="inline-math"></div>
+<img src="img-math/9f8b76b28b9309659f08d9729d88db0ffa7803017cad90800e3942693250598a.svg" class="inline-math"></div>
 </li>
 <li id="itm-axiom-cod-exists">
 <div class="paragraph">
-<img src="img-math/9de1d2d165377fba57cde59b63177e215e8efa03836572cb68562df01f32e18c.svg" class="inline-math"></div>
+<img src="img-math/f0aa790f72975fb6e953a09064ed0030b402a88281d9dc2ab8c0eebc98a1afec.svg" class="inline-math"></div>
 </li>
 </ol>
 
-Observe that the conclusions of axioms <a href="#itm-axiom-dom-exists">2</a> and <a href="#itm-axiom-cod-exists">4</a> assert that certain domains and codomains of certain types exist, which together with our axioms for <img src="img-math/b4b9e697454686923d29cb614c41c8ea9c2c9e5d75d8efc0c6c818949f5ef559.svg" class="inline-math"> and <img src="img-math/469f0d97fb197567f9f1d42f2f702c7e96ace4a2faf240c08a88ff55de3948b3.svg" class="inline-math"> implies that these types are function types.
+Observe that the conclusions of axioms <a href="#itm-axiom-dom-exists">2</a> and <a href="#itm-axiom-cod-exists">4</a> assert that domains and codomains of certain types exist, which together with our axioms for <img src="img-math/b4b9e697454686923d29cb614c41c8ea9c2c9e5d75d8efc0c6c818949f5ef559.svg" class="inline-math"> and <img src="img-math/469f0d97fb197567f9f1d42f2f702c7e96ace4a2faf240c08a88ff55de3948b3.svg" class="inline-math"> implies that these types are function types.
 If necessary, fresh type identifiers are adjoined during PHL evaluation by the non-surjective axioms asserting that the <img src="img-math/b4b9e697454686923d29cb614c41c8ea9c2c9e5d75d8efc0c6c818949f5ef559.svg" class="inline-math"> and <img src="img-math/469f0d97fb197567f9f1d42f2f702c7e96ace4a2faf240c08a88ff55de3948b3.svg" class="inline-math"> functions are defined on the same set of types.</div>
 <div class="paragraph">
-With the PHL theory modelling the type theory at hand, the full type inference algorithm can now be implemented in three steps:
+With the PHL theory modeling the type system at hand, the full type inference algorithm can now be implemented in three steps:
 <ol>
 <li>
 <div class="paragraph">
@@ -721,35 +736,47 @@ Output the maximal syntax tree representing <img src="img-math/da020b7e2e39341f6
 </li>
 </ol>
 </div>
-<h2>
+<h2 id="sec-conclusion">
 5 Conclusion</h2>
 <div class="paragraph">
 Using Datalog to implement type checking and inference, as we sketched in Section <a href="#subsec-inference">4.2</a>, is not a new idea.
-For example, the blog post [<a href="#lowering-rust-traits-to-logic">3</a>] discusses an implementation of Rust's trait system using Datalog.
+For example, the blog post [<a href="#lowering-rust-traits-to-logic">9</a>] discusses an implementation of Rust's trait system using Datalog.
 One of the issues raised there is that Rust's associated types require reasoning about equalities of types.
 A similar issue would arise for Haskell's type families.
 The solution proposed in the blog post is to combine Datalog with a normalization algorithm.
 RHL's built-in equality might offer a declarative alternative to normalization that applies also in situations where no strongly normalizing rewrite system is available.</div>
 <div class="paragraph">
-Typing rules are typically specified using the notation of natural deducation (e.g. the application typing rule <a href="#eq-application-typing-rule">(4)</a>).
-Apart from syntactic differences, the structure of such rules and their semantics correspond almost precisely PHL.
-Indeed, it is generally understood that many type systems can be encoded as <em>essentially algebraic theories</em> , which have the same expressive strength as epic PHL.
+Typing rules are typically specified using the notation of natural deduction (e.g. the application typing rule <a href="#eq-application-typing-rule">(4)</a>).
+Apart from syntactic differences, the structure of such rules and their semantics correspond almost precisely to PHL.
+Indeed, it is generally understood that many type systems can be encoded as <em>essentially algebraic theories</em> [<a href="#locally-presentable-and-accessible-categories">6</a>, Chapter 3.D], which have the same descriptive strength as epic PHL.
 From this perspective, program fragments can be identified with elements of the <em>initial model</em> of the PHL theory axiomatizing the type system, i.e. the free model over the empty relational structure.</div>
 <div class="paragraph">
 These conceptual connections and the example in Section <a href="#subsec-inference">4.2</a> suggest that PHL and RHL evaluation have the potential to assume a role in the implementation of programming languages paralleling that of parser generators:
 Where parser generators produce parsers from grammars, RHL evaluation engines produce type checkers from type systems.</div>
 <h2>Bibliography</h2>
 <ol class="bibliography">
+<li id="eqlog-homepage">
+ Eqlog.</li>
+<li id="souffle-choice">
+ The Choice Construct in the {Souffl{\'{e}}} Language. Programming Languages and Systems, pages 163–181, 2021.</li>
 <li id="congruence-closure">
  Variations on the Common Subexpression Problem. Journal of the {ACM}, 27(4):758–771, 1980.</li>
+<li id="souffle-union-find">
+ Fast Parallel Equivalence Relations in a {Datalog} Compiler. 2019 28th International Conference on Parallel Architectures and Compilation Techniques ({PACT}), 2019.</li>
+<li id="phl">
+ Partial {Horn} logic and cartesian categories. Annals of Pure and Applied Logic, 145(3):314–353, 2007.</li>
+<li id="locally-presentable-and-accessible-categories">
+ Locally Presentable and Accessible Categories. 1994.</li>
+<li id="phl-theory">
+ Martin E. Bidlingmaier. Algebraic Semantics of {Datalog} with Equality. 2023.</li>
 <li id="naive-congruence-closure">
  John Cocke and Jacob Theodore Schwartz. Programming Languages and Their Compilers. 1970.</li>
 <li id="lowering-rust-traits-to-logic">
- Niko Matsakis. Lowering Rust traits to logic.</li>
+ Niko Matsakis. Lowering {Rust} traits to logic.</li>
 <li id="pierce-types-and-programming-languages">
  Benjamin C. Pierce. Types and Programming Languages. The MIT Press, 2002.</li>
 <li id="egg">
- Max Willsey, Chandrakana Nandi, Yisu Remy Wang, Oliver Flatt, Zachary Tatlock and Pavel Panchekha. Egg: Fast and Extensible Equality Saturation. Proc. ACM Program. Lang., 5(POPL), 2021.</li>
+ Max Willsey, Chandrakana Nandi, Yisu Remy Wang, Oliver Flatt, Zachary Tatlock and Pavel Panchekha. {Egg}: Fast and Extensible Equality Saturation. Proc. ACM Program. Lang., 5(POPL), 2021.</li>
 </ol>
 </body>
 </html>
