@@ -18,7 +18,7 @@ RHL extends Datalog with quantification over sorts, existential quantification i
 These capabilities allow RHL evaluation to subsume and expand applications of Datalog and congruence closure algorithms.</div>
 <div class="paragraph">
 We explain how aspects of a fast congruence closure algorithm can be incorporated into Datalog evaluation to obtain an efficient RHL evaluation algorithm.
-We then sketch how Steensgard's points-to analysis and type inference can be implemented using RHL evaluation.
+We then sketch how Steensgaard's points-to analysis and type inference can be implemented using RHL evaluation.
 RHL and the evaluation algorithm described here are the foundation of the <em>Eqlog</em> Datalog engine.</div>
 <h2>
 1 Introduction</h2>
@@ -572,14 +572,14 @@ The <em>signature table</em> hash map in the efficient congruence closure algori
 4 Applications</h2>
 <div class="paragraph">
 In this Section, we discuss two applications of RHL and PHL evaluation to the implementation of programming languages:
-Steensgard's points-to analysis (Section <a href="#subsec-steensgard">4.1</a>) and type inference (Section <a href="#subsec-inference">4.2</a>).</div>
+Steensgaard's points-to analysis (Section <a href="#subsec-steensgard">4.1</a>) and type inference (Section <a href="#subsec-inference">4.2</a>).</div>
 <h3 id="subsec-steensgard">
-4.1 Steensgard's points-to analysis</h3>
+4.1 Steensgaard's points-to analysis</h3>
 <div class="paragraph">
 Points-to-analysis aims to bound the set of heap objects a variable in a program can point to.
-The two well-known approaches are due to Andersen and Steensgard.
+The two well-known approaches are due to Andersen and Steensgaard.
 Both algorithms identify heap objects with their allocation sites, i.e. the program expressions that allocate objects.
-The Andersen and Steensgard analyses thus give an over-approximating answer to the question of whether a given variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to an object that was allocated in expression <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math">.</div>
+The Andersen and Steensgaard analyses thus give an over-approximating answer to the question of whether a given variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to an object that was allocated in expression <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math">.</div>
 <div class="paragraph">
 Both analyses must consider the case where a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> is a assigned to a variable <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.
 Andersen-style analysis computes for each variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> a set of objects <img src="img-math/52258ef6ed0c70dc0e15013ae07307e1b540dd2e61ebfd9ce19140869b8bf1e0.svg" class="inline-math"> that <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> can point to such that the following properties hold:
@@ -610,10 +610,10 @@ The rules above governing the <img src="img-math/a0f7c1f9defef5342a6d3661dff2267
 To summarize, Andersen's algorithm enforces <em>subset constraints</em>:
 If a variable <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math"> can take the value of a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math">, either through a function call or a direct assignment, then the points-to set of <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> is a subset of the points-to set of <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.</div>
 <div class="paragraph">
-Steensgard's algorithm is a less precise but typically faster variation of Andersen's algorithm.
+Steensgaard's algorithm is a less precise but typically faster variation of Andersen's algorithm.
 It is based on <em>equality constraints</em>.
 Thus if a variable <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math"> can take the value of a variable <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math">, then Andersen's algorithm <em>equates</em> the points-to sets of <img src="img-math/0c5750eb5e55535bfc4daebfb296f18cb1b41e3d70a4758232d960f86d16af07.svg" class="inline-math"> and <img src="img-math/2d568543e50b2cd1c7373fc0e0a7128e64ca13910890988ac1f1621381a45948.svg" class="inline-math">.
-A direct implementation of Steensgard's algorithm maintains a union-find data structure on the variables of a program, and a mapping that assigns to each canonical representative a points-to set of heap allocations.
+A direct implementation of Steensgaard's algorithm maintains a union-find data structure on the variables of a program, and a mapping that assigns to each canonical representative a points-to set of heap allocations.
 The algorithm scans the program source code and performs the following actions:
 <ol>
 <li>
@@ -627,8 +627,8 @@ The points-to set of the unified equivalence class is the union of the points-to
 </li>
 </ol>
 
-Steensgard's algorithm is strictly less precise than Andersen's, but it typically requires less memory, since only one points-to set needs to be maintained for every equivalence class of variables.
-To encode Steensgard's algorithm in RHL, we can simply replace rule <a href="#itm-andersen-subset">2</a> above in Andersen's analysis with the rule
+Steensgaard's algorithm is strictly less precise than Andersen's, but it typically requires less memory, since only one points-to set needs to be maintained for every equivalence class of variables.
+To encode Steensgaard's algorithm in RHL, we can simply replace rule <a href="#itm-andersen-subset">2</a> above in Andersen's analysis with the rule
 <div class="display-math-row">
 <img src="img-math/c742ca039db3e063e25f4ef9c1d514e838def1e6f01455fc108908dac31be1e0.svg">
 </div>
