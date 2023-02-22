@@ -1,4 +1,4 @@
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height="1.1em" version="1.1" viewBox="0 0 54 11" width="5.4em">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="1.1em" version="1.1" viewBox="0 0 54 11" width="5.4em">
 <defs>
 <g>
 <symbol id="glyph0-0" overflow="visible">
@@ -39,23 +39,23 @@
 <g id="surface1">
 
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="0.925" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="7.963"/>
+  <use x="0.925" xlink:href="#glyph0-1" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="9.643" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="7.963"/>
+  <use x="9.643" xlink:href="#glyph1-1" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="19.052" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-1" y="7.963"/>
-  <use x="26.24699" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-2" y="7.963"/>
-  <use x="30.674369" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-3" y="7.963"/>
-  <use x="33.441979" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-3" y="7.963"/>
-  <use x="36.20959" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-4" y="7.963"/>
+  <use x="19.052" xlink:href="#glyph2-1" y="7.963"/>
+  <use x="26.24699" xlink:href="#glyph2-2" y="7.963"/>
+  <use x="30.674369" xlink:href="#glyph2-3" y="7.963"/>
+  <use x="33.441979" xlink:href="#glyph2-3" y="7.963"/>
+  <use x="36.20959" xlink:href="#glyph2-4" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="40.084" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.963"/>
+  <use x="40.084" xlink:href="#glyph0-2" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="50.835" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-5" y="7.963"/>
+  <use x="50.835" xlink:href="#glyph2-5" y="7.963"/>
 </g>
 </g>
 </svg>

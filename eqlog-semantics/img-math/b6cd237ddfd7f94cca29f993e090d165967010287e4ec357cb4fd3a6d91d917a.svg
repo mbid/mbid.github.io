@@ -1,4 +1,4 @@
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height="1.1em" version="1.1" viewBox="0 0 192 11" width="19.2em">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="1.1em" version="1.1" viewBox="0 0 192 11" width="19.2em">
 <defs>
 <g>
 <symbol id="glyph0-0" overflow="visible">
@@ -90,82 +90,82 @@
 <g id="surface1">
 
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="0.925" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="7.963"/>
+  <use x="0.925" xlink:href="#glyph0-1" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="10.59" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="9.457"/>
+  <use x="10.59" xlink:href="#glyph1-1" y="9.457"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="17.827" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-1" y="7.963"/>
+  <use x="17.827" xlink:href="#glyph2-1" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="28.343" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-1" y="7.963"/>
+  <use x="28.343" xlink:href="#glyph3-1" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="33.325" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-2" y="7.963"/>
+  <use x="33.325" xlink:href="#glyph2-2" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="36.092" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.963"/>
+  <use x="36.092" xlink:href="#glyph0-2" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="40.97" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-2" y="9.457"/>
-  <use x="43.44012" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-3" y="9.457"/>
-  <use x="47.840588" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-4" y="9.457"/>
-  <use x="52.241056" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-5" y="9.457"/>
+  <use x="40.97" xlink:href="#glyph1-2" y="9.457"/>
+  <use x="43.44012" xlink:href="#glyph1-3" y="9.457"/>
+  <use x="47.840588" xlink:href="#glyph1-4" y="9.457"/>
+  <use x="52.241056" xlink:href="#glyph1-5" y="9.457"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="56.28" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-3" y="7.963"/>
+  <use x="56.28" xlink:href="#glyph2-3" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="61.815" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-2" y="7.963"/>
+  <use x="61.815" xlink:href="#glyph3-2" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="67.35" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.963"/>
+  <use x="67.35" xlink:href="#glyph0-2" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="76.067" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-3" y="7.963"/>
+  <use x="76.067" xlink:href="#glyph3-3" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="85.476" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="7.963"/>
+  <use x="85.476" xlink:href="#glyph0-3" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="93.266" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-4" y="7.963"/>
+  <use x="93.266" xlink:href="#glyph3-4" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="100.458997" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-5" y="7.963"/>
+  <use x="100.458997" xlink:href="#glyph3-5" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="109.31276" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-1" y="7.963"/>
+  <use x="109.31276" xlink:href="#glyph3-1" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="114.299" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-2" y="7.963"/>
-  <use x="117.06661" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-4" y="7.963"/>
-  <use x="123.570196" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-5" y="7.963"/>
-  <use x="126.337806" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-6" y="7.963"/>
-  <use x="131.319106" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-7" y="7.963"/>
-  <use x="135.193561" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-8" y="7.963"/>
+  <use x="114.299" xlink:href="#glyph2-2" y="7.963"/>
+  <use x="117.06661" xlink:href="#glyph2-4" y="7.963"/>
+  <use x="123.570196" xlink:href="#glyph2-5" y="7.963"/>
+  <use x="126.337806" xlink:href="#glyph2-6" y="7.963"/>
+  <use x="131.319106" xlink:href="#glyph2-7" y="7.963"/>
+  <use x="135.193561" xlink:href="#glyph2-8" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="139.067" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-6" y="7.963"/>
+  <use x="139.067" xlink:href="#glyph3-6" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="145.847" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-9" y="7.963"/>
-  <use x="149.721455" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-3" y="7.963"/>
+  <use x="145.847" xlink:href="#glyph2-9" y="7.963"/>
+  <use x="149.721455" xlink:href="#glyph2-3" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="155.256" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-2" y="7.963"/>
+  <use x="155.256" xlink:href="#glyph3-2" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="160.793213" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-6" y="7.963"/>
+  <use x="160.793213" xlink:href="#glyph3-6" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="170.333399" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-3" y="7.963"/>
+  <use x="170.333399" xlink:href="#glyph3-3" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="179.747" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-4" y="7.963"/>
+  <use x="179.747" xlink:href="#glyph0-4" y="7.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="186.953" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-4" y="7.963"/>
+  <use x="186.953" xlink:href="#glyph3-4" y="7.963"/>
 </g>
 </g>
 </svg>

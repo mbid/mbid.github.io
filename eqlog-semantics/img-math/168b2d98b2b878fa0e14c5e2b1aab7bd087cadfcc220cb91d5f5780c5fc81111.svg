@@ -1,4 +1,4 @@
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height="1.1em" version="1.1" viewBox="0 0 159 11" width="15.9em">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="1.1em" version="1.1" viewBox="0 0 159 11" width="15.9em">
 <defs>
 <g>
 <symbol id="glyph0-0" overflow="visible">
@@ -35,43 +35,43 @@
 </defs>
 <g id="surface1">
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="0.314" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="7.918"/>
-  <use x="7.64747" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.918"/>
-  <use x="12.074849" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="7.918"/>
-  <use x="14.84246" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-4" y="7.918"/>
+  <use x="0.314" xlink:href="#glyph0-1" y="7.918"/>
+  <use x="7.64747" xlink:href="#glyph0-2" y="7.918"/>
+  <use x="12.074849" xlink:href="#glyph0-3" y="7.918"/>
+  <use x="14.84246" xlink:href="#glyph0-4" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="18.717" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="7.918"/>
+  <use x="18.717" xlink:href="#glyph1-1" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="26.973" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-5" y="7.918"/>
+  <use x="26.973" xlink:href="#glyph0-5" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="63.336" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="7.918"/>
-  <use x="70.66947" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.918"/>
-  <use x="75.096849" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="7.918"/>
-  <use x="77.86446" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-4" y="7.918"/>
+  <use x="63.336" xlink:href="#glyph0-1" y="7.918"/>
+  <use x="70.66947" xlink:href="#glyph0-2" y="7.918"/>
+  <use x="75.096849" xlink:href="#glyph0-3" y="7.918"/>
+  <use x="77.86446" xlink:href="#glyph0-4" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="81.739" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="7.918"/>
+  <use x="81.739" xlink:href="#glyph1-1" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="89.994" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-1" y="4.302"/>
+  <use x="89.994" xlink:href="#glyph2-1" y="4.302"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="92.79" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-5" y="7.918"/>
+  <use x="92.79" xlink:href="#glyph0-5" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="129.153" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="7.918"/>
-  <use x="136.48647" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.918"/>
-  <use x="140.913849" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="7.918"/>
-  <use x="143.68146" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-4" y="7.918"/>
+  <use x="129.153" xlink:href="#glyph0-1" y="7.918"/>
+  <use x="136.48647" xlink:href="#glyph0-2" y="7.918"/>
+  <use x="140.913849" xlink:href="#glyph0-3" y="7.918"/>
+  <use x="143.68146" xlink:href="#glyph0-4" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="147.556" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="7.918"/>
+  <use x="147.556" xlink:href="#glyph1-1" y="7.918"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="155.811" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-5" y="7.918"/>
+  <use x="155.811" xlink:href="#glyph0-5" y="7.918"/>
 </g>
 <path d="M -44.664062 2.394563 L -21.550781 2.394563 " style="fill:none;stroke-width:0.39848;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(1,0,0,-1,80,5.418)"/>
 <path d="M -2.073681 2.391968 C -1.694775 0.954468 -0.851025 0.278686 0.0005375 0.0013425 C -0.851025 -0.279907 -1.694775 -0.955689 -2.073681 -2.389282 " style="fill:none;stroke-width:0.39848;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(1,0,0,-1,58.6479,3.02478)"/>

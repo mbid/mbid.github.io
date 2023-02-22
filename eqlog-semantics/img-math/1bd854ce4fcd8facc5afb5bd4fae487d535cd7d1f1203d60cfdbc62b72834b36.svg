@@ -1,4 +1,4 @@
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height="4.2em" version="1.1" viewBox="0 0 94 42" width="9.4em">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="4.2em" version="1.1" viewBox="0 0 94 42" width="9.4em">
 <defs>
 <g>
 <symbol id="glyph0-0" overflow="visible">
@@ -35,34 +35,34 @@
 </defs>
 <g id="surface1">
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="0.079" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="9.785"/>
+  <use x="0.079" xlink:href="#glyph0-1" y="9.785"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="82.091" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="9.785"/>
+  <use x="82.091" xlink:href="#glyph0-1" y="9.785"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="91.126" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="6.17"/>
+  <use x="91.126" xlink:href="#glyph1-1" y="6.17"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="41.604" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="41.818"/>
+  <use x="41.604" xlink:href="#glyph0-2" y="41.818"/>
 </g>
 <path d="M -34.292969 8.427094 L -10.199219 -10.397125 " style="fill:none;stroke-width:0.39848;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(1,0,0,-1,47,22.056)"/>
 <path d="M -2.072637 2.39182 C -1.695109 0.956736 -0.848786 0.27948 -0.000911951 -0.000000186286 C -0.850343 -0.276925 -1.693438 -0.955378 -2.073079 -2.392073 " style="fill:none;stroke-width:0.39848;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(0.78802,0.6156,0.6156,-0.78802,36.95775,32.57478)"/>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="18.43" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-1" y="28.511"/>
+  <use x="18.43" xlink:href="#glyph2-1" y="28.511"/>
 </g>
 <path d="M -33.398438 14.763031 L 30.203125 14.763031 " style="fill:none;stroke-width:0.39848;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(1,0,0,-1,47,22.056)"/>
 <path d="M -2.070989 2.391326 C -1.692082 0.957733 -0.848332 0.278045 -0.00067625 0.00070125 C -0.848332 -0.280549 -1.692082 -0.95633 -2.070989 -2.389924 " style="fill:none;stroke-width:0.39848;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(1,0,0,-1,77.40302,7.29367)"/>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="43.27" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-2" y="4.95"/>
+  <use x="43.27" xlink:href="#glyph2-2" y="4.95"/>
 </g>
 <path d="M 32.621094 8.427094 L 7.40625 -10.623687 " style="fill:none;stroke-width:0.39848;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(1,0,0,-1,47,22.056)"/>
 <path d="M -2.071942 2.391339 C -1.693393 0.954817 -0.84888 0.277611 -0.00140036 -0.000377083 C -0.84928 -0.280213 -1.692301 -0.955389 -2.072362 -2.391586 " style="fill:none;stroke-width:0.39848;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" transform="matrix(-0.79787,0.6028,0.6028,0.79787,54.24911,32.79802)"/>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="69.199" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-1" y="31.392"/>
+  <use x="69.199" xlink:href="#glyph2-1" y="31.392"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="73.336" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph3-1" y="28.386"/>
+  <use x="73.336" xlink:href="#glyph3-1" y="28.386"/>
 </g>
 </g>
 </svg>

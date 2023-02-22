@@ -1,4 +1,4 @@
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height="0.9em" version="1.1" viewBox="0 0 28 9" width="2.8em">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="0.9em" version="1.1" viewBox="0 0 28 9" width="2.8em">
 <defs>
 <g>
 <symbol id="glyph0-0" overflow="visible">
@@ -24,11 +24,11 @@
 <g id="surface1">
 
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="0.925" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="7.963"/>
-  <use x="8.39695" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="7.963"/>
-  <use x="13.932171" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="7.963"/>
-  <use x="19.467391" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-4" y="7.963"/>
-  <use x="24.448691" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-5" y="7.963"/>
+  <use x="0.925" xlink:href="#glyph0-1" y="7.963"/>
+  <use x="8.39695" xlink:href="#glyph0-2" y="7.963"/>
+  <use x="13.932171" xlink:href="#glyph0-3" y="7.963"/>
+  <use x="19.467391" xlink:href="#glyph0-4" y="7.963"/>
+  <use x="24.448691" xlink:href="#glyph0-5" y="7.963"/>
 </g>
 </g>
 </svg>

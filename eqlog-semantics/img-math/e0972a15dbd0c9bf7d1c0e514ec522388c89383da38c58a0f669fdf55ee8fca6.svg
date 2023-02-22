@@ -1,4 +1,4 @@
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height="1.1em" version="1.1" viewBox="0 0 43 11" width="4.3em">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="1.1em" version="1.1" viewBox="0 0 43 11" width="4.3em">
 <defs>
 <g>
 <symbol id="glyph0-0" overflow="visible">
@@ -30,31 +30,31 @@
 <g id="surface1">
 
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="0.925" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="8.963"/>
+  <use x="0.925" xlink:href="#glyph0-1" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="6.112" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph1-1" y="5.347"/>
+  <use x="6.112" xlink:href="#glyph1-1" y="5.347"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="10.581" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="8.963"/>
+  <use x="10.581" xlink:href="#glyph0-2" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="15.012364" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="8.963"/>
+  <use x="15.012364" xlink:href="#glyph0-3" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="19.433766" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="8.963"/>
+  <use x="19.433766" xlink:href="#glyph0-3" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="23.865131" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-3" y="8.963"/>
+  <use x="23.865131" xlink:href="#glyph0-3" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="28.296495" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-2" y="8.963"/>
+  <use x="28.296495" xlink:href="#glyph0-2" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="32.717897" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph0-1" y="8.963"/>
+  <use x="32.717897" xlink:href="#glyph0-1" y="8.963"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use x="37.907" xmlns:tns0='http://www.w3.org/1999/xlink' tns0:href="#glyph2-1" y="5.347"/>
+  <use x="37.907" xlink:href="#glyph2-1" y="5.347"/>
 </g>
 </g>
 </svg>
