@@ -1,5 +1,23 @@
-<h1 id="type-checking-using-eqlog-parsing">Type Checking using Eqlog:
-Parsing</h1>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="date" content='2023-07-23'>
+    <title>Type Checking using Eqlog: Parsing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html {
+        padding: 0.5em;
+      }
+      body {
+        max-width: 700px;
+        margin: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Type Checking using Eqlog: Parsing</h1>
+    <i>Date: July 23, 2023</i>
 <p>This is the first post in a series I intend to write on implementing
 a type checker using <a href="https://github.com/eqlog/eqlog">Eqlog</a>,
 a Datalog engine for Rust. The repository containing the complete type
@@ -13,7 +31,7 @@ not a lot of work on using Datalog for type checking (though see <a
 href="https://dl.acm.org/doi/pdf/10.1145/3428195">here</a>), which is
 what this series is about.</p>
 <p><a href="https://github.com/eqlog/eqlog">Eqlog</a> is a Datalog
-engine which I and, for previous versions, <a
+engine which I and, on previous versions, <a
 href="https://www.jakobbotsch.com/">Jakob Nielsen</a> have been working
 on from time to time over the last few years. Eqlog implements an
 extension of Datalog that allows it to infer equalities among elements
@@ -49,12 +67,12 @@ href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]
 <p>The [code] links above after each post lead to a branch in the
 repository that contains only the code discussed so far, which will
 hopefully make it easier to follow along.</p>
-<h2 id="overview">Overview</h2>
-<p>The source code structure of our type checker is that of a normal
-Rust project, and so can be compiled as usual using Cargo. However,
-we’ll write very little Rust code ourselves: This will mostly be for
-reading input source files, generating errors and other glue code.
-Instead, we’ll implement all core logic using either the <a
+<h2 id="project-structure">Project structure</h2>
+<p>The project structure of our type checker is that of a normal Rust
+project, and so can be compiled as usual using Cargo. However, we’ll
+write very little Rust code ourselves: This will mostly be for reading
+input source files, generating errors and other glue code. Instead,
+we’ll implement all core logic using either the <a
 href="https://github.com/lalrpop/lalrpop">LALRPOP</a> parser generator
 or Eqlog. Both LALRPOP and Eqlog compile their respective source files
 into Rust modules, which we then include into our Rust crate to glue
@@ -329,3 +347,5 @@ class="sourceCode rust"><code class="sourceCode rust"><span id="cb15-1"><a href=
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="cn">Ok</span>((p<span class="op">,</span> lits<span class="op">,</span> module))</span>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+  </body>
+</html>
