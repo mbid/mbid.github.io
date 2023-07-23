@@ -1,0 +1,331 @@
+<h1 id="type-checking-using-eqlog-parsing">Type Checking using Eqlog:
+Parsing</h1>
+<p>This is the first post in a series I intend to write on implementing
+a type checker using <a href="https://github.com/eqlog/eqlog">Eqlog</a>,
+a Datalog engine for Rust. The repository containing the complete type
+checker is available <a
+href="https://github.com/eqlog/examples-inference">here</a>, and each
+post in the series will explain one aspect of the type checker. Datalog
+is popular for static analysis, and Rust’s <a
+href="https://github.com/rust-lang/chalk">Chalk project</a> is an
+implementation of Rust’s trait system based on Datalog. However, there’s
+not a lot of work on using Datalog for type checking (though see <a
+href="https://dl.acm.org/doi/pdf/10.1145/3428195">here</a>), which is
+what this series is about.</p>
+<p><a href="https://github.com/eqlog/eqlog">Eqlog</a> is a Datalog
+engine which I and, for previous versions, <a
+href="https://www.jakobbotsch.com/">Jakob Nielsen</a> have been working
+on from time to time over the last few years. Eqlog implements an
+extension of Datalog that allows it to infer equalities among elements
+during evaluation. For example, you cannot directly encode the
+anti-symmetry axiom <span
+class="math inline"><em>x</em> ≤ <em>y</em> ∧ <em>y</em> ≤ <em>x</em> ⟹ <em>x</em> = <em>y</em></span>
+in standard Datalog because of the equality in the conclusion, but this
+is trivial in Eqlog. I expect that instead of Eqlog you can also use the
+<a href="https://github.com/egraphs-good/egglog">egglog</a> Datalog
+engine, which works similarly to Eqlog.</p>
+<p>The ability to reason about equality will be critical when get to
+type unification. Lack of native support for equality is probably the
+reason why type checking using Datalog isn’t a well-known technique even
+though Datalog is quite popular in the programming languages space.</p>
+<p>I intend for each post in this series to introduce one aspect of the
+type checker. This is my current outline, which I might need to update
+as I write the other posts:</p>
+<ol type="1">
+<li><strong>Parsing [<a
+href="https://github.com/eqlog/examples-inference/tree/parsing">code</a>]
+(this post)</strong></li>
+<li>Types [<a
+href="https://github.com/eqlog/examples-inference/tree/types">code</a>]</li>
+<li>Variable binding [<a
+href="https://github.com/eqlog/examples-inference/tree/binding">code</a>]</li>
+<li>Expression typing [<a
+href="https://github.com/eqlog/examples-inference/tree/expr-types">code</a>]</li>
+<li>Function literal typing [<a
+href="https://github.com/eqlog/examples-inference/tree/function-types">code</a>]</li>
+<li>Hindley-Milner polymorphism [<a
+href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]</li>
+</ol>
+<p>The [code] links above after each post lead to a branch in the
+repository that contains only the code discussed so far, which will
+hopefully make it easier to follow along.</p>
+<h2 id="overview">Overview</h2>
+<p>The source code structure of our type checker is that of a normal
+Rust project, and so can be compiled as usual using Cargo. However,
+we’ll write very little Rust code ourselves: This will mostly be for
+reading input source files, generating errors and other glue code.
+Instead, we’ll implement all core logic using either the <a
+href="https://github.com/lalrpop/lalrpop">LALRPOP</a> parser generator
+or Eqlog. Both LALRPOP and Eqlog compile their respective source files
+into Rust modules, which we then include into our Rust crate to glue
+everything together.</p>
+<p>We invoke the LALRPOP and Eqlog compilers by adding the following
+<code>build.rs</code> file in the crate root directory:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="pp">lalrpop::</span>process_root()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="pp">eqlog::</span>process_root()<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>If it exists, Cargo executes a <code>build.rs</code> file before
+compiling the crate itself. The two <code>process_root</code> functions
+traverse the crate directory and generate a Rust module from each file
+with <code>.lalrpop</code> or <code>.eqlog</code> extension. (The
+similarity between LALRPOP and Eqlog here is obviously not an accident;
+I followed LALRPOP’s compilation model in the implementation of
+Eqlog.)</p>
+<p>Our LALRPOP grammar file is at <a
+href="https://github.com/eqlog/examples-inference/blob/parsing/src/grammar.lalrpop"><code>src/grammar.lalrpop</code></a>,
+and the Eqlog theory file describing our type system is at <a
+href="https://github.com/eqlog/examples-inference/blob/parsing/src/program.eqlog"><code>src/program.eqlog</code></a>.
+We declare the Rust modules generated from these two files by putting
+the following lines in our <code>main.rs</code> file:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">eqlog_runtime::</span>eqlog_mod<span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">eqlog_mod!</span>(program)<span class="op">;</span> <span class="co">// Declares the `program` module.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">lalrpop_util::</span>lalrpop_mod<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">lalrpop_mod!</span>(grammar)<span class="op">;</span> <span class="co">// Declares the `grammar` module.</span></span></code></pre></div>
+<p>The generated <code>grammar.rs</code> and <code>program.rs</code>
+source files are available somewhere under the <code>target</code>
+directory after building the crate, but they’re not meant to be
+human-readable. However, the crate’s documentation, which you can browse
+via <code>cargo doc --open</code>, lists the symbols exported by these
+files.</p>
+<h2 id="representing-asts-in-eqlog">Representing ASTs in Eqlog</h2>
+<p>The result of parsing is an abstract syntax tree (AST). ASTs are
+typically defined using algebraic data types, for example like so:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> ExprNode <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    False<span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    True<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    Equal <span class="op">{</span> lhs<span class="op">:</span> <span class="dt">Box</span><span class="op">&lt;</span>Expr<span class="op">&gt;,</span> rhs<span class="op">:</span> <span class="dt">Box</span><span class="op">&lt;</span>Expr <span class="op">},</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    App <span class="op">{</span> func<span class="op">:</span> <span class="dt">Box</span><span class="op">&lt;</span>Expr<span class="op">&gt;,</span> args<span class="op">:</span> <span class="dt">Vec</span><span class="op">&lt;</span>Expr<span class="op">&gt;</span> <span class="op">},</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> TypeNode <span class="op">{</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    Boolean<span class="op">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Similarly to SQL, Eqlog operates on tuples in relations and thus
+cannot directly consume such tree data structures. Fortunately, we can
+encode ASTs in Eqlog’s data model as follows. For each type of AST node,
+we add a <em>sort</em> declaration to <code>program.eqlog</code>:</p>
+<pre class="eqlog"><code>Sort ExprNode;
+Sort TypeNode;</code></pre>
+<p>“Sort” is just what Eqlog calls a type. Each node constructor with
+<span class="math inline"><em>n</em></span> parameters corresponds to a
+relation (or <em>predicate</em> in Eqlog terminology) with <span
+class="math inline"><em>n</em> + 1</span> components. The first
+component of the relation corresponds to the node itself and the last
+<span class="math inline"><em>n</em></span> components correspond to the
+parameters of the node constructor. We thus add the following
+declarations:</p>
+<pre class="eqlog"><code>Pred FalseExprNode : ExprNode;
+Pred TrueExprNode : ExprNode;
+// EqualExprNode(equal_expr, lhs, rhs)
+Pred EqualExprNode : ExprNode * ExprNode * ExprNode;
+Pred BooleanTypeNode : TypeNode;</code></pre>
+<p>The <code>App</code> constructor is more difficult to express because
+its <code>args</code> parameter corresponds to a variable number of
+<code>ExprNode</code> elements, whereas each Eqlog predicate has a fixed
+number of parameters. We can work around this limitation by introducing
+a new sort <code>ExprListNode</code> encoding lists of
+<code>ExprNode</code> elements:</p>
+<pre class="eqlog"><code>Sort ExprListNode;
+Pred NilExprListNode : ExprListNode;
+Pred ConsExprListNode : ExprListNode * ExprNode * ExprListNode;</code></pre>
+<p>Here <code>NilExprListNode(node)</code> should hold whenever
+<code>node</code> represents an empty list of expressions. We can now
+declare <code>App</code> as follows:</p>
+<pre class="eqlog"><code>// App(app_expr, func, args)
+Pred App : ExprNode * ExprNode * ExprListNode; </code></pre>
+<p>Some AST nodes are given not just by a number of AST node children
+but also some additional data. For example, a node representing a string
+literal contains its value as a <code>String</code> field, and a node
+representing a variable contains a <code>String</code> for the name of
+the variable. While some Datalog engines support strings, numbers and
+other primitive types, Eqlog does not. Instead, we declare an Eqlog sort
+for each type of data that we need:</p>
+<pre class="eqlog"><code>Sort Var;
+Sort StringLiteral;
+Sort NumberLiteral;</code></pre>
+<p>For each of these sorts, our Rust glue code maintains a hash map to
+associate values to the Eqlog elements that represent them:</p>
+<pre><code>pub struct Literals {
+    pub vars: HashMap&lt;String, Var&gt;,
+    pub strings: HashMap&lt;String, StringLiteral&gt;,
+    pub numbers: HashMap&lt;String, NumberLiteral&gt;,
+}</code></pre>
+<p>Since the mapping between Eqlog elements and values is maintained
+outside of Eqlog, we cannot inspect those values in Eqlog. However,
+since we make sure that each data value is represented by at most one
+Eqlog element, our Eqlog code can assume that elements of these sorts
+are equal if and only if their attached data values agree. This is all
+we shall need.</p>
+<p>The <code>program.eqlog</code> file also declares
+<code>StmtNode</code> and <code>StmtListNode</code> sorts representing
+statements and lists of statements, an <code>OptTypeNode</code> sort
+representing type nodes that might be absent, and an
+<code>ArgListNode</code> sort representing lists of
+<code>(Var, OptTypeNode)</code> pairs. Finally, there is a
+<code>ModuleNode</code> sort representing the root of the syntax tree
+and a sort of function nodes representing function definitions:</p>
+<pre class="eqlog"><code>Sort OptTypeNode;
+Pred SomeOptTypeNode : OptTypeNode * TypeNode;
+Pred NoneOptTypeNode : OptTypeNode;
+
+Sort ArgListNode;
+Pred NilArgListNode : ArgListNode;
+Pred ConsArgListNode : ArgListNode * Var * OptTypeNode * ArgListNode;
+
+Sort FunctionNode;
+// Function(node, function_name, domain, codomain, body)
+Pred Function : FunctionNode * Var * ArgListNode * OptTypeNode * StmtListNode;</code></pre>
+<h2 id="parsing-into-the-eqlog-model">Parsing into the Eqlog model</h2>
+<p>Having defined the Eqlog data model, we now turn to populating such
+models. We can accomplish this using the interface of the generated Rust
+module. There’s a type for each sort we have declared in the Eqlog file.
+Each of these is just a wrapper around an integer ID:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> ExprNode(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> ExprListNode(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> TypeNode(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span></code></pre></div>
+<p>The main type we need is the <em>model</em> type, in our case called
+<code>Program</code> based on the name of our Eqlog file. You can think
+of the model object as an in-memory instance of an SQL database, with
+schema determined by the sorts and relations declared in the Eqlog file.
+Thus, our <code>Program</code> type looks something like this:</p>
+<pre class="eqlog"><code>struct Program {
+    // Carrier sets of elements:
+    expr_nodes: Set&lt;ExprNode&gt;,
+    expr_list_nodes: Set&lt;ExprListNode&gt;,
+    // ...
+
+    // Relations:
+    false_expr_node: Set&lt;(ExprNode,)&gt;,
+    equal_expr_node: Set&lt;(ExprNode, ExprNode)&gt;,
+    function: Set&lt;(FunctionNode, Var, ArgListNode, OptTypeNode, StmtListNode)&gt;,
+    // ...
+}</code></pre>
+<p>In later posts we will see that a <code>Program</code> object
+maintains also indices into its relations and union-find data structures
+to keep track of equality among elements, but these are not relevant for
+now.</p>
+<p>The associated functions of the <code>Program</code> type we need for
+this post are as follows:</p>
+<ul>
+<li><code>fn new() -&gt; Program</code><br />
+This function creates an empty <code>Program</code> object, i.e., an
+object that doesn’t contain any elements (and thus also no tuples).</li>
+<li><code>fn new_{{sort}}(&amp;mut self) -&gt; {{sort}}</code><br />
+There is a function like this for each sort, for example
+<code>new_expr_node</code>. This adds a new element of the specified
+sort with a fresh ID to the model.</li>
+<li><code>fn insert_{{predicate}}(&amp;mut self, Sort1 arg1, Sort2 arg2, ..., Sortn argn)</code><br />
+There is a function like this for each predicate, for example
+<code>insert_cons_expr_list_node</code>. The arguments of the function
+correspond to the components of the predicate. Note that each element
+passed as parameter here must be known to the <code>&amp;self</code>
+instance, which usually means that you’ve obtained the element by
+calling one of the <code>new_{{sort}}</code> functions.</li>
+</ul>
+<p>The syntax of our toy language is mostly inspired by TypeScript
+syntax. I won’t go into details of how LALRPOP works; there’s an
+excellent <a href="https://lalrpop.github.io/lalrpop/">book</a> about
+that. In a nutshell, LALRPOP grammar files are given by the usual
+production rules and an attached snippet of Rust code for each rule that
+is executed when the rule fires. The purpose of these Rust snippets is
+to generate the appropriate AST nodes.</p>
+<p>In our case, we pass an initially empty <code>Program</code> object
+<code>p</code> and a <code>Literals</code> object as state into the
+parser, and each production rule adds data to these using the functions
+explained above. For example, here are the production rules for
+<code>ExprNode</code>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Var<span class="op">:</span> Var <span class="op">=</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Intersperse<span class="op">&lt;</span>Item<span class="op">,</span> Separator<span class="op">&gt;:</span> <span class="dt">Vec</span><span class="op">&lt;</span>Item<span class="op">&gt;</span> <span class="op">=</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>SimpleExpr<span class="op">:</span> ExprNode <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>var<span class="op">:</span> Var<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_variable_expr_node(expr<span class="op">,</span> var)<span class="op">;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;(&quot;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_void_expr_node(expr)<span class="op">;</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;true&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_true_expr_node(expr)<span class="op">;</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;false&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_false_expr_node(expr)<span class="op">;</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>string<span class="op">:</span> StringLiteral<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_string_literal_expr_node(expr<span class="op">,</span> string)<span class="op">;</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>num<span class="op">:</span> NumberLiteral<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_number_literal_expr_node(expr<span class="op">,</span> num)<span class="op">;</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// This would result in a shift-reduce conflict if we made `function` an `Expr` instead of a</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// `SimpleExpr`:</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>function<span class="op">:</span> SimpleExpr<span class="op">&gt;</span> <span class="st">&quot;(&quot;</span> <span class="op">&lt;</span>args<span class="op">:</span> Intersperse<span class="op">&lt;</span>Expr<span class="op">,</span> <span class="st">&quot;,&quot;</span><span class="op">&gt;&gt;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> args <span class="op">=</span> expr_list_node(args<span class="op">.</span>as_slice()<span class="op">,</span> p)<span class="op">;</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_app_expr_node(expr<span class="op">,</span> function<span class="op">,</span> args)<span class="op">;</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;(&quot;</span> <span class="op">&lt;</span>expr<span class="op">:</span> Expr<span class="op">&gt;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> expr<span class="op">,</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>Expr<span class="op">:</span> ExprNode <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>expr<span class="op">:</span> SimpleExpr<span class="op">&gt;</span> <span class="op">=&gt;</span> expr<span class="op">,</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>function<span class="op">:</span> Function<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_function_expr_node(expr<span class="op">,</span> function)<span class="op">;</span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Here <code>expr_list_node</code> is a convenience function that helps
+us create <code>ExprListNode</code> elements, and there are similar
+functions for other list nodes. This is the definition of
+<code>expr_list_node</code>:</p>
+<pre class="eqlog"><code>pub fn expr_list_node(nodes: &amp;[ExprNode], p: &amp;mut Program) -&gt; ExprListNode {
+    let mut l = p.new_expr_list_node();
+    p.insert_nil_expr_list_node(l);
+    for node in nodes.iter().rev() {
+        let cons = p.new_expr_list_node();
+        p.insert_cons_expr_list_node(cons, *node, l);
+        l = cons;
+    }
+    l
+}</code></pre>
+<p>Note that we have to iterate the slice in reverse since, by
+convention, <code>ConsExprListNode</code> represents <em>pre</em>pending
+a node to a list of nodes.</p>
+<p>Finally, the <code>check_source</code> function, which ties
+everything together, looks like this:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> check_source(src<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>(Program<span class="op">,</span> Literals<span class="op">,</span> ModuleNode)<span class="op">,</span> LanguageError<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> no_comments_src <span class="op">=</span> erase_comments(src)<span class="op">;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="kw">mut</span> p <span class="op">=</span> <span class="pp">Program::</span>new()<span class="op">;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="kw">mut</span> lits <span class="op">=</span> <span class="pp">Literals::</span>new()<span class="op">;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> module <span class="op">=</span> <span class="pp">ModuleParser::</span>new()</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>parse(<span class="op">&amp;</span><span class="kw">mut</span> p<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> lits<span class="op">,</span> <span class="op">&amp;</span>no_comments_src)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>map_err(<span class="op">|</span>err<span class="op">|</span> <span class="pp">LanguageError::</span>from_parse_error(err<span class="op">,</span> <span class="op">&amp;</span>no_comments_src))<span class="op">?;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="cn">Ok</span>((p<span class="op">,</span> lits<span class="op">,</span> module))</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
