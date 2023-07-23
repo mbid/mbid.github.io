@@ -1,0 +1,6 @@
+#!/bin/sh
+
+bn=$(basename "$1" .md)
+
+mkdir -p "$bn"
+pandoc -o "$bn/index.html" -s "$1"
