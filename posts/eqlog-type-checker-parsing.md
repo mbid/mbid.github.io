@@ -161,7 +161,7 @@ struct TypeNode(u32);
 The main type we need is the *model* type, in our case called `Program` based on the name of our Eqlog file.
 You can think of the model object as an in-memory instance of an SQL database, with schema determined by the sorts and relations declared in the Eqlog file.
 Thus, our `Program` type looks something like this:
-```eqlog
+```rust
 struct Program {
     // Carrier sets of elements:
     expr_nodes: Set<ExprNode>,
@@ -254,7 +254,7 @@ Expr: ExprNode = {
 
 Here `expr_list_node` is a convenience function that helps us create `ExprListNode` elements, and there are similar functions for other list nodes.
 This is the definition of `expr_list_node`:
-```eqlog
+```rust
 pub fn expr_list_node(nodes: &[ExprNode], p: &mut Program) -> ExprListNode {
     let mut l = p.new_expr_list_node();
     p.insert_nil_expr_list_node(l);
