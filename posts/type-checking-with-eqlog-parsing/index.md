@@ -1,5 +1,5 @@
 ---
-title: "Type Checking using Eqlog: Parsing"
+title: "Type Checking with Eqlog: Parsing"
 date: "July 23, 2023"
 ---
 
