@@ -237,7 +237,7 @@ not a lot of work on using Datalog for type checking (though see <a
 href="https://dl.acm.org/doi/pdf/10.1145/3428195">here</a>), which is
 what this series is about.</p>
 <p><a href="https://github.com/eqlog/eqlog">Eqlog</a> is a Datalog
-engine which I and, on previous versions, <a
+engine which I and, for previous versions, <a
 href="https://www.jakobbotsch.com/">Jakob Nielsen</a> have been working
 on from time to time over the last few years. Eqlog implements an
 extension of Datalog that allows it to infer equalities among elements
@@ -383,10 +383,10 @@ associate values to the Eqlog elements that represent them:</p>
 }</code></pre>
 <p>Since the mapping between Eqlog elements and values is maintained
 outside of Eqlog, we cannot inspect those values in Eqlog. However,
-since we make sure that each data value is represented by at most one
-Eqlog element, our Eqlog code can assume that elements of these sorts
-are equal if and only if their attached data values agree. This is all
-we shall need.</p>
+since we make sure that each value is represented by at most one Eqlog
+element, our Eqlog code can assume that elements of these sorts are
+equal if and only if their attached values agree. This is all we shall
+need.</p>
 <p>The <code>program.eqlog</code> file also declares
 <code>StmtNode</code> and <code>StmtListNode</code> sorts representing
 statements and lists of statements, an <code>OptTypeNode</code> sort

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-bn=$(basename "$1" .md)
+cd "$(dirname "$1")"
+name_without_ext=$(basename "$1" .md)
 
-mkdir -p "$bn"
-pandoc -o "$bn/index.html" -s "$1"
+pandoc -o "$name_without_ext.html" -s "$name_without_ext.md"
