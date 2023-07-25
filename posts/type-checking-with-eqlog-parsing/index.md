@@ -195,20 +195,29 @@ In a nutshell, LALRPOP grammar files are given by the usual production rules and
 The purpose of these Rust snippets is to generate the appropriate AST nodes.
 
 In our case, we pass an initially empty `Program` object `p` and a `Literals` object as state into the parser, and each production rule adds data to these using the functions explained above.
-For example, here are the production rules for `ExprNode`:
+For example, here are some relevant production rules for `ExprNode`:
 ```rust
-Var: Var = { ... }
-Intersperse<Item, Separator>: Vec<Item> = { ... }
+Var: Var = {
+    <s: r"[A-Za-z][A-Za-z0-9_]*"> => {
+        match literals.vars.get(s) {
+            Some(v) => *v,
+            None => {
+                let v = p.new_var();
+                literals.vars.insert(s.to_string(), v);
+                v
+            },
+        }
+    },
+}
 
-SimpleExpr: ExprNode = {
+Intersperse<Item, Separator>: Vec<Item> = {
+    // ...
+}
+
+Expr0: ExprNode = {
     <var: Var> => {
         let expr = p.new_expr_node();
         p.insert_variable_expr_node(expr, var);
-        expr
-    },
-    "(" ")" => {
-        let expr = p.new_expr_node();
-        p.insert_void_expr_node(expr);
         expr
     },
     "true" => {
@@ -216,39 +225,25 @@ SimpleExpr: ExprNode = {
         p.insert_true_expr_node(expr);
         expr
     },
-    "false" => {
-        let expr = p.new_expr_node();
-        p.insert_false_expr_node(expr);
-        expr
-    },
-    <string: StringLiteral> => {
-        let expr = p.new_expr_node();
-        p.insert_string_literal_expr_node(expr, string);
-        expr
-    },
-    <num: NumberLiteral> => {
-        let expr = p.new_expr_node();
-        p.insert_number_literal_expr_node(expr, num);
-        expr
-    },
-    // This would result in a shift-reduce conflict if we made `function` an `Expr` instead of a
-    // `SimpleExpr`:
-    <function: SimpleExpr> "(" <args: Intersperse<Expr, ",">> ")" => {
+
+    <function: Expr0> "(" <args: Intersperse<Expr, ",">> ")" => {
         let args = expr_list_node(args.as_slice(), p);
         let expr = p.new_expr_node();
         p.insert_app_expr_node(expr, function, args);
         expr
     },
-    "(" <expr: Expr> ")" => expr,
+
+    // ...
 }
 
-Expr: ExprNode = {
-    <expr: SimpleExpr> => expr,
-    <function: Function> => {
+Expr1: ExprNode = {
+    <lhs: Expr0> "==" <rhs: Expr0> => {
         let expr = p.new_expr_node();
-        p.insert_function_expr_node(expr, function);
+        p.insert_equals_expr_node(expr, lhs, rhs);
         expr
-    }
+    },
+
+    // ...
 }
 ```
 

@@ -466,62 +466,57 @@ to generate the appropriate AST nodes.</p>
 <p>In our case, we pass an initially empty <code>Program</code> object
 <code>p</code> and a <code>Literals</code> object as state into the
 parser, and each production rule adds data to these using the functions
-explained above. For example, here are the production rules for
-<code>ExprNode</code>:</p>
+explained above. For example, here are some relevant production rules
+for <code>ExprNode</code>:</p>
 <div class="sourceCode" id="cb13"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Var<span class="op">:</span> Var <span class="op">=</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Intersperse<span class="op">&lt;</span>Item<span class="op">,</span> Separator<span class="op">&gt;:</span> <span class="dt">Vec</span><span class="op">&lt;</span>Item<span class="op">&gt;</span> <span class="op">=</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>SimpleExpr<span class="op">:</span> ExprNode <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>var<span class="op">:</span> Var<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_variable_expr_node(expr<span class="op">,</span> var)<span class="op">;</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;(&quot;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_void_expr_node(expr)<span class="op">;</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;true&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_true_expr_node(expr)<span class="op">;</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;false&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_false_expr_node(expr)<span class="op">;</span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>string<span class="op">:</span> StringLiteral<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_string_literal_expr_node(expr<span class="op">,</span> string)<span class="op">;</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>num<span class="op">:</span> NumberLiteral<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_number_literal_expr_node(expr<span class="op">,</span> num)<span class="op">;</span></span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// This would result in a shift-reduce conflict if we made `function` an `Expr` instead of a</span></span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// `SimpleExpr`:</span></span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>function<span class="op">:</span> SimpleExpr<span class="op">&gt;</span> <span class="st">&quot;(&quot;</span> <span class="op">&lt;</span>args<span class="op">:</span> Intersperse<span class="op">&lt;</span>Expr<span class="op">,</span> <span class="st">&quot;,&quot;</span><span class="op">&gt;&gt;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> args <span class="op">=</span> expr_list_node(args<span class="op">.</span>as_slice()<span class="op">,</span> p)<span class="op">;</span></span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_app_expr_node(expr<span class="op">,</span> function<span class="op">,</span> args)<span class="op">;</span></span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;(&quot;</span> <span class="op">&lt;</span>expr<span class="op">:</span> Expr<span class="op">&gt;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> expr<span class="op">,</span></span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>Expr<span class="op">:</span> ExprNode <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>expr<span class="op">:</span> SimpleExpr<span class="op">&gt;</span> <span class="op">=&gt;</span> expr<span class="op">,</span></span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>function<span class="op">:</span> Function<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_function_expr_node(expr<span class="op">,</span> function)<span class="op">;</span></span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>        expr</span>
-<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Var<span class="op">:</span> Var <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>s<span class="op">:</span> <span class="st">r&quot;[A-Za-z][A-Za-z0-9_]*&quot;</span><span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> literals<span class="op">.</span>vars<span class="op">.</span>get(s) <span class="op">{</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>            <span class="cn">Some</span>(v) <span class="op">=&gt;</span> <span class="op">*</span>v<span class="op">,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>            <span class="cn">None</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                <span class="kw">let</span> v <span class="op">=</span> p<span class="op">.</span>new_var()<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                literals<span class="op">.</span>vars<span class="op">.</span>insert(s<span class="op">.</span>to_string()<span class="op">,</span> v)<span class="op">;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>                v</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>            <span class="op">},</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>Intersperse<span class="op">&lt;</span>Item<span class="op">,</span> Separator<span class="op">&gt;:</span> <span class="dt">Vec</span><span class="op">&lt;</span>Item<span class="op">&gt;</span> <span class="op">=</span> <span class="op">{</span> </span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>Expr0<span class="op">:</span> ExprNode <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>var<span class="op">:</span> Var<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_variable_expr_node(expr<span class="op">,</span> var)<span class="op">;</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;true&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_true_expr_node(expr)<span class="op">;</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>function<span class="op">:</span> Expr0<span class="op">&gt;</span> <span class="st">&quot;(&quot;</span> <span class="op">&lt;</span>args<span class="op">:</span> Intersperse<span class="op">&lt;</span>Expr<span class="op">,</span> <span class="st">&quot;,&quot;</span><span class="op">&gt;&gt;</span> <span class="st">&quot;)&quot;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> args <span class="op">=</span> expr_list_node(args<span class="op">.</span>as_slice()<span class="op">,</span> p)<span class="op">;</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_app_expr_node(expr<span class="op">,</span> function<span class="op">,</span> args)<span class="op">;</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>Expr1<span class="op">:</span> ExprNode <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>lhs<span class="op">:</span> Expr0<span class="op">&gt;</span> <span class="st">&quot;==&quot;</span> <span class="op">&lt;</span>rhs<span class="op">:</span> Expr0<span class="op">&gt;</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> expr <span class="op">=</span> p<span class="op">.</span>new_expr_node()<span class="op">;</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>        p<span class="op">.</span>insert_equals_expr_node(expr<span class="op">,</span> lhs<span class="op">,</span> rhs)<span class="op">;</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>        expr</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Here <code>expr_list_node</code> is a convenience function that helps
 us create <code>ExprListNode</code> elements, and there are similar
 functions for other list nodes. This is the definition of
