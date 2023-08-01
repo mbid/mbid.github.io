@@ -1,6 +1,7 @@
 ---
 title: "Type Checking with Eqlog: Parsing"
 date: "July 23, 2023"
+lang: "en_US"
 ---
 
 This is the first post in a series I intend to write on implementing a type checker using [Eqlog](https://github.com/eqlog/eqlog), a Datalog engine for Rust.
