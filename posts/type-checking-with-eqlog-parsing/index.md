@@ -21,8 +21,8 @@ I intend for each post in this series to introduce one aspect of the type checke
 This is my current outline, which I might need to update as I write the other posts:
 
 1. **Parsing [[code](https://github.com/eqlog/examples-inference/tree/parsing)] (this post)**
-2. Types [[code](https://github.com/eqlog/examples-inference/tree/types)]
-3. Variable binding [[code](https://github.com/eqlog/examples-inference/tree/binding)]
+2. [Variable binding](../type-checking-with-eqlog-variable-binding) [[code](https://github.com/eqlog/examples-inference/tree/binding)]
+3. Types [[code](https://github.com/eqlog/examples-inference/tree/types)]
 4. Expression typing [[code](https://github.com/eqlog/examples-inference/tree/expr-types)]
 5. Function literal typing [[code](https://github.com/eqlog/examples-inference/tree/function-types)]
 6. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
