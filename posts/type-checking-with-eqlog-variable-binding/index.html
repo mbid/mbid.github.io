@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2023-08-01" />
+  <title>Type Checking with Eqlog: Variable Binding</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 45em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Type Checking with Eqlog: Variable Binding</h1>
+<p class="date">August 01, 2023</p>
+</header>
+<p>This is the second post in a series on implementing a type checker in
+<a href="https://github.com/eqlog/eqlog">Eqlog</a>. This post deals with
+<em>variable binding</em>, or <em>name resolution</em>. You can find the
+other posts here:</p>
+<ol type="1">
+<li><a href="../type-checking-with-eqlog-parsing">Parsing</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/parsing">code</a>]</li>
+<li><strong>Variable binding [<a
+href="https://github.com/eqlog/examples-inference/tree/binding">code</a>]
+(this post)</strong></li>
+<li>Types [<a
+href="https://github.com/eqlog/examples-inference/tree/types">code</a>]
+(this post)</li>
+<li>Expression typing [<a
+href="https://github.com/eqlog/examples-inference/tree/expr-types">code</a>]</li>
+<li>Function literal typing [<a
+href="https://github.com/eqlog/examples-inference/tree/function-types">code</a>]</li>
+<li>Hindley-Milner polymorphism [<a
+href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]</li>
+</ol>
+<p>As usual, the code we discuss in this post is available as a <a
+href="https://github.com/eqlog/examples-inference/tree/binding">branch</a>
+in the associated repository.</p>
+<p>So far we haven’t done any computations in Eqlog, but that’s going to
+change in this post. Our goal is to detect two kinds of errors:</p>
+<ol type="1">
+<li>Shadowing: Multiple definitions of a variable in the same
+scope.</li>
+<li>Undeclared variables: Usage of a variable without prior
+declaration.</li>
+</ol>
+<p>The role of Eqlog here will be to propagate information about whether
+a variable is in scope through the syntax tree.</p>
+<h2 id="eqlog-evaluation">Eqlog evaluation</h2>
+<p>Eqlog evaluates <em>axioms</em>, or <em>rules</em>. We can declare
+axioms as follows:</p>
+<pre class="eqlog"><code>Axiom &lt;premise&gt; =&gt; &lt;conclusion&gt;;</code></pre>
+<p>Premise and conclusion must be conjunctions of <em>atoms</em>. In
+this blog post, we’ll only need predicate atoms, which are given by
+application of predicates to variables. For example, here is an Eqlog
+program for computing the transitive closure of a graph:</p>
+<pre class="eqlog"><code>Sort Vertex;
+Predicate Edge : Vertex * Vertex;
+Axiom Edge(x, y) &amp; Edge(y, z) =&gt; Edge(x, z);</code></pre>
+<p>During evaluation, Eqlog repeatedly matches the premise of each axiom
+on data in the model and then adds the conclusion. Evaluation stops when
+nothing changes anymore, i.e., when all conclusions already hold. In
+case of the above transitive closure program above, Eqlog will enumerate
+all pairs of entries <code>(a, b)</code> and <code>(b, c)</code> in the
+<code>Edge</code> relation and then insert the tuple <code>(a, c)</code>
+into <code>Edge</code>. Evaluation stops when all tuples
+<code>(a, c)</code> found this way are already in <code>Edge</code>,
+i.e., when the edge relation is transitive.</p>
+<p>As for our goal of detecting variable binding errors, we add for each
+relevant AST node <code>X</code> a predicate
+<code>VarInX : Var * X</code> to represent whether a variable is in
+scope for a given node:</p>
+<pre class="eqlog"><code>Pred VarInStmts : Var * StmtListNode;
+Pred VarInFunction : Var * FunctionNode;
+Pred VarInArgList : Var * ArgListNode;
+Pred VarInExpr : Var * ExprNode;
+Pred VarInExprs : Var * ExprListNode;</code></pre>
+<p>We’re going to add axioms that populate these predicates based on the
+program’s AST. Note that variable bindings are not relevant in AST nodes
+that contain only types, which is why there is no need for a
+<code>VarInType : Var * TypeNode</code> predicate. Since our grammar is
+such that every <code>StmtNode</code> appears as head of some
+<code>StmtNodeList</code>, a separate
+<code>VarInStmt : Var * StmtNode</code> predicate would be redundant,
+but not every <code>ExprNode</code> is part of an
+<code>ExprNodeList</code>.</p>
+<h2 id="propagation">Propagation</h2>
+<p>Our first axioms are concerned with <em>propagating</em> variable
+bindings into subnodes. There is one such axiom for each node type, for
+example <code>IfStmtNode</code> or <code>ConsExprNode</code>. The
+premise of each of these axioms matches the respective node and a
+variable that is in scope for the node. The conclusion asserts that this
+variable is also in scope for all subnodes. Here are some examples:</p>
+<pre class="eqlog"><code>// If variable is in scope for a list of statements, then it is also in scope
+// for the tail of the list.
+Axiom
+    ConsStmtListNode(stmts, _, tail)
+    &amp; VarInStmts(var, stmts)
+    =&gt;
+    VarInStmts(var, tail)
+    ;
+
+// If a variable is in scope for an if statemennt, then it is also in scope for
+// the branching condition and the two branches.
+Axiom
+    ConsStmtListNode(stmts, head, _)
+    &amp; IfStmtNode(head, cond, true_branch, false_branch)
+    &amp; VarInStmts(var, stmts)
+    =&gt;
+    VarInExpr(var, cond)
+    &amp; VarInStmts(var, true_branch)
+    &amp; VarInStmts(var, false_branch)
+    ;
+
+// If a variable is in scope for an equality comparison expression, then it is
+// also in scope for the left-hand and right-hand side expressions.
+Axiom
+    EqualsExprNode(expr, lhs, rhs)
+    &amp; VarInExpr(var, expr)
+    =&gt;
+    VarInExpr(var, lhs)
+    &amp; VarInExpr(var, rhs)
+    ;</code></pre>
+<h3 id="propagating-function-arguments-into-function-bodies">Propagating
+function arguments into function bodies</h3>
+<p>You might wonder what the <code>FunctionNode</code> sort represents.
+Elements of this sort are what our parser emits for <em>function
+literals</em>, so for example for the following source code
+fragment:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">foo</span> (x<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> { <span class="cf">return</span> x<span class="op">;</span> }</span></code></pre></div>
+<p>The subnodes (function name, arguments, optional return type
+annotation, body) of a function node element are available via the</p>
+<pre><code>Function : FunctionNode * Var * ArgListNode * OptTypeNode * StmtListNode</code></pre>
+<p>predicate.</p>
+<p>Function literals can appear in two contexts: As function statements
+or as function expressions. In both cases, variables available in the
+ambient scope of the function literal are also available inside the
+function. We enforce this by the following axioms:</p>
+<pre><code>Axiom
+    ConsStmtListNode(stmts, head, _)
+    &amp; FunctionStmtNode(head, func)
+    &amp; VarInStmts(var, stmts)
+    =&gt;
+    VarInFunction(var, func)
+    ;
+Axiom
+    FunctionExprNode(expr, func)
+    &amp; VarInExpr(var, expr)
+    =&gt;
+    VarInFunction(var, func)
+    ;</code></pre>
+<p>Arguments of function literals are represented as
+<code>ArgListNode</code> elements. To make sure that we can detect
+variable shadowing for arguments, i.e., when a function argument has the
+same name as an ambient variable, we need to propagate variables in
+scope outside of the function into the argument list node:</p>
+<pre class="eqlog"><code>Axiom
+    Function(func, _, args, _, _)
+    &amp; VarInFunction(var, func)
+    =&gt;
+    VarInArgList(var, args)
+    ;</code></pre>
+<p>Thus, the <code>VarInArgList</code> predicate keeps track of all
+variables in scope where the argument list appears, not just of the
+variables that are listed in the argument list. An
+<code>ArgListNode</code> is either empty, or it is given by a head
+variable with optional type annotation and a tail
+<code>ArgListNode</code>. We consider the variable introduced in the
+head of an argument list to be in scope for the tail of the argument
+list, but not for the argument list itself. This means that the
+following naturally seeming rule would, by our previous axiom, propagate
+ambient variable bindings into the function body, but it would not
+propagate the variables introduced in the argument list itself:</p>
+<pre class="eqlog"><code>Axiom
+    Function(_, _, args, _, body)
+    // This doesn&#39;t quite work:
+    &amp; VarInArgList(var, args)
+    =&gt;
+    VarInStmts(var, body)
+    ;</code></pre>
+<p>Instead, we need a way to access the <em>end</em> of an argument
+list, i.e., the <code>NilArgList</code> from which a given argument list
+can be obtained by repeated consing. This is the purpose of the
+following <code>ArgListEnd</code> predicate and its axioms:</p>
+<pre class="eqlog"><code>Pred ArgListEnd : ArgListNode * ArgListNode;
+Axiom NilArgListNode(arg_list) =&gt; ArgListEnd(arg_list, arg_list);
+Axiom
+    ConsArgListNode(arg_list, _, _, tail)
+    &amp; ArgListEnd(tail, end)
+    =&gt;
+    ArgListEnd(arg_list, end)
+    ;</code></pre>
+<p>We can now state a fixed version of the axiom that propagates
+variables introduced in argument lists into bodies:</p>
+<pre class="eqlog"><code>Axiom
+    Function(_, _, args, _, body)
+    &amp; ArgListEnd(args, args_end)
+    &amp; VarInArgList(var, args_end)
+    =&gt;
+    VarInStmts(var, body)
+    ;</code></pre>
+<h2 id="base-cases">Base cases</h2>
+<p>So far we’ve only propagated existing variable bindings through their
+scope, but there are no axioms that initially populate the
+<code>VarInX</code> predicates. We’ll add such axioms next, one for each
+AST node that introduces a new variable.</p>
+<h3 id="let-statements">Let statements</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// A let statement.</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x<span class="op">:</span> <span class="dt">number</span> <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span></code></pre></div>
+<p>Let statements are represented by our parser as entries in the
+<code>LetStmtNode : StmtNode * Var * OptTypeNode * ExprNode</code>
+predicate. Like every other statement, let statements always appear as
+first element in some <code>StmtNodeList</code>, and variables
+introduced by the let statements are in scope for all succeeding
+statements:</p>
+<pre class="eqlog"><code>Axiom
+    ConsStmtListNode(_, head, tail)
+    &amp; LetStmtNode(head, var, _, _)
+    =&gt;
+    VarInStmts(var, tail)
+    ;</code></pre>
+<h3 id="function-statements">Function statements</h3>
+<p>Similarly to let statements, function statements introduce the
+variable of the function name into the scope of succeeding statements of
+the same block:</p>
+<pre><code>Axiom
+    ConsStmtListNode(_, head, tail)
+    &amp; FunctionStmtNode(head, func)
+    &amp; Function(func, var, _, _ ,_)
+    =&gt;
+    VarInStmts(var, tail)
+    ;</code></pre>
+<h3 id="function-arguments">Function arguments</h3>
+<p>As mentioned before when we discussed propagation of function
+arguments, we consider a variable introduced in the head of an argument
+list to be in scope for the tail of the argument list. This is enforced
+by the following axiom:</p>
+<pre class="eqlog"><code>Axiom
+    ConsArgListNode(_, var, _, tail)
+    =&gt;
+    VarInArgList(var, tail)
+    ;</code></pre>
+<h3 id="function-names">Function names</h3>
+<p>The name of a function is not only available outside of the function
+(in case of function statements), but also in its own body. This enables
+recursive function definitions.</p>
+<p>Note that we already propagate the variables in scope for the
+<code>ArgListNode</code> of a function into the body. Thus, if we
+enforce that the name of the function is in scope of the argument list,
+then the name will also be available in the body:</p>
+<pre class="eqlog"><code>Axiom Function(_, var, arg, _ ,_) =&gt; VarInArgList(var, arg);</code></pre>
+<p>The advantage of this approach over making the function name
+available in the body directly is that it enables us to detect shadowing
+of the function name by a function argument, for example here:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">foo</span> (foo) {}</span></code></pre></div>
+<h2 id="error-reporting">Error reporting</h2>
+<h3 id="shadowing">Shadowing</h3>
+<p>Shadowing occurs when a variable is declared twice within the same
+scope. Our Eqlog program reports shadowing to our Rust glue code via the
+following nullary predicate:</p>
+<pre><code>Pred VariableShadowing: ();</code></pre>
+<p>The only possible entry for a nullary predicate is the empty tuple,
+but the predicate can also be empty. We can thus think of nullary
+predicates as truth values, or as Boolean values. Our Eqlog program must
+ensure that the <code>VariableShadowing</code> predicate is populated
+whenever the program contains an instance of shadowing. Because we do
+not add an entry to the predicate from outside the Eqlog program, we
+know that if the predicate holds after Eqlog evaluation, then the
+program must contain an instance of shadowing.</p>
+<p>There is an axiom that concludes <code>VariableShadowing</code> for
+each of the base cases we considered in the previous section. For
+example, the axiom for let statements is as follows:</p>
+<pre class="eqlog"><code>Axiom
+    LetStmtNode(stmt, var, _, _)
+    &amp; ConsStmtListNode(stmts, head, _)
+    &amp; VarInStmts(var, stmts)
+    =&gt;
+    VariableShadowing()
+    ;</code></pre>
+<p>Thus, shadowing occurs when there is a let statement
+<code>stmt</code> introducing a variable <code>var</code> such that
+<code>var</code> is already in scope for <code>stmt</code>.</p>
+<h3 id="undeclared-variables">Undeclared variables</h3>
+<p>Following the approach we took for shadowing, we might attempt to add
+an axiom along the following lines to our Eqlog program:</p>
+<pre class="eqlog"><code>Axiom
+    VariableExprNode(expr, var)
+    // Doesn&#39;t compile:
+    &amp; NOT VarInExpr(var, expr)
+    =&gt;
+    UndeclaredVariable()
+    ;</code></pre>
+<p>Thus, if a variable is used as an expression and that variable is
+<em>not</em> in scope, then the program contains the usage of an
+undeclared variable. Unfortunately, while some other Datalog engines
+support negation, Eqlog does not, and so
+<code>NOT VarInExpr(var, expr)</code> is not valid Eqlog. There is no
+fundamental reason why Eqlog cannot support negations with the same
+semantics as other Datalog engines; I’ve simply not come around to
+implementing it.</p>
+<p>Instead, we’ll encode this axiom explicitly in Rust:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> has_undeclared_variables(p<span class="op">:</span> <span class="op">&amp;</span>Program) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    p<span class="op">.</span>iter_variable_expr_node()</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>any(<span class="op">|</span>(expr<span class="op">,</span> var)<span class="op">|</span> <span class="op">!</span>p<span class="op">.</span>var_in_expr(var<span class="op">,</span> expr))</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Eqlog does not automatically evaluate axioms; we have to call the
+<code>close</code> method to start evaluation. After evaluation, we
+check whether there are variable binding errors. Our top-level
+<code>check_source</code> function thus looks like this:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> check_source(src<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>(Program<span class="op">,</span> Literals<span class="op">,</span> ModuleNode)<span class="op">,</span> LanguageError<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> no_comments_src <span class="op">=</span> erase_comments(src)<span class="op">;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="kw">mut</span> p <span class="op">=</span> <span class="pp">Program::</span>new()<span class="op">;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="kw">mut</span> lits <span class="op">=</span> <span class="pp">Literals::</span>new()<span class="op">;</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> module <span class="op">=</span> <span class="pp">ModuleParser::</span>new()</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>parse(<span class="op">&amp;</span><span class="kw">mut</span> p<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> lits<span class="op">,</span> <span class="op">&amp;</span>no_comments_src)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>map_err(<span class="op">|</span>err<span class="op">|</span> <span class="pp">LanguageError::</span>from_parse_error(err<span class="op">,</span> <span class="op">&amp;</span>no_comments_src))<span class="op">?;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    p<span class="op">.</span>close()<span class="op">;</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> p<span class="op">.</span>variable_shadowing() <span class="op">{</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">LanguageError::</span>VariableShadowing)<span class="op">;</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> has_undeclared_variables(<span class="op">&amp;</span>p) <span class="op">{</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">LanguageError::</span>UndeclaredVariable)<span class="op">;</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    <span class="cn">Ok</span>((p<span class="op">,</span> lits<span class="op">,</span> module))</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+</body>
+</html>
