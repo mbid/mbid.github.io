@@ -3,4 +3,4 @@
 cd "$(dirname "$1")"
 name_without_ext=$(basename "$1" .md)
 
-pandoc -o "$name_without_ext.html" -s "$name_without_ext.md"
+pandoc --verbose -s --variable maxwidth=45em -o "$name_without_ext.html" "$name_without_ext.md"
