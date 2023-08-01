@@ -10,7 +10,7 @@ You can find the other posts here:
 
 1. [Parsing](../type-checking-with-eqlog-parsing) [[code](https://github.com/eqlog/examples-inference/tree/parsing)]
 2. **Variable binding [[code](https://github.com/eqlog/examples-inference/tree/binding)] (this post)**
-3. Types [[code](https://github.com/eqlog/examples-inference/tree/types)] (this post)
+3. Types [[code](https://github.com/eqlog/examples-inference/tree/types)]
 4. Expression typing [[code](https://github.com/eqlog/examples-inference/tree/expr-types)]
 5. Function literal typing [[code](https://github.com/eqlog/examples-inference/tree/function-types)]
 6. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
