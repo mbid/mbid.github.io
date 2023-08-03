@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Type Checking with Eqlog: Types</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 45em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Type Checking with Eqlog: Types</h1>
+<p class="date">???</p>
+</header>
+<p>This is the third post in a series on implementing a type checker
+with the <a href="https://github.com/eqlog/eqlog">Eqlog</a> Datalog
+engine. This post deals with our semantic model of the type system, and
+we’ll finally see some of Eqlog’s distinctive features in action. You
+can find the other posts here:</p>
+<ol type="1">
+<li><a href="../type-checking-with-eqlog-parsing">Parsing</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/parsing">code</a>]</li>
+<li><a href="../type-checking-with-eqlog-variable-binding">Variable
+binding</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/binding">code</a>]</li>
+<li><strong>Types [<a
+href="https://github.com/eqlog/examples-inference/tree/types">code</a>]
+(this post)</strong></li>
+<li>Expression typing [<a
+href="https://github.com/eqlog/examples-inference/tree/expr-types">code</a>]</li>
+<li>Function literal typing [<a
+href="https://github.com/eqlog/examples-inference/tree/function-types">code</a>]</li>
+<li>Hindley-Milner polymorphism [<a
+href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]</li>
+</ol>
+<p>As usual, the code we discuss in this post is available as a <a
+href="https://github.com/eqlog/examples-inference/tree/types">branch</a>
+in the associated repository.</p>
+<p>Our goal is to define a <em>semantic</em> model of our type system
+that complements the <em>syntactical</em> <code>TypeNode</code> AST
+nodes we’ve already discussed in the first post on parsing. Our parser
+generates fresh <code>TypeNode</code> elements for each piece of source
+code representing a type. As a consequence, there can be many different
+<code>TypeNode</code> elements representing the same type. For example,
+the AST of the program</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">foo</span> (num)<span class="op">:</span> <span class="dt">boolean</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> e<span class="op">:</span> <span class="dt">boolean</span> <span class="op">=</span> num <span class="op">==</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> e<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>contains two different <code>BooleanTypeNode</code> elements, one for
+each occurrence of the string <code>boolean</code>. For type checking
+and inference we will eventually have to verify that certain types
+match, so <code>TypeNode</code> elements are unsuitable for this.</p>
+<p>Instead, we introduce a new sort <code>Type</code> to represent
+<em>semantic</em> types. In order to be useful for type checking and
+inference, semantic types should have the following properties:</p>
+<ol type="1">
+<li>There should be at most one <code>Type</code> element that
+represents <code>boolean</code>; similarly for <code>string</code>,
+<code>number</code> and so forth.</li>
+<li>Various AST nodes should have associated <code>Type</code> element,
+e.g. <code>TypeNode</code>, <code>ExprNode</code> (the type of an
+expression) and <code>FunctionNode</code> (the type of a function
+literal).</li>
+<li>Every variable binding should have an associated <code>Type</code>
+element.</li>
+</ol>
+<p>All of these requirements are <em>functional</em> in nature: For
+example, requirement 2 says that there should be a total function
+<code>TypeNode -&gt; Type</code>.</p>
+<h2 id="functions-and-equality-in-eqlog">Functions and equality in
+Eqlog</h2>
+<p>Eqlog has a <code>Func</code> keyword that lets us declare (partial)
+functions, for example in the following Eqlog program:</p>
+<pre><code>Sort M;
+Func Mul : M * M -&gt; M;</code></pre>
+<p>Eqlog represents functions as <a
+href="https://en.wikipedia.org/wiki/Graph_of_a_function">graph
+relations</a>, i.e., as sets of value-result tuples. Thus, the binary
+<code>Mul</code> function is represented in the same way as a ternary
+predicate <code>MulGraph : M * M * M</code>, and
+<code>MulGraph(a, b, c)</code> holds if and only if
+<code>Mul(a, b) = c</code>. However, not every relation corresponds to a
+function: This is only so if the last component is uniquely determined
+by the other components. For the ternary <code>MulGraph</code>
+predicate, this means that the following axiom must hold:</p>
+<pre class="eqlog"><code>Axiom MulGraph(x, y, z_0) &amp; MulGraph(x, y, z_1) =&gt; z_0 = z_1;</code></pre>
+<p>Eqlog implicitly adds such <em>functionality axioms</em> for every
+function declaration.</p>
+<p>The conclusion of a functionality axiom is an equality, and
+equalities are not part of standard Datalog either. Eqlog implements
+equalities as follows. Recall that Eqlog repeatedly matches the premise
+of each axiom on current data in the model and then adds the conclusion
+of the axiom for each match. An equality <code>x = y</code> in the
+premise restricts matches to those where <code>x</code> and
+<code>y</code> are interpreted as the same element.</p>
+<p>Equalities in the conclusion are more interesting: Eqlog models
+contain union-find data structure to track equality among elements. When
+Eqlog has matched the premise of an axiom and there is an equality
+<code>x = y</code> in the conclusion, then it merges the equivalence
+classes of the elements that are matched for <code>x</code> and
+<code>y</code>.</p>
+<p>Crucially, Eqlog matches premises with respect to the equivalence
+relations stored in these union-find data structures. For example, there
+are two occurrences of the variable <code>x</code> in the premise
+<code>MulGraph(x, y, z_0) &amp; MulGraph(x, y, z_1)</code> of our
+functionality axiom above. A match of this premise is allowed to
+interpret these two occurrences by distinct (in the sense that they are
+represented by different IDs) elements as long as the two elements are
+in the same equivalence class. This means that more matches become
+possible after an equality has been found.</p>
+<p>For example, suppose we have a model of our theory above given by
+four distinct elements <code>a, b, c, d</code> and the following
+<code>MulGraph</code> entries:</p>
+<pre class="eqlog"><code>MulGraph(a, b, c)
+MulGraph(a, b, d)
+MulGraph(c, a, b)
+MulGraph(d, a, a)</code></pre>
+<p>Let’s walk through Eqlog evaluation. At first, the only non-trivial
+(i.e. <code>z_0 != z_1</code>) match for the premise of the
+functionality axiom is <code>(a, b, c)</code>, <code>(a, b, d)</code>.
+The conclusion of the functionality axiom then asserts
+<code>c = d</code>. This means that <code>(c, a, b)</code>,
+<code>(d, a, a)</code> is a valid match now. From this it follows that
+<code>b = a</code> must hold. At this point there are only trivial
+matches, where the conclusion already holds, so evaluation stops.</p>
+<h2 id="type-constructors">Type constructors</h2>
+<p>We return to defining our semantic model of types. Our type system
+has the following type constants, which we declare as nullary
+functions:</p>
+<pre class="eqlog"><code>Func VoidType : Type;
+Func BooleanType : Type;
+Func NumberType : Type;
+Func StringType : Type;</code></pre>
+<p>The functionality axiom for nullary functions asserts that there is
+at most one such constant. For example, if
+<code>sigma = VoidType()</code> and <code>tau = VoidType()</code>, then
+<code>sigma = tau</code>.</p>
+<p>The only type constructor with non-trivial arguments in our toy
+language is the constructor of function types: It takes as parameters a
+list of types for the domain (the types of arguments) and a type for the
+codomain (the result type). To model a <em>list</em> of semantic types,
+we use a similar trick as for syntax nodes:</p>
+<pre class="eqlog"><code>Sort TypeList;
+Func NilTypeList : TypeList;
+Func ConsTypeList : Type * TypeList -&gt; TypeList;</code></pre>
+<p>However, here we’re using Eqlog functions instead of predicates to
+represent empty lists and the cons operation. This has the effect that
+Eqlog considers all <code>NilTypeList()</code> elements as equal, and
+that two type lists agree if they have equal heads and equal tails. The
+analogous properties would be undesirable for AST nodes because in the
+AST we want to distinguish <code>NilTypeListNode</code> elements that
+that appear at different locations in source code.</p>
+<p>We can now declare the function type constructor:</p>
+<pre class="eqlog"><code>Func FunctionType: TypeList * Type -&gt; Type;</code></pre>
+<h2 id="total-functions">Total functions</h2>
+<p>One of our requirements on the semantic <code>Type</code> sort was
+that there should be functions associating <code>Type</code> elements to
+various AST nodes. To that end, we declare the following functions:</p>
+<pre class="eqlog"><code>Func SemanticType : TypeNode -&gt; Type;
+Func SemanticOptType : OptTypeNode -&gt; Type;
+Func SemanticArgTypes : ArgListNode -&gt; TypeList;
+
+// The types of expressions and function literals:
+Func ExprType : ExprNode -&gt; Type;
+Func ExprTypes : ExprNodeList -&gt; TypeList;
+Func FunctionNodeType : FunctionNode -&gt; Type;</code></pre>
+<p>However, Eqlog’s <code>Func</code> keyword introduces
+<em>partial</em> functions, whereas we required <em>total</em>
+functions.</p>
+<p>To enforce that these functions are total, we can use Eqlog’s
+exclamation mark operator <code>!</code> like so:</p>
+<pre class="eqlog"><code>Axiom tn: TypeNode =&gt; SemanticType(tn)!;
+Axiom otn: OptTypeNode =&gt; SemanticOptType(otn)!;
+Axiom ag: ArgListNode =&gt; SemanticArgTypes(ag)!;
+
+Axiom expr: ExprNode =&gt; ExprType(expr)!;
+Axiom exprs: ExprListNode =&gt; ExprTypes(exprs)!;
+Axiom func: FunctionNode =&gt; FunctionNodeType(func)!;</code></pre>
+<p>These axioms make use of another Eqlog construct that we haven’t seen
+before: <em>Sort quantifiers</em>, for example
+<code>tn: TypeNode</code>, match every element of a given sort. Sort
+quantifiers are needed in situations where a variable is not constrained
+by a predicate or function in the premise.</p>
+<p>You can read the exclamation mark operator as “is defined”. During
+evaluation, when Datalog has matched the premise of an axiom and
+encounters an atom <code>t!</code> in the conclusion, it first checks
+whether the expression <code>t</code> and all its subexpressions are
+already defined. If they are, then nothing needs to be done. If some
+subexpression or <code>t</code> itself is not defined yet, then Eqlog
+adjoins fresh elements to the model to represent them. For example, the
+axiom for <code>SemanticType</code> causes Eqlog to adjoin a fresh
+<code>Type</code> element <code>t</code> to the model for each
+<code>TypeNode</code> element <code>tn</code> and insert the tuple
+<code>(tn, t)</code> into the graph of <code>SemanticType</code>.</p>
+<p>We have to be very careful about axioms involving the exclamation
+mark operator though, because such axioms can lead to non-termination.
+Consider for example this Eqlog program that encodes the natural
+numbers:</p>
+<pre class="eqlog"><code>Sort N;
+Func Z : N;
+Func S : N -&gt; N;
+Axiom =&gt; Z()!;
+Axiom n : N =&gt; S(n)!;</code></pre>
+<p>Evaluation on even the empty model structure does not terminate for
+this Eqlog program, since Eqlog will adjoin more and more elements
+<code>Z(), S(Z()), S(S(Z())), ...</code> without halting. In our case,
+termination is guaranteed because the number of <code>Type</code>
+elements adjoined during evaluation is bounded by the number of AST node
+elements, and AST node elements are only added to the model before Eqlog
+evaluation, by the parser.</p>
+<h2 id="translating-type-nodes-to-semantic-types">Translating type nodes
+to semantic types</h2>
+<p>Our <code>SemanticType</code>, <code>SemanticOptType</code> and
+<code>SemanticArgTypes</code> functions associate semantic type (list)
+elements to certain AST nodes. However, we haven’t set up any rules
+governing these functions. For example, we need an axiom that enforces
+that the semantic type associated to a <code>BooleanTypeNode</code> is
+the semantic <code>BooleanType</code>. The following axiom accomplishes
+this:</p>
+<pre class="eqlog"><code>Axiom
+    BooleanTypeNode(tn)
+    &amp; sigma = SemanticType(tn)
+    =&gt;
+    BooleanType() = sigma
+    ;</code></pre>
+<p>There are analogous axioms that encode the relationship between
+<code>NumberTypeNode</code> and <code>NumberType</code>,
+<code>VoidTypeNode</code> and <code>VoidType</code> and so forth. The
+semantic type of a function type AST node depends recursively on the
+semantic types associated to domain and codomain AST nodes:</p>
+<pre class="eqlog"><code>Axiom
+    FunctionTypeNode(tn, args, codomain)
+    &amp; dom_types = SemanticArgTypes(args)
+    &amp; cod_type = SemanticType(codomain)
+    &amp; function_type = SemanticType(tn)
+    =&gt;
+    FunctionType(dom_types, cod_type) = function_type
+    ;</code></pre>
+<p>The <code>OptTypeNode</code> sort represents optional type node
+elements. Our parser emits such elements for example in argument lists
+of function literals, where argument variables can have an optional type
+annotation. In case an <code>OptTypeNode</code> element is given by a
+<code>TypeNode</code>, we enforce that <code>SemanticOptType</code>
+agrees with <code>SemanticType</code>:</p>
+<pre class="eqlog"><code>Axiom
+    SomeOptTypeNode(otn, tn)
+    &amp; sigma = SemanticType(tn)
+    =&gt;
+    SemanticOptType(otn) = sigma
+    ;</code></pre>
+<p>There are no axioms that govern how <code>SemanticOptType</code>
+interacts with <code>NilOptTypeNode</code> elements. But by our totality
+axioms above, <code>SemanticOptType</code> is still defined on
+<code>NilOptTypeNode</code> elements. The resulting <code>Type</code>
+elements will thus for now be undetermined, i.e., not equal to a type
+obtained from one of the type constructors. However, we will later add
+axioms that imply indirectly that a <code>SemanticOptType</code> element
+must agree with certain other <code>Type</code> elements. For example,
+we will add axioms that assert that the type of a variable must on the
+one hand be equal to the <code>SemanticOptType</code> of its optional
+type annotation, and on the other hand that the variable must be a
+<code>boolean</code> if it is used as condition of an <code>if</code>
+statement.</p>
+<p>The <code>SemanticArgTypes : ArgListNode -&gt; TypeList</code> should
+be given by mapping the <code>SemanticTypeOpt</code> function on
+optional type annotations, which we enforce as follows:</p>
+<pre class="eqlog"><code>Axiom
+    NilArgListNode(al)
+    &amp; semantic_types = SemanticArgTypes(al)
+    =&gt;
+    NilTypeList() = semantic_types
+    ;
+Axiom
+    ConsArgListNode(al, _, head_type, tail)
+    &amp; semantic_head = SemanticOptType(head_type)
+    &amp; semantic_tail = SemanticArgTypes(tail)
+    &amp; semantic_types = SemanticArgTypes(al)
+    =&gt;
+    semantic_types = ConsTypeList(semantic_head, semantic_tail)
+    ;</code></pre>
+<h2 id="types-of-variables">Types of variables</h2>
+<p>In the previous post on variable binding, we set up predicates
+<code>VarInX : Var * X</code> for various AST node sorts <code>X</code>,
+for example <code>ExprNode</code>, and we added axioms that enforce
+<code>VarInX(var, node)</code> holds precisely when the variable
+<code>var</code> is accessible within <code>node</code>. For type
+checking, this information is not enough: We need to know which type the
+variable has.</p>
+<p>Thus, we change the <code>VarInX</code> predicates to functions
+<code>VarTypeInX : Var * X -&gt; Type</code>: These functions should be
+defined on a pair of <code>(var, node)</code> if <code>var</code> is in
+scope for <code>node</code>, and if so, then
+<code>VarTypeInX(var, node)</code> is the type of the variable. This
+change makes it necessary to adapt the existing propagation axioms so
+that they also propagate the type of the variable. For example, the
+axiom that propagates variable bindings through
+<code>StmtNodeList</code> elements now looks like this:</p>
+<pre class="eqlog"><code>Axiom
+    ConsStmtListNode(stmts, _, tail)
+    &amp; sigma = VarTypeInStmts(var, stmts)
+    =&gt;
+    VarTypeInStmts(var, tail) = sigma
+    ;</code></pre>
+<p>Outside of propagation axioms we don’t use results of the
+<code>VarTypeInX</code> functions for now; we just hypothesize or assert
+that one of the <code>VarInType</code> functions is defined on certain
+pairs of variable and node. This will change in the next posts, where we
+collect typing constraints on variables based on their declaration and
+usage.</p>
+<h2 id="injectivity-of-type-constructors">Injectivity of type
+constructors</h2>
+<p>In most type systems, type constructors have <em>disjoint
+ranges</em>, and each type constructor is separately <em>injective</em>.
+The disjoint range property means that types obtained using different
+type constructors do not agree. In our case, this means for example that
+the <code>boolean</code> type is different from the <code>string</code>
+type, and that the <code>void</code> type is different from all function
+types. Injectivity is only relevant for type constructors with arguments
+(so no type constants such as <code>number</code>). For our toy
+language, injectivity thus only applies to function types, where it says
+that if two functions types are equal, then they must have the same
+domain types and the same codomain types.</p>
+<p>Evaluation of our Eqlog program can currently not violate these
+properties, but this will change in the next posts due to typing
+constraints on expression or variables. For example, we will enforce
+that the type of a variable that is used as condition for an
+<code>if</code> statement must be of type <code>boolean</code>, and that
+it must also be of type <code>string</code> if it is initialized with a
+string literal. We enforce these constraints by imposing equalities on
+the <code>ExprType</code> of expressions, which by the functionality
+axioms can lead to a violation of the disjoint range or injectivity
+properties. These violations only happen for ill-typed programs, so our
+type checker should report a type error in these situations. Similarly
+to the <code>VariableShadowing</code> predicate that we used to report
+variable shadowing, we introduce a predicate</p>
+<pre class="eqlog"><code>Pred ConflictingTypes: ();</code></pre>
+<p>that our Eqlog program should populate if it detects a violation of
+injectivity or the disjoint ranges property.</p>
+<p>Detecting a violation of the disjoint ranges property is fairly
+straightforward:</p>
+<pre class="eqlog"><code>Axiom VoidType() = BooleanType() =&gt; ConflictingTypes();
+Axiom VoidType() = NumberType() =&gt; ConflictingTypes();
+Axiom VoidType() = StringType() =&gt; ConflictingTypes();
+Axiom VoidType() = FunctionType(_, _) =&gt; ConflictingTypes();
+
+Axiom BooleanType() = NumberType() =&gt; ConflictingTypes();
+// ...</code></pre>
+<p>We could encode injectivity of the function type constructor like
+this:</p>
+<pre class="eqlog"><code>Axiom
+    FunctionType(sigmas_0, tau_0) = FunctionType(sigma_1, tau_1)
+    =&gt;
+    sigmas_0 = sigmas_1
+    &amp; tau_0 = tau_1
+    ;</code></pre>
+<p>Instead, we’ll go with an approach that will help us also later:
+Axiomatizing inverse functions to <code>FunctionType</code> in each
+argument.</p>
+<p>When we collect constraints on the types of expressions, we’ll
+eventually have the need to assert that some type <code>kappa</code> is
+a function type, i.e., that there should <em>exist</em>
+<code>domain</code> and <code>codomain</code> such that
+<code>kappa = FunctionType(domain, kappa)</code>. However, Eqlog does
+intentionally not support existential quantification, since <a
+href="https://www.mbid.me/eqlog-semantics/">this would make Eqlog
+evaluation semantically ill-behaved</a>. To work around this, we
+introduce functions <code>DomainTypes : Type -&gt; TypeList</code> and
+<code>CodomainType : Type -&gt; Type</code> as inverse functions for the
+two arguments of <code>FunctionType</code>:</p>
+<pre class="eqlog"><code>Axiom DomainTypes(tau)! =&gt; CodomainType(tau)!;
+Axiom CodomainType(tau)! =&gt; DomainTypes(tau)!;
+Axiom
+    kappa = FunctionType(sigmas, tau)
+    =&gt;
+    DomainTypes(kappa) = sigmas
+    &amp; CodomainType(kappa) = tau
+    ;
+Axiom
+    sigmas = DomainTypes(kappa)
+    &amp; tau = CodomainType(kappa)
+    =&gt;
+    FunctionType(sigmas, tau) = kappa
+    ;</code></pre>
+<p>To assert that a given type is a function type, it now suffices to
+assert that <code>DomainTypes</code> or <code>CodomainType</code> is
+defined on it. Since functions are injective if and only if they have an
+inverse function on their range, the presence of
+<code>DomainTypes</code> and <code>CodomainType</code> makes the
+explicit injectivity axiom above redundant.</p>
+<p>Due to injectivity of
+<code>FunctionType : TypeList * Type -&gt; Type</code>, it can happen
+that we equate <code>TypeList</code> elements during evaluation. If type
+lists are equal, then they should contain the same types in the same
+order. Our Eqlog program equates type lists with different lengths only
+if the input source code contains a variable number mismatch, e.g. a
+call of a function with the wrong number of arguments, so we want to
+report a type error in this case. We can enforce these condition on type
+lists like so:</p>
+<pre class="eqlog"><code>Axiom NilTypeList() = ConsTypeList(_, _) =&gt; ConflictingTypes();
+Axiom
+    ConsTypeList(head_0, tail_0) = ConsTypeList(head_1, tail_1)
+    =&gt;
+    head_0 = head_1
+    &amp; tail_0 = tail_1
+    ;</code></pre>
+</body>
+</html>
