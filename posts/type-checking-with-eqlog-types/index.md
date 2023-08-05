@@ -1,5 +1,6 @@
 ---
 title: "Type Checking with Eqlog: Types"
+date: August 05, 2023
 lang: "en_US"
 ---
 
