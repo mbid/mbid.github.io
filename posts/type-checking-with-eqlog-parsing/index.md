@@ -20,12 +20,11 @@ Lack of native support for equality is probably the reason why type checking usi
 I intend for each post in this series to introduce one aspect of the type checker.
 This is my current outline, which I might need to update as I write the other posts:
 
-1. **Parsing [[code](https://github.com/eqlog/examples-inference/tree/parsing)] (this post)**
+1. **[Parsing](../type-checking-with-eqlog-parsing) [[code](https://github.com/eqlog/examples-inference/tree/parsing)] (this post)**
 2. [Variable binding](../type-checking-with-eqlog-variable-binding) [[code](https://github.com/eqlog/examples-inference/tree/binding)]
-3. Types [[code](https://github.com/eqlog/examples-inference/tree/types)]
-4. Expression typing [[code](https://github.com/eqlog/examples-inference/tree/expr-types)]
-5. Function literal typing [[code](https://github.com/eqlog/examples-inference/tree/function-types)]
-6. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
+3. [Types](../type-checking-with-eqlog-types) [[code](https://github.com/eqlog/examples-inference/tree/types)]
+4. [Typing](../type-checking-with-eqlog-typing) [[code](https://github.com/eqlog/examples-inference/tree/typing)] (this post)
+5. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
 
 The [code] links above after each post lead to a branch in the repository that contains only the code discussed so far, which will hopefully make it easier to follow along.
 

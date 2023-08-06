@@ -9,11 +9,10 @@ This post deals with *variable binding*, or *name resolution*.
 You can find the other posts here:
 
 1. [Parsing](../type-checking-with-eqlog-parsing) [[code](https://github.com/eqlog/examples-inference/tree/parsing)]
-2. **Variable binding [[code](https://github.com/eqlog/examples-inference/tree/binding)] (this post)**
-3. Types [[code](https://github.com/eqlog/examples-inference/tree/types)]
-4. Expression typing [[code](https://github.com/eqlog/examples-inference/tree/expr-types)]
-5. Function literal typing [[code](https://github.com/eqlog/examples-inference/tree/function-types)]
-6. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
+2. **[Variable binding](../type-checking-with-eqlog-variable-binding) [[code](https://github.com/eqlog/examples-inference/tree/binding)] (this post)**
+3. [Types](../type-checking-with-eqlog-types) [[code](https://github.com/eqlog/examples-inference/tree/types)]
+4. [Typing](../type-checking-with-eqlog-typing) [[code](https://github.com/eqlog/examples-inference/tree/typing)]
+5. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
 
 As usual, the code we discuss in this post is available as a [branch](https://github.com/eqlog/examples-inference/tree/binding) in the associated repository.
 
