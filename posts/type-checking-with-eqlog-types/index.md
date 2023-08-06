@@ -191,8 +191,11 @@ Axiom
 ```
 
 The `OptTypeNode` sort represents optional type node elements.
-Our parser emits such elements for example in argument lists of function literals, where argument variables can have an optional type annotation.
-In case an `OptTypeNode` element is given by a `TypeNode`, we enforce that `SemanticOptType` agrees with `SemanticType`:
+Our parser uses these nodes to represent type optional annotations.
+The `SemanticOptType` function is total and gives us a `Type` element from such nodes, regardless of whether the `OptTypeNode` corresponds to an actual `TypeNode` or not.
+One way to think about this is that the resulting `Type` element represents a type that is constrained by the type annotation.
+If the type annotation is missing, then the `Type` element is entirely unconstrained, i.e., not related to any type constructor.
+But on `SomeOptTypeNode` elements, which are given by an actual type node, `SemanticOptType` should agree with `SemanticType`:
 ```eqlog
 Axiom
     SomeOptTypeNode(otn, tn)
@@ -201,11 +204,6 @@ Axiom
     SemanticOptType(otn) = sigma
     ;
 ```
-There are no axioms that govern how `SemanticOptType` interacts with `NilOptTypeNode` elements.
-But by our totality axioms above, `SemanticOptType` is still defined on `NilOptTypeNode` elements.
-The resulting `Type` elements will thus for now be undetermined, i.e., not equal to a type obtained from one of the type constructors.
-However, we will later add axioms that imply indirectly that a `SemanticOptType` element must agree with certain other `Type` elements.
-For example, we will add axioms that assert that the type of a variable must on the one hand be equal to the `SemanticOptType` of its optional type annotation, and on the other hand that the variable must be a `boolean` if it is used as condition of an `if` statement.
 
 The `SemanticArgTypes : ArgListNode -> TypeList` should be given by mapping the `SemanticTypeOpt` function on optional type annotations, which we enforce as follows:
 ```eqlog

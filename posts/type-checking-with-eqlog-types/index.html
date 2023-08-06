@@ -464,30 +464,24 @@ semantic types associated to domain and codomain AST nodes:</p>
     FunctionType(dom_types, cod_type) = function_type
     ;</code></pre>
 <p>The <code>OptTypeNode</code> sort represents optional type node
-elements. Our parser emits such elements for example in argument lists
-of function literals, where argument variables can have an optional type
-annotation. In case an <code>OptTypeNode</code> element is given by a
-<code>TypeNode</code>, we enforce that <code>SemanticOptType</code>
-agrees with <code>SemanticType</code>:</p>
+elements. Our parser uses these nodes to represent type optional
+annotations. The <code>SemanticOptType</code> function is total and
+gives us a <code>Type</code> element from such nodes, regardless of
+whether the <code>OptTypeNode</code> corresponds to an actual
+<code>TypeNode</code> or not. One way to think about this is that the
+resulting <code>Type</code> element represents a type that is
+constrained by the type annotation. If the type annotation is missing,
+then the <code>Type</code> element is entirely unconstrained, i.e., not
+related to any type constructor. But on <code>SomeOptTypeNode</code>
+elements, which are given by an actual type node,
+<code>SemanticOptType</code> should agree with
+<code>SemanticType</code>:</p>
 <pre class="eqlog"><code>Axiom
     SomeOptTypeNode(otn, tn)
     &amp; sigma = SemanticType(tn)
     =&gt;
     SemanticOptType(otn) = sigma
     ;</code></pre>
-<p>There are no axioms that govern how <code>SemanticOptType</code>
-interacts with <code>NilOptTypeNode</code> elements. But by our totality
-axioms above, <code>SemanticOptType</code> is still defined on
-<code>NilOptTypeNode</code> elements. The resulting <code>Type</code>
-elements will thus for now be undetermined, i.e., not equal to a type
-obtained from one of the type constructors. However, we will later add
-axioms that imply indirectly that a <code>SemanticOptType</code> element
-must agree with certain other <code>Type</code> elements. For example,
-we will add axioms that assert that the type of a variable must on the
-one hand be equal to the <code>SemanticOptType</code> of its optional
-type annotation, and on the other hand that the variable must be a
-<code>boolean</code> if it is used as condition of an <code>if</code>
-statement.</p>
 <p>The <code>SemanticArgTypes : ArgListNode -&gt; TypeList</code> should
 be given by mapping the <code>SemanticTypeOpt</code> function on
 optional type annotations, which we enforce as follows:</p>
