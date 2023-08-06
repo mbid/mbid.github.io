@@ -511,10 +511,20 @@ variable has.</p>
 <code>VarTypeInX : Var * X -&gt; Type</code>: These functions should be
 defined on a pair of <code>(var, node)</code> if <code>var</code> is in
 scope for <code>node</code>, and if so, then
-<code>VarTypeInX(var, node)</code> is the type of the variable. This
-change makes it necessary to adapt the existing propagation axioms so
-that they also propagate the type of the variable. For example, the
-axiom that propagates variable bindings through
+<code>VarTypeInX(var, node)</code> is the type of the variable. We also
+update our rules that introduce variable bindings so they take type
+annotations into consideration. For example, the axiom for let
+statements is now as follows:</p>
+<pre class="eqlog"><code>Axiom
+    ConsStmtListNode(_, head, tail)
+    &amp; LetStmtNode(head, var, ty_annot, _)
+    &amp; ty = SemanticOptType(ty_annot)
+    =&gt;
+    VarTypeInStmts(var, tail) = ty
+    ;</code></pre>
+<p>The axioms responsible for propagating existing variable bindings
+also need updating so that they propagate the type of variables. For
+example, the axiom that propagates variable bindings through
 <code>StmtNodeList</code> elements now looks like this:</p>
 <pre class="eqlog"><code>Axiom
     ConsStmtListNode(stmts, _, tail)
@@ -522,12 +532,6 @@ axiom that propagates variable bindings through
     =&gt;
     VarTypeInStmts(var, tail) = sigma
     ;</code></pre>
-<p>Outside of propagation axioms we don’t use results of the
-<code>VarTypeInX</code> functions for now; we just hypothesize or assert
-that one of the <code>VarInType</code> functions is defined on certain
-pairs of variable and node. This will change in the next posts, where we
-collect typing constraints on variables based on their declaration and
-usage.</p>
 <h2 id="injectivity-of-type-constructors">Injectivity of type
 constructors</h2>
 <p>In most type systems, type constructors have <em>disjoint

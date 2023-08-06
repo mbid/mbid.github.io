@@ -231,7 +231,19 @@ We need to know which type the variable has.
 
 Thus, we change the `VarInX` predicates to functions `VarTypeInX : Var * X -> Type`:
 These functions should be defined on a pair of `(var, node)` if `var` is in scope for `node`, and if so, then `VarTypeInX(var, node)` is the type of the variable.
-This change makes it necessary to adapt the existing propagation axioms so that they also propagate the type of the variable.
+We also update our rules that introduce variable bindings so they take type annotations into consideration.
+For example, the axiom for let statements is now as follows:
+```eqlog
+Axiom
+    ConsStmtListNode(_, head, tail)
+    & LetStmtNode(head, var, ty_annot, _)
+    & ty = SemanticOptType(ty_annot)
+    =>
+    VarTypeInStmts(var, tail) = ty
+    ;
+```
+
+The axioms responsible for propagating existing variable bindings also need updating so that they propagate the type of variables.
 For example, the axiom that propagates variable bindings through `StmtNodeList` elements now looks like this:
 ```eqlog
 Axiom
@@ -241,8 +253,6 @@ Axiom
     VarTypeInStmts(var, tail) = sigma
     ;
 ```
-Outside of propagation axioms we don't use results of the `VarTypeInX` functions for now; we just hypothesize or assert that one of the `VarInType` functions is defined on certain pairs of variable and node.
-This will change in the next posts, where we collect typing constraints on variables based on their declaration and usage.
 
 ## Injectivity of type constructors
 
