@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2023-08-06" />
+  <title>Type Checking with Eqlog: Typing</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 45em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Type Checking with Eqlog: Typing</h1>
+<p class="date">August 06, 2023</p>
+</header>
+<p>This is the fourth post in a series on implementing a type checker
+with the <a href="https://github.com/eqlog/eqlog">Eqlog</a> Datalog
+engine. In this post, we impose constraints on types of expressions and
+functions. By the end, we’ll have a full type checker for simple types.
+Lol no generics. You can find the other posts here:</p>
+<ol type="1">
+<li><a href="../type-checking-with-eqlog-parsing">Parsing</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/parsing">code</a>]</li>
+<li><a href="../type-checking-with-eqlog-variable-binding">Variable
+binding</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/binding">code</a>]</li>
+<li><a href="../type-checking-with-eqlog-types">Types</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/types">code</a>]</li>
+<li><strong>Typing [<a
+href="https://github.com/eqlog/examples-inference/tree/typing">code</a>]
+(this post)</strong></li>
+<li>Hindley-Milner polymorphism [<a
+href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]</li>
+</ol>
+<p>As usual, the code we discuss in this post is available as a <a
+href="https://github.com/eqlog/examples-inference/tree/typing">branch</a>
+in the associated repository.</p>
+<p>In the previous post on the <code>Type</code> sort we introduced the
+following:</p>
+<ul>
+<li>Type constructors such as <code>BooleanType : Type</code> and
+<code>FunctionType : TypeList -&gt; Type</code>.</li>
+<li>Variable bindings associate types to variables in the current
+scope.</li>
+<li>Our Eqlog program populates the <code>ConflictingTypes</code>
+predicate if we equate types that cannot be equal, for example if
+<code>BooleanType() = NumberType()</code>.</li>
+<li>Total functions that associate <code>Type</code> elements to various
+AST nodes, in particular the <code>ExprType : ExprNode -&gt; Type</code>
+and <code>FunctionNodeType : FunctionNode -&gt; Type</code> functions.
+As of now, there are no laws these functions: The output of these
+functions is always an opaque <code>Type</code> element.</li>
+</ul>
+<p>Our main task for this post is to impose constraints on the
+<code>ExprType</code> and <code>FunctionNodeType</code> functions.</p>
+<h2 id="types-of-expressions">Types of expressions</h2>
+<p>We begin with the constraints on the <code>ExprType</code> function.
+Here are the rules for constants:</p>
+<pre class="eqlog"><code>Axiom FalseExprNode(expr) &amp; et = ExprType(expr) =&gt; et = BooleanType();
+Axiom TrueExprNode(expr) &amp; et = ExprType(expr) =&gt; et = BooleanType();
+Axiom
+    StringLiteralExprNode(expr, _)
+    &amp; et = ExprType(expr)
+    =&gt;
+    et = StringType()
+    ;
+// ...</code></pre>
+<p>And this is the rule for equality comparisons:</p>
+<pre class="eqlog"><code>Axiom
+    EqualsExprNode(eq, lhs, rhs)
+    &amp; eq_type = ExprType(eq)
+    &amp; lhs_type = ExprType(lhs)
+    &amp; rhs_type = ExprType(rhs)
+    =&gt;
+    eq_type = BooleanType()
+    &amp; lhs_type = rhs_type
+    ;</code></pre>
+<p>Thus, if <code>eq</code> is the expression <code>lhs == rhs</code>,
+then <code>eq</code> is of <code>boolean</code> type, and the types of
+<code>lhs</code> and <code>rhs</code> agree.</p>
+<p>Note that we do not “check”, “verify” or even “demand” that the types
+of <code>lhs</code> and <code>rhs</code> agree — we simply assert that
+the types <em>are</em> equal. So what happens if there is an equality
+expression such as <code>true == "asdf"</code> where the types of the
+two operands do not match? As usual, Eqlog will enforce that our rules
+hold and thus equate the types of <code>true</code> and
+<code>"asdf"</code>. This means that now
+<code>BooleanType() == StringType()</code> holds, which will make the
+rule</p>
+<pre class="eqlog"><code>Axiom BooleanType() == StringType() =&gt; TypeConflict();</code></pre>
+<p>fire, so that <code>TypeConflict</code> holds. Our Rust glue code
+then finds that the <code>TypeConflict</code> predicate is populated
+after evaluation and reports an error.</p>
+<p>Recall the <code>VarTypeInExpr : Var * ExprNode -&gt; Type</code>
+function: <code>VarTypeInExpr(var, expr)</code> is defined if and only
+if there is a variable in scope for <code>expr</code>, and if so the
+result of <code>VarTypeInExpr</code> is the type of the variable. With
+this function at hand, the typing rule of variable usage is as
+follows:</p>
+<pre class="eqlog"><code>Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = sigma
+    =&gt;
+    ExprType(expr) = sigma
+    ;</code></pre>
+<p>Note that it is important that we only hypothesize, but not assert,
+that <code>VarTypeInExpr</code> is defined on <code>var</code> and
+<code>expr</code>. If we moved the <code>VarTypeInExpr</code> atom from
+the premise to the conclusion, then every usage of a variable would
+<em>introduce</em> a variable binding, which would make it impossible to
+detect usages of undeclared variables.</p>
+<p>The most complex axiom governing <code>ExprType</code> is the rule
+for function applications. If <code>AppExprNode(expr, func, args)</code>
+holds, then <code>expr</code> is an expression of the form
+<code>func(args)</code>. In this situation <code>func</code> must be a
+function type with domain and codomain matching the types of
+<code>args</code> and <code>expr</code>. Here it comes in handy that
+we’ve encoded injectivity of <code>FunctionType</code> by adding inverse
+functions <code>DomainType</code> and <code>CodomainType</code>: If
+either of those functions is defined on a type <code>kappa</code>, then
+also the other function is defined, and
+<code>kappa = FunctionType(DomainType(kappa), CodomainType(kappa))</code>.
+We can thus encode typing constraints arising from function application
+as follows:</p>
+<pre class="eqlog"><code>Axiom
+    AppExprNode(expr, func, args)
+    &amp; res_ty = ExprType(expr)
+    &amp; func_ty = ExprType(func)
+    &amp; arg_tys = ExprTypes(args)
+    =&gt;
+    arg_tys = DomainTypes(func_ty)
+    &amp; res_ty = CodomainType(func_ty)
+    ;</code></pre>
+<p>Some of the constraints on expressions also arise from usage in
+statements. For example, the expression used in the condition for a
+<code>while</code> loop or an <code>if</code> statement must be
+Boolean.</p>
+<h2 id="types-of-function-literals">Types of function literals</h2>
+<p>Next we consider the constraints on
+<code>FunctionNodeType : FunctionNode -&gt; Type</code>. To recap, the
+<code>FunctionNode</code> sort represents function literals, for example
+this source code fragment:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">foo</span>(x<span class="op">:</span> <span class="dt">number</span><span class="op">,</span> y)<span class="op">:</span> <span class="dt">boolean</span> {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> x <span class="op">==</span> y<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Subnodes of the function literals are available via the
+<code>Function</code> predicate:</p>
+<pre><code>Pred Function : FunctionNode * Var * ArgListNode * OptTypeNode * StmtListNode;
+// Function(func_node, name, args, result_type, body)</code></pre>
+<p>Our first constraint on <code>FunctionNodeType</code> is that it is
+always a <code>FunctionType</code>, which is equivalent to it having
+<code>DomainTypes</code> and a <code>CodomainType</code>:</p>
+<pre class="eqlog"><code>Axiom kappa = FunctionNodeType(_) =&gt; DomainTypes(kappa)! &amp; CodomainType(kappa)!;</code></pre>
+<h3 id="argument-types">Argument types</h3>
+<p>The domain type of a function literal is given by the types of its
+arguments:</p>
+<pre class="eqlog"><code>Axiom
+    Function(func, _, args, _, _)
+    &amp; dom = DomainTypes(FunctionNodeType(func))
+    =&gt;
+    SemanticArgTypes(args) = dom
+    ;</code></pre>
+<p>Recall from the last post that
+<code>SemanticArgTypes : ArgListNode -&gt; TypeList</code> is given by
+mapping the <code>SemanticOptType</code> function on the type
+annotations of each argument. In that post we also added a rule to
+equate the <code>SemanticOptType</code> of a argument variable
+declaration with the <code>VarTypeInArgList</code> for that
+variable:</p>
+<pre class="eqlog"><code>// Every function argument introduces a variable.
+Axiom
+    ConsArgListNode(_, var, ty_annot, tail)
+    &amp; ty = SemanticOptType(ty_annot)
+    =&gt;
+    VarTypeInArgList(var, tail) = ty
+    ;</code></pre>
+<p>Since we propagate the result of the <code>VarTypeInArgList</code>
+function into the function body, this means that the type of an argument
+as given by <code>FunctionNodeType</code> is tied to the type of the
+argument variable inside the function body.</p>
+<h3 id="return-type-annotations">Return type annotations</h3>
+<p>The return type of a function should match an explicit return type
+annotation:</p>
+<pre class="eqlog"><code>Axiom
+    Function(func, _, _, cod_annot, _)
+    &amp; func_ty = FunctionNodeType(func)
+    &amp; cod_ty = SemanticOptType(cod_annot)
+    =&gt;
+    CodomainType(func_ty) = cod_ty
+    ;</code></pre>
+<h3 id="types-in-return-statements">Types in return statements</h3>
+<p>We need rules that tie the return type of a function to the type of
+expressions that are returned from the function body. For example, we
+should detect that the return type of the function</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">foo</span> () { <span class="cf">return</span> <span class="dv">5</span><span class="op">;</span> }</span></code></pre></div>
+<p>is <code>number</code> even though the return type annotation is
+missing. If a function body contains multiple return statements with
+expressions of different types, then we should report a type conflict
+error, for example here:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bar</span> (c) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (c) {</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">&#39;xyz&#39;</span><span class="op">;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The body of a function is a <code>StmtListNode</code> element, so we
+introduce a <code>ReturnsType : StmtListNode -&gt; Type</code> function
+for this analysis: We should have
+<code>ReturnsType(stmts) = sigma</code> if and only if one of the
+(sub)statements in <code>stmts</code> is an explicit return statement
+with an expression of type <code>sigma</code>. The functionality axiom
+for <code>ReturnsType</code> enforces that there can be at most one such
+type <code>sigma</code>. This means that conflicting types in return
+statements surface the same way as for expressions: They lead to an
+equality such as <code>BooleanType() == NumberType()</code>, which will
+then trigger one of our axioms that populates the
+<code>ConflictingTypes</code> predicate.</p>
+<p>Our AST uses different nodes for return statements with or without an
+expression:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="dv">5</span><span class="op">;</span> <span class="co">// Returns the expression `5`.</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span><span class="op">;</span> <span class="co">// Equivalent to `return ();`.</span></span></code></pre></div>
+<p>The axiom relating <code>ReturnsTypes</code> to return statements
+with expressions is</p>
+<pre class="eqlog"><code>Axiom
+    ConsStmtListNode(stmts, head, _)
+    &amp; ReturnStmtNode(head, return_value)
+    &amp; et = ExprType(return_value)
+    =&gt;
+    ReturnsType(stmts) = et
+    ;</code></pre>
+<p>and the axiom for return statements without expressions is
+similar.</p>
+<p>We also need axioms that propagate <code>ReturnsType</code> through
+statement nodes:</p>
+<pre class="eqlog"><code>// If the tail of a statement list that can return a type, then the full
+// statement list can also return that type.
+Axiom
+    ConsStmtListNode(stmts, _, tail)
+    &amp; rt = ReturnsType(tail)
+    =&gt;
+    ReturnsType(stmts) = rt
+    ;
+
+// An if statement can return a type if at least one of its two branches
+// returns that type.
+Axiom
+    ConsStmtListNode(stmts, head, _)
+    &amp; IfStmtNode(head, _, true_branch, _)
+    &amp; rt = ReturnsType(true_branch)
+    =&gt;
+    ReturnsType(stmts) = rt
+    ;
+Axiom
+    ConsStmtListNode(stmts, head, _)
+    &amp; IfStmtNode(head, _, _, false_branch)
+    &amp; rt = ReturnsType(false_branch)
+    =&gt;
+    ReturnsType(stmts) = rt
+    ;
+
+// ...</code></pre>
+<p>We can now enforce that the return type of a function matches the
+type of returned expressions like so:</p>
+<pre class="eqlog"><code>Axiom
+    Function(func, _, _, _, body)
+    &amp; ft = FunctionNodeType(func)
+    &amp; rt = ReturnsType(body)
+    =&gt;
+    rt = CodomainType(ft)
+    ;</code></pre>
+<h3 id="implicit-void-return">Implicit <code>void</code> return</h3>
+<p>If control flow reaches the end of a function body, then the function
+implicitly returns <code>()</code>, so the return type of the function
+must be <code>void</code>. Unfortunately, as with most questions
+concerning control flow, it is undecidable whether this rule applies to
+a given function. But we can over-approximate an answer: There will be
+cases where our analysis believes that control flow can reach the end of
+a function when that is not actually the case. Our simple heuristic is
+based on the following rules:</p>
+<ul>
+<li>Control cannot flow past return statements. If our toy language had
+assertions or exceptions, we could also consider these here.</li>
+<li>Control can only flow past an <code>if</code> statement if it can
+flow through at least one of the two branches.</li>
+</ul>
+<p>In particular, we don’t attempt to analyze branching conditions to
+infer whether some branch is unreachable.</p>
+<p>Our analysis works with the</p>
+<pre><code>Pred CanProceedStmt : StmtNode;
+Pred CanProceedStmts : StmtListNode;</code></pre>
+<p>predicates: We should have <code>CanProceedStmts(stmt)</code> if
+control can flow past <code>stmt</code>, and
+<code>CanProceedStmts(stmts)</code> if control can flow past all the
+statements in <code>stmts</code>:</p>
+<pre class="eqlog"><code>Axiom LetStmtNode(stmt, _, _, _) =&gt; CanProceedStmt(stmt);
+Axiom ExprStmtNode(stmt, _) =&gt; CanProceedStmt(stmt);
+// ... and so forth for most other statement nodes but not return statements.
+
+Axiom
+    IfStmtNode(stmt, _, true_branch, _)
+    &amp; CanProceedStmts(true_branch)
+    =&gt;
+    CanProceedStmt(stmt)
+    ;
+// ... and similarly for `false_branch`.</code></pre>
+<p>Finally, we enforce an implicit <code>void</code> return type on a
+function if control can flow past its body:</p>
+<pre class="eqlog"><code>Axiom
+    Function(func, _, _, _, body)
+    &amp; CanProceedStmts(body)
+    &amp; cod = CodomainType(FunctionNodeType(func))
+    =&gt;
+    cod = VoidType()
+    ;</code></pre>
+<h2 id="undetermined-types">Undetermined types</h2>
+<p>Our type checker is now almost complete: In case there are
+conflicting typing constraints on an expression or function, then the
+<code>ConflictingTypes</code> is populated. However, we have not
+considered <em>undetermined</em> types yet. Keeping in mind that our
+language does not have generics yet, which types should <code>x</code>
+and <code>id</code> have in the following program?</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">id</span>(x) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> x<span class="op">;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>To detect situations such as this one and report an error, we
+introduce predicates</p>
+<pre class="eqlog"><code>Pred DeterminedType : Type;
+Pred DeterminedTypes : TypeList;</code></pre>
+<p>which should hold only for types that are either base types or
+obtained from base types with type constructors:</p>
+<pre class="eqlog"><code>Axiom sigma = VoidType() =&gt; DeterminedType(sigma);
+Axiom sigma = BooleanType() =&gt; DeterminedType(sigma);
+Axiom
+    sigma = FunctionType(dom, cod)
+    &amp; DeterminedTypes(dom)
+    &amp; DeterminedType(cod)
+    =&gt;
+    DeterminedType(sigma)
+    ;
+...</code></pre>
+<p>If Eqlog supported negations, we could now add an axiom such as</p>
+<pre class="eqlog"><code>Axiom NOT DeterminedType(_) =&gt; UndeterminedType();</code></pre>
+<p>and check after Eqlog evaluation whether
+<code>UndeterminedType</code> holds. As Eqlog does not have negations
+(yet?), we have to encode this axiom directly in Rust:</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> has_undetermined_type(p<span class="op">:</span> <span class="op">&amp;</span>Program) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    p<span class="op">.</span>iter_type()<span class="op">.</span>any(<span class="op">|</span>sigma<span class="op">|</span> <span class="op">!</span>p<span class="op">.</span>determined_type(sigma))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This concludes the implementation of our first version our type
+checker. Thanks for following along! But the series is not done yet: The
+next post will introduce generics, and we’ll implement Hindley-Milner
+type inference in Eqlog. With generics, the function <code>id</code>
+above will have inferred type <code>forall a. (x: a) =&gt; a</code>, so
+we won’t report an error anymore.</p>
+</body>
+</html>
