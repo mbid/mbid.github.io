@@ -7,12 +7,11 @@ lang: "en_US"
 This is the first post in a series I intend to write on implementing a type checker using [Eqlog](https://github.com/eqlog/eqlog), a Datalog engine for Rust.
 The repository containing the complete type checker is available [here](https://github.com/eqlog/examples-inference), and each post in the series will explain one aspect of the type checker.
 Datalog is popular for static analysis, and Rust's [Chalk project](https://github.com/rust-lang/chalk) is an implementation of Rust's trait system based on Datalog.
-However, there's not a lot of work on using Datalog for type checking (though see [here](https://dl.acm.org/doi/pdf/10.1145/3428195)), which is what this series is about.
+However, there's not a lot of work on using Datalog for type checking (though see [here](https://dl.acm.org/doi/pdf/10.1145/3428195) and [here](https://github.com/egraphs-good/egglog/blob/main/tests/typecheck.egg)), which is what this series is about.
 
 [Eqlog](https://github.com/eqlog/eqlog) is a Datalog engine which I and, for previous versions, [Jakob Nielsen](https://www.jakobbotsch.com/) have been working on from time to time over the last few years.
 Eqlog implements an extension of Datalog that allows it to infer equalities among elements during evaluation.
 For example, you cannot directly encode the anti-symmetry axiom $x \le y \land y \le x \implies x = y$ in standard Datalog because of the equality in the conclusion, but this is trivial in Eqlog.
-I expect that instead of Eqlog you can also use the [egglog](https://github.com/egraphs-good/egglog) Datalog engine, which works similarly to Eqlog.
 
 The ability to reason about equality will be critical when get to type unification.
 Lack of native support for equality is probably the reason why type checking using Datalog isn't a well-known technique even though Datalog is quite popular in the programming languages space.

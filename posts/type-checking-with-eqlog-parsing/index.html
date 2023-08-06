@@ -247,8 +247,9 @@ is popular for static analysis, and Rust’s <a
 href="https://github.com/rust-lang/chalk">Chalk project</a> is an
 implementation of Rust’s trait system based on Datalog. However, there’s
 not a lot of work on using Datalog for type checking (though see <a
-href="https://dl.acm.org/doi/pdf/10.1145/3428195">here</a>), which is
-what this series is about.</p>
+href="https://dl.acm.org/doi/pdf/10.1145/3428195">here</a> and <a
+href="https://github.com/egraphs-good/egglog/blob/main/tests/typecheck.egg">here</a>),
+which is what this series is about.</p>
 <p><a href="https://github.com/eqlog/eqlog">Eqlog</a> is a Datalog
 engine which I and, for previous versions, <a
 href="https://www.jakobbotsch.com/">Jakob Nielsen</a> have been working
@@ -258,9 +259,7 @@ during evaluation. For example, you cannot directly encode the
 anti-symmetry axiom <span
 class="math inline"><em>x</em> ≤ <em>y</em> ∧ <em>y</em> ≤ <em>x</em> ⟹ <em>x</em> = <em>y</em></span>
 in standard Datalog because of the equality in the conclusion, but this
-is trivial in Eqlog. I expect that instead of Eqlog you can also use the
-<a href="https://github.com/egraphs-good/egglog">egglog</a> Datalog
-engine, which works similarly to Eqlog.</p>
+is trivial in Eqlog.</p>
 <p>The ability to reason about equality will be critical when get to
 type unification. Lack of native support for equality is probably the
 reason why type checking using Datalog isn’t a well-known technique even
