@@ -232,14 +232,13 @@ We need to know which type the variable has.
 Thus, we change the `VarInX` predicates to functions `VarTypeInX : Var * X -> Type`:
 These functions should be defined on a pair of `(var, node)` if `var` is in scope for `node`, and if so, then `VarTypeInX(var, node)` is the type of the variable.
 We also update our rules that introduce variable bindings so they take type annotations into consideration.
-For example, the axiom for let statements is now as follows:
+For example, the axiom for function argument variables is now as follows:
 ```eqlog
 Axiom
-    ConsStmtListNode(_, head, tail)
-    & LetStmtNode(head, var, ty_annot, _)
-    & ty = SemanticOptType(ty_annot)
+    ConsStmtListNode(stmts, _, tail)
+    & sigma = VarTypeInStmts(var, stmts)
     =>
-    VarTypeInStmts(var, tail) = ty
+    VarTypeInStmts(var, tail) = sigma
     ;
 ```
 

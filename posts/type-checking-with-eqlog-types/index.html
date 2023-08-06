@@ -513,14 +513,13 @@ defined on a pair of <code>(var, node)</code> if <code>var</code> is in
 scope for <code>node</code>, and if so, then
 <code>VarTypeInX(var, node)</code> is the type of the variable. We also
 update our rules that introduce variable bindings so they take type
-annotations into consideration. For example, the axiom for let
-statements is now as follows:</p>
+annotations into consideration. For example, the axiom for function
+argument variables is now as follows:</p>
 <pre class="eqlog"><code>Axiom
-    ConsStmtListNode(_, head, tail)
-    &amp; LetStmtNode(head, var, ty_annot, _)
-    &amp; ty = SemanticOptType(ty_annot)
+    ConsStmtListNode(stmts, _, tail)
+    &amp; sigma = VarTypeInStmts(var, stmts)
     =&gt;
-    VarTypeInStmts(var, tail) = ty
+    VarTypeInStmts(var, tail) = sigma
     ;</code></pre>
 <p>The axioms responsible for propagating existing variable bindings
 also need updating so that they propagate the type of variables. For
