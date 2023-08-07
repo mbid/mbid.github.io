@@ -5,11 +5,9 @@ html {
 }
 body {
   margin: 0 auto;
-  max-width: 45em;
-  padding-left: 50px;
-  padding-right: 50px;
-  padding-top: 50px;
-  padding-bottom: 50px;
+  max-width: 40em;
+  padding-top: 12px;
+  padding-bottom: 12px;
   hyphens: auto;
   overflow-wrap: break-word;
   text-rendering: optimizeLegibility;
@@ -44,12 +42,19 @@ body {
 p {
   margin: 1em 0;
 }
-a {
-  color: #1a1a1a;
+nav {
+  display: flex;
+  flex-direction: row;
+  gap: 12pt;
 }
-a:visited {
-  color: #1a1a1a;
+nav > a {
+  font-size: 1.2em;
 }
+/*
+nav > :last-child {
+  margin-left: auto;
+}
+*/
 img {
   max-width: 100%;
 }
@@ -127,18 +132,6 @@ td {
 header {
   margin-bottom: 4em;
   text-align: center;
-}
-#TOC li {
-  list-style: none;
-}
-#TOC ul {
-  padding-left: 1.3em;
-}
-#TOC > ul {
-  padding-left: 0;
-}
-#TOC a:not(:hover) {
-  text-decoration: none;
 }
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}

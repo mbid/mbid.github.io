@@ -1,0 +1,6 @@
+#!/bin/sh
+
+template_file="$(dirname "$0")/index-template.html"
+metadata_file="$(dirname "$0")/posts.yaml"
+
+echo "" | pandoc --template="$template_file" --metadata-file="$metadata_file" --verbose --standalone --output="index.html" "$@"

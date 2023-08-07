@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>Posts</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      ul.post-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+
+        font-size: 1.2em;
+      }
+      ul.post-list > li {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-top: 0.6666em;
+        margin-bottom: 0.6666em;
+      }
+      .date {
+        display: block;
+        width: 200px;
+      }
+      .post {
+        display: block;
+        margin-left: 1em;
+      }
+      a.post:not(:hover) {
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/posts">posts</a>
+      <a href="/">about</a>
+    </nav>
+    <header id="title-block-header">
+      <h1 class="title">Posts</h1>
+    </header>
+    <ul class="post-list">
+      $for(posts)$
+      <li>
+        <span class="date">
+          $it.date$
+        </span>
+        <a class="post" href="type-checking-with-eqlog-parsing">
+          $it.title$
+        </a>
+      </li>
+      $endfor$
+    </ul>
+  </body>
+</html>
