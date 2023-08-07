@@ -7,7 +7,6 @@ lang: "en_US"
 This is the fourth post in a series on implementing a type checker with the [Eqlog](https://github.com/eqlog/eqlog) Datalog engine.
 In this post, we impose constraints on types of expressions and functions.
 By the end, we'll have a full type checker for simple types.
-Lol no generics.
 You can find the other posts here:
 
 1. [Parsing](../type-checking-with-eqlog-parsing) [[code](https://github.com/eqlog/examples-inference/tree/parsing)]
