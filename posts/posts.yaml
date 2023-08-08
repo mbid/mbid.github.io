@@ -3,9 +3,13 @@ lang: en_US
 posts:
   - title: "Type Checking with Eqlog: Parsing"
     date: July 23, 2023 
+    url: type-checking-with-eqlog-parsing
   - title: "Type Checking with Eqlog: Variable Binding"
     date: August 01, 2023 
+    url: type-checking-with-eqlog-variable-binding
   - title: "Type Checking with Eqlog: Types"
     date: August 05, 2023
+    url: type-checking-with-eqlog-types
   - title: "Type Checking with Eqlog: Typing"
     date: August 06, 2023
+    url: type-checking-with-eqlog-typing
