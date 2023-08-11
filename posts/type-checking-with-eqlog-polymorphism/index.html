@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Type Checking with Eqlog: Polymorphism</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<nav>
+<a href="/posts">posts</a>
+<a href="/">about</a>
+</nav>
+<header id="title-block-header">
+<h1 class="title">Type Checking with Eqlog: Polymorphism</h1>
+</header>
+<p>This is the fifth post in a series on implementing a type checker
+with the <a href="https://github.com/eqlog/eqlog">Eqlog</a> Datalog
+engine. In this post, we’ll extend our type system with generics, or
+<em>polymorphism</em>, and implement <a
+href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system">Hindley-Milner
+type inference</a>.</p>
+<p>You can find the other posts here:</p>
+<ol type="1">
+<li><a href="../type-checking-with-eqlog-parsing">Parsing</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/parsing">code</a>]</li>
+<li><a href="../type-checking-with-eqlog-variable-binding">Variable
+binding</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/binding">code</a>]</li>
+<li><a href="../type-checking-with-eqlog-types">Types</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/types">code</a>]</li>
+<li><a href="../type-checking-with-eqlog-typing">Typing</a> [<a
+href="https://github.com/eqlog/examples-inference/tree/typing">code</a>]</li>
+<li><strong>Polymorphism [<a
+href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]
+(this post)</strong></li>
+</ol>
+<p>After the last post, we now have a type checker for a <em>simply
+typed</em> language. This means that our type checker accepts a program
+only if every expression and variable can be assigned a unique concrete
+type. For example, consider the following program, which is rejected by
+our type checker:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">id</span>(x) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a <span class="op">=</span> <span class="fu">id</span>(<span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> b <span class="op">=</span> <span class="fu">id</span>(<span class="st">&#39;xyz&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p>The problem here is the variable <code>x</code>: Our type checker
+believes that it must have type <code>number</code> due to the call
+<code>id(5)</code>, but that it must also have type <code>string</code>
+due to the call <code>id('xyz')</code>. On the other hand, if we removed
+the two calls to <code>id</code>, so that <code>id</code> was never
+called, then our type checker would reject the program because the type
+of <code>x</code> would not be determined.</p>
+<p>Our goal for this post is to implement generics, which will make the
+program above type check. To be specific, we’ll implement first-order
+polymorphism. This means that, in addition to the types we’ve already
+seen, which we’ll refer to as <em>simple types</em> or
+<em>monotypes</em> from now on, we now also consider <em>polytypes</em>.
+Polytypes are given by a list of <em>bound</em> type variables and a
+simple type that may contain any of the bound type variables. We write
+polytypes as <code>forall a0 a1 &lt;...&gt; an. t</code>, where
+<code>t</code> is a simple type that can contain any of the type
+variables <code>a0, ..., an</code>. The <code>id</code> function above
+will be inferred to have type <code>forall a. (x: a) =&gt; a</code>.
+That our flavor of polymorphism is first-order means that polytypes
+cannot be nested: There can only be one quantifier in the front of a
+type.</p>
+<p>We still require each expression and each variable introduced by a
+<code>let</code> statement to have a simple type, but names introduced
+with <code>function</code> statements have polytypes. At every usage
+site of a variable whose type is a polytype, we substitute the polytype
+into a monotype by replacing each of its bound type variable by a simple
+type.</p>
+<p>Within the scope of a function body, we consider type variables of
+the function type to be simple types. This means that the variable
+<code>x</code> in the program above has simple type <code>a</code>
+within the body of <code>id</code>. And it also has implications for
+nested function definitions. Consider the following program:</p>
+<pre><code>function id2(y) {
+    function foo(z) {
+        return y;
+    }
+    return foo(());
+}</code></pre>
+<p>The type of <code>id2</code> is
+<code>forall b. (y: b) =&gt; b</code>. The function <code>foo</code> has
+type <code>forall c. (z: c) =&gt; b</code>.</p>
+</body>
+</html>
