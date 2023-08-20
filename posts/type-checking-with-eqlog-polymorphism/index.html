@@ -38,9 +38,9 @@ href="https://github.com/eqlog/examples-inference/tree/hindley-milner">code</a>]
 </ol>
 <p>After the last post, we now have a type checker for a <em>simply
 typed</em> language. This means that our type checker accepts a program
-only if every expression and variable can be assigned a unique concrete
-type. For example, consider the following program, which is rejected by
-our type checker:</p>
+only if it can assign a uniquely determined, concrete type to every
+expression and variable in the program. This means that our type checker
+rejects some sensible programs, for example this one:</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">id</span>(x) {</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x<span class="op">;</span></span>
@@ -55,39 +55,470 @@ due to the call <code>id('xyz')</code>. On the other hand, if we removed
 the two calls to <code>id</code>, so that <code>id</code> was never
 called, then our type checker would reject the program because the type
 of <code>x</code> would not be determined.</p>
-<p>Our goal for this post is to implement generics, which will make the
-program above type check. To be specific, we’ll implement first-order
-polymorphism. This means that, in addition to the types we’ve already
-seen, which we’ll refer to as <em>simple types</em> or
-<em>monotypes</em> from now on, we now also consider <em>polytypes</em>.
-Polytypes are given by a list of <em>bound</em> type variables and a
-simple type that may contain any of the bound type variables. We write
-polytypes as <code>forall a0 a1 &lt;...&gt; an. t</code>, where
-<code>t</code> is a simple type that can contain any of the type
-variables <code>a0, ..., an</code>. The <code>id</code> function above
-will be inferred to have type <code>forall a. (x: a) =&gt; a</code>.
-That our flavor of polymorphism is first-order means that polytypes
-cannot be nested: There can only be one quantifier in the front of a
-type.</p>
-<p>We still require each expression and each variable introduced by a
-<code>let</code> statement to have a simple type, but names introduced
-with <code>function</code> statements have polytypes. At every usage
-site of a variable whose type is a polytype, we substitute the polytype
-into a monotype by replacing each of its bound type variable by a simple
-type.</p>
-<p>Within the scope of a function body, we consider type variables of
-the function type to be simple types. This means that the variable
-<code>x</code> in the program above has simple type <code>a</code>
-within the body of <code>id</code>. And it also has implications for
-nested function definitions. Consider the following program:</p>
-<pre><code>function id2(y) {
-    function foo(z) {
-        return y;
-    }
-    return foo(());
-}</code></pre>
-<p>The type of <code>id2</code> is
-<code>forall b. (y: b) =&gt; b</code>. The function <code>foo</code> has
-type <code>forall c. (z: c) =&gt; b</code>.</p>
+<p>Our goal for this post is to implement <em>polymorphism</em>, or
+<em>generics</em>, which will make the program above type check with
+inferred polymorphic type <code>id : (a) =&gt; a</code> where
+<code>a</code> is a <em>type variable</em>. At the two call sites of the
+<code>id</code> function, our new version of the type checker implicitly
+instantiates the polymorphic type of <code>id</code> by plugging in
+<code>number</code> and <code>string</code>, respectively, for the type
+variable <code>a</code>.</p>
+<h2 id="monotypes-and-polytypes">Monotypes and polytypes</h2>
+<p>We represent type variables in our Eqlog program as a
+<code>Type</code> elements which cannot be obtained by applying one of
+the type constructors to other <code>Type</code> elements. Our previous
+checker for simple types would report an error if it found such
+<code>Type</code> elements after Eqlog evaluation, but we will relax
+this check later on.</p>
+<p>In addition to the monomorphic types or <em>monotypes</em> that we’ve
+seen so far, we now also consider polymorphic types or
+<em>polytypes</em>. Both monotypes and polytypes are given by an
+underlying <code>Type</code> element:</p>
+<pre class="eqlog"><code>Sort GeneralType;
+Func MonoType : Type -&gt; GeneralType;
+Func PolyType : Type -&gt; GeneralType;</code></pre>
+<p>The difference between monotypes and polytypes lies in how we
+interpret type variables occurring in the underlying <code>Type</code>
+element:</p>
+<ul>
+<li><p>A <code>MonoType(ty)</code> is well-formed only if all type
+variables occurring in <code>ty</code> are part of the ambient <em>type
+context</em>. Type contexts are sets of <code>Type</code> elements that
+parametrize a program fragment; more on this <a
+href="#type-contexts">below</a>. For example, monotypes occurring in top
+level module scope may not contain any type variables at all, and within
+the body of the <code>id</code> function the only type variable that a
+monotype may refer to is the type of the argument
+<code>x</code>.</p></li>
+<li><p>In <code>PolyType(ty)</code>, the <code>ty</code> element
+represents a <em>type scheme</em>: We interpret type variables in
+<code>ty</code> that are not in the ambient type context as
+<em>bound</em> or <em>universally quantified</em>. The set of bound type
+variables in a polytype is often syntactically denoted like so:
+<code>id : forall a. (a) =&gt; a</code>.</p></li>
+</ul>
+<p>Our flavor of polymorphism is usually called <em>prenex</em> or
+<em>rank 1</em> polymorphism. “Prenex” because types can be (implicitly)
+quantified over only on the top level, i.e. in <em>front</em> of the
+type. Thus <code>forall a. (a) =&gt; a</code> is valid, whereas
+<code>(forall a. a =&gt; a) -&gt; (forall b. b =&gt; ())</code> is
+invalid. And “rank 1” because our type system has rank 0 types
+(monotypes) and rank 1 types (polytypes) which quantify over rank 0
+types, but no more: We could also imagine rank 2 types that are allowed
+to quantify over rank 1 types, rank 3 types which quantify over rank 2
+types and so forth.</p>
+<p>Since types of variables can now be polymorphic, we have to change
+our <code>VarTypeInX : X -&gt; Type</code> function family to be valued
+in <code>GeneralType</code>:</p>
+<pre class="eqlog"><code>Func VarTypeInStmts : StmtListNode -&gt; GeneralType;
+Func VarTypeInExpr : ExprNode -&gt; GeneralType;
+...</code></pre>
+<p>While the axioms propagating variable bindings through syntax nodes
+can stay the same, we have to decide for each AST node that introduces a
+variable binding whether the variable has monotype or polytype:</p>
+<ul>
+<li><p>Variables introduced using function statements have
+polytypes:</p>
+<pre class="eqlog"><code>Axiom
+    ConsStmtListNode(_, head, tail)
+    &amp; FunctionStmtNode(head, func)
+    &amp; Function(func, var, _, _ ,_)
+    &amp; ty = PolyType(FunctionNodeType(func))
+    =&gt;
+    VarTypeInStmts(var, tail) = ty
+    ;</code></pre></li>
+<li><p>Variables introduced using let statements have monotypes:</p>
+<pre class="eqlog"><code>Axiom
+    ConsStmtListNode(_, head, tail)
+    &amp; LetStmtNode(head, var, ty_annot, expr)
+    &amp; ty = SemanticOptType(ty_annot)
+    &amp; expr_type = ExprType(expr)
+    &amp; mono_expr_type = MonoType(expr_type)
+    =&gt;
+    expr_type = ty
+    &amp; VarTypeInStmts(var, tail) = mono_expr_type
+    ;</code></pre>
+<p>This is similar to Rust’s type system, where local variables must
+have monotypes, but different from TypeScript’s type system, where such
+variables can have polytypes. But this is an arbitrary decision, not a
+fundamental limitation, that lets us reuse most of the
+<code>ExprType</code> machinery we’ve introduced in the last post
+without much adaptation.</p></li>
+<li><p>Function argument variables have monotypes:</p>
+<pre><code>Axiom
+    ConsArgListNode(_, var, otn, tail)
+    &amp; ty = MonoType(SemanticOptType(otn))
+    =&gt;
+    VarTypeInArgList(var, tail) = ty
+    ;</code></pre>
+<p>This is a general limitation of rank 1 polymorphism: The types of
+function argument variables appear in the domain of a function type. So
+if function argument types were polytypes, then this function type would
+be rank 2.</p></li>
+<li><p>Inside the argument list (and hence body) of a function literal,
+the function being defined has monotype:</p>
+<pre class="eqlog"><code>Axiom
+    Function(func, var, arg, _ ,_)
+    &amp; ty = MonoType(FunctionNodeType(func))
+    =&gt;
+    VarTypeInArgList(var, arg) = ty
+    ;</code></pre>
+<p>This means that recursive calls may not instantiate the function
+being defined with different type arguments.</p></li>
+</ul>
+<h2 id="type-contexts">Type contexts</h2>
+<p>Which type variables in a polytype are bound depends on the context
+of the polytype: If the polytype appears in the global module scope,
+then all type variables in it are universally quantified. But if a
+polytype appears in the body of function, then only those type variables
+that are not already introduced by arguments of the function are bound.
+Consider the following convoluted way of implementing the identity
+function:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">id</span>(x) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">const_x</span>(y) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x<span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">const_x</span>(<span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Suppose the type of <code>x</code> is <code>MonoType(a)</code> and
+that the type of <code>y</code> is <code>MonoType(b)</code> for type
+variables <code>a</code> and <code>b</code>. Then the type of
+<code>id</code> is <code>PolyType((a) =&gt; a)</code>, and since
+<code>id</code> appears in the global module scope, <code>a</code> is
+bound. The type of <code>const_x</code> is
+<code>PolyType((b) =&gt; a)</code>, but since it appears in the body of
+the <code>id</code> function, so that <code>a</code> is in the ambient
+type context, only <code>b</code> is bound.</p>
+<p>Because of local functions such as the one above, we need a way to
+keep track of which type variables were already introduced in the body
+of a function, and we need to propagate this information into relevant
+subnodes. This is the purpose of <em>type contexts</em>, which we define
+in Eqlog as follows:</p>
+<pre class="eqlog"><code>Sort TypeContext;
+
+Pred TypeInContext : Type * TypeContext;
+Pred TypesInContext : TypeList * TypeContext;</code></pre>
+<p>Think of <code>TypeContext</code> elements as (non-<a
+href="https://en.wikipedia.org/wiki/Axiom_of_extensionality">extensional</a>)
+sets of <code>Type</code> elements, and the <code>TypeInContext</code>
+predicate as the membership relation.
+<code>TypesInContext(tys, ctx)</code> should hold if and only if every
+type in <code>tys</code> is in <code>ctx</code>; we’ve seen axioms
+encoding similar properties before, so they’re omitted here.</p>
+<p>Next we introduce total functions to associate type contexts to
+various syntax nodes:</p>
+<pre class="eqlog"><code>Func ModuleTypeContext : ModuleNode -&gt; TypeContext;
+Func FunctionTypeContext : FunctionNode -&gt; TypeContext;
+Func StmtTypeContext : StmtNode -&gt; TypeContext;
+Func ExprTypeContext : ExprNode -&gt; TypeContext;
+...
+
+Axiom mn : ModuleNode =&gt; ModuleTypeContext(mn)!;
+Axiom fn : FunctionNode =&gt; FunctionTypeContext(fn)!;
+...
+</code></pre>
+<p>The type context we associate to an AST node usually agrees with the
+type context of its parent node. For example, the axiom</p>
+<pre class="eqlog"><code>Axiom
+    EqualsExprNode(expr, lhs, rhs)
+    &amp; expr_ctx = ExprTypeContext(expr)
+    &amp; lhs_ctx = ExprTypeContext(lhs)
+    &amp; rhs_ctx = ExprTypeContext(rhs)
+    =&gt;
+    expr_ctx = lhs_ctx
+    &amp; lhs_ctx = rhs_ctx
+    ;</code></pre>
+<p>propagates type contexts through equality comparisons.</p>
+<p>Crucially, though, the type context associated to function definition
+literals is not the same as the type context of its parent node but an
+<em>extension</em> of it: A type context which contains all the types of
+the base type context, but may contain additional types. We axiomatize
+type context extensions as follows:</p>
+<pre class="eqlog"><code>Pred ContextExtension : TypeContext * TypeContext;
+Axiom
+    ContextExtension(base, ext)
+    &amp; TypeInContext(sigma, base)
+    =&gt;
+    TypeInContext(sigma, ext)
+    ;</code></pre>
+<p>We can then enforce our constraints on the type contexts of functions
+as follows:</p>
+<pre class="eqlog"><code>Axiom
+    FunctionStmtNode(stmt, func)
+    &amp; ambient_ctx = StmtTypeContext(stmt)
+    &amp; func_ctx = FunctionTypeContext(func)
+    =&gt;
+    ContextExtension(ambient_ctx, func_ctx)
+    ;
+Axiom
+    FunctionExprNode(expr, func)
+    &amp; ambient_ctx = ExprTypeContext(expr)
+    &amp; func_ctx = FunctionTypeContext(func)
+    =&gt;
+    ContextExtension(ambient_ctx, func_ctx)
+    ;</code></pre>
+<p>Within the scope of a function literal, we want to treat the types of
+function arguments as valid monotypes, so we add them to the type
+context of the function:</p>
+<pre class="eqlog"><code>Axiom
+    ConsArgListNode(arg_list, _, head_ty_node, _)
+    &amp; ctx = ArgListContext(arg_list)
+    &amp; head_ty = SemanticOptType(head_ty_node)
+    =&gt;
+    TypeInContext(head_ty, ctx)
+    ;</code></pre>
+<p>Datalog cannot support recursively applicable rules containing
+negations, and Eqlog does not support it at all. Because of this, we
+cannot check that a <code>Type</code> element occurring inside a
+polytype is a bound type variable during Eqlog evaluation: That would
+require us to hypothesize that a type element is <em>not</em> the result
+of applying a type constructor, and that it is <em>not</em> in the
+ambient type context. Fortunately, we will only need to check whether a
+type element is <em>unbound</em>, i.e., that the type element is either
+a type variable in the ambient type context, or that it is the result of
+applying a type constructor to unbound types. To prepare, we close type
+contexts under type constructors:</p>
+<pre class="eqlog"><code>Axiom gamma: TypeContext &amp; sigma = VoidType() =&gt; TypeInContext(sigma, gamma);
+...
+Axiom
+    kappa = FunctionType(dom, cod)
+    &amp; TypesInContext(dom, gamma)
+    &amp; TypeInContext(cod, gamma)
+    =&gt;
+    TypeInContext(kappa, gamma)
+    ;</code></pre>
+<p>We also want type contexts to be closed under <em>inverses</em> of
+type constructors. This is relevant for functions with arguments whose
+types that involve a type variable but are not directly equal it, for
+example in this function:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">apply</span> (f<span class="op">,</span> x) {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">f</span>(x)<span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The <code>apply</code> function should have type
+<code>((a) =&gt; b, a) =&gt; b</code>. Our rules for arguments of
+functions imply that the types of <code>f: (a) =&gt; b</code> and
+<code>x: a</code> are in the type context of the body of
+<code>apply</code>, but only the following rule, which closes type
+contexts under inverses of the function type constructor, lets us
+conclude that then also <code>b</code> must be in the type context:</p>
+<pre class="eqlog"><code>Axiom
+    TypeInContext(FunctionType(dom, cod), gamma)
+    =&gt;
+    TypesInContext(dom, gamma)
+    &amp; TypeInContext(cod, gamma)
+    ;</code></pre>
+<p>Now a type element is unbound if and only if it is in the ambient
+type context.</p>
+<h2 id="instantiation">Instantiation</h2>
+<p>Our function <code>VarInExpr : Var -&gt; GeneralType</code> can
+result into a polytype, whereas we still expect the function
+<code>ExprType : ExprNode -&gt; Type</code> to result into a type in the
+current context, i.e., into a monotype. This means that we need to
+revisit our typing rules for variable usages.</p>
+<p>In case the variable has monotype, we can continue to equate the type
+of the variable expression with the type of the variable:</p>
+<pre class="eqlog"><code>Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = MonoType(ty)
+    =&gt;
+    ExprType(expr) = ty
+    ;</code></pre>
+<p>However, if the variable has <code>PolyType(ty)</code>, then we need
+to <em>instantiate</em> the type scheme <code>ty</code> first, i.e.,
+replace the type variables in <code>ty</code> by suitable types in the
+current context. We introduce the following machinery for that
+purpose:</p>
+<pre class="eqlog"><code>Sort Instantiation;
+
+Func Instantiate : Instantiation * Type -&gt; Type;
+Func InstantiateList : Instantiation * TypeList -&gt; TypeList;</code></pre>
+<p>Each <code>Instantiation</code> element represents a (partial) maps
+<code>Type -&gt; Type</code>, and the <code>Instantiate</code> function
+represents the application of such maps to <code>Type</code> elements.
+As usual, we add rules that enforce that the
+<code>InstantiateList</code> function is given by
+<code>Instantiate</code> on each element of a <code>TypeList</code>.</p>
+<p>We associate an <code>Instantiation</code> element to every usage of
+a variable with polytype and equate the expression type with an
+instantiation of the polytype scheme.</p>
+<pre><code>Func ExprInstantiation : ExprNode -&gt; Instantiation;
+
+Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = PolyType(_)
+    =&gt;
+    ExprInstantiation(expr)!
+    ;
+Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = PolyType(sigma)
+    &amp; inst = ExprInstantiation(expr)
+    &amp; expr_ty = ExprType(expr)
+    =&gt;
+    Instantiate(inst, sigma) = expr_ty
+    ;</code></pre>
+<p>The typing rules we added in the previous post put constraints on the
+<code>ExprType</code> of polymorphic variables based on their usage, but
+we still need to encode constraints on it based on the variable’s
+polytype scheme.</p>
+<h3 id="instantiation-and-type-constructors">Instantiation and type
+constructors</h3>
+<p>The instantiation of a function type should be a function type, the
+instantiation of the string type should be the string type, and so
+forth. In other words, <code>Instantiate</code> should <em>commute</em>
+with type constructors in its <code>Type</code> argument:</p>
+<pre class="eqlog"><code>// Instantiate commutes with the number type constructor.
+Axiom
+    instance_number = Instantiate(_, NumberType())
+    =&gt;
+    NumberType() = instance_number
+    ;
+
+// If a funnction type is instantiated, then also the domain and
+// codomain are instantiated, and instantiate commutes with the
+// function type constructor.
+Axiom
+    Instantiate(inst, FunctionType(dom, cod))!
+    =&gt;
+    InstantiateList(inst, dom)!
+    &amp; Instantiate(inst, cod)!
+    ;
+Axiom
+    dom_instances = InstantiateList(inst, dom)
+    &amp; cod_instance = Instantiate(inst, cod)
+    &amp; func_instance = Instantiate(inst, FunctionType(dom, cod))
+    =&gt;
+    FunctionType(dom_instances, cod_instance) = func_instance
+    ;
+...</code></pre>
+<p>Note that commutativity of the <code>Instantiate(inst, -)</code>
+operation with type constructors for fixed <code>inst</code> implies
+that the operation is uniquely determined by its value on type
+variables.</p>
+<h3 id="instantiation-and-unbound-type-elements">Instantiation and
+unbound type elements</h3>
+<p>Unbound type variables cannot be freely instantiated, since they are
+bound in the ambient type context of the polytype already. In case of
+the convoluted identity function above, this means that every
+instantiation of <code>const_x : (b) =&gt; a</code> must map
+<code>a</code> onto itself.</p>
+<p>Since we’re not allowing higher-ranked types, we do not allow return
+values with polytypes from functions; even if we return a variable with
+polymorphic type, it is instantiated into a monotype first. As a
+consequence, polytypes cannot escape the ambient type context in which
+they were defined: The type context of a usage site of a variable with
+polytype is always an iterated extension of the ambient type context of
+the where the polytype was defined. It follows that at every usage site
+of a polytype, a type element occuring in the polytype scheme is unbound
+if and only if it is in the ambient type context of a usage site.</p>
+<pre class="eqlog"><code>Func InstantiationTarget : Instantiation -&gt; TypeContext;
+Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = PolyType(_)
+    &amp; instance = ExprInstantiation(expr)
+    &amp; ctx = ExprTypeContext(expr)
+    =&gt;
+    InstantiationTarget(instance) = ctx
+    ;
+Axiom
+    sigma_instance = Instantiate(instance, sigma)
+    &amp; TypeInContext(sigma, InstantiationTarget(instance))
+    =&gt;
+    sigma = sigma_instance
+    ;</code></pre>
+<h2 id="type-errors">Type errors</h2>
+<p>Our introduction of polymorphism makes it necessary to revisit two
+error categories: Undetermined type errors and conflicting type
+constraints.</p>
+<h3 id="undetermined-types">Undetermined types</h3>
+<p>Recall that in the last post we introduced a predicate</p>
+<pre><code>Pred DeterminedType : Type;</code></pre>
+<p>and added rules so that <code>DeterminedType(ty)</code> holds if and
+only if <code>ty</code> does not contain any type variables. If our type
+checker found a <code>Type</code> element that did not satisfy
+<code>DeterminedType</code> after Eqlog evaluation, it would report an
+error due to the undetermined type.</p>
+<p>Now that we’ve added support for polymorphism, this check is
+evidently overly restrictive, but we cannot remove it entirely. Consider
+the following program:</p>
+<pre><code>function absurd() {
+    return absurd();
+}
+
+let x = absurd();</code></pre>
+<p>The type of <code>absurd</code> is <code>() =&gt; b</code>, so its
+return type is entirely unrestricted. This means that also the type of
+<code>x</code> is a undetermined (i.e., a type variable), but we require
+that all variables introdruced by let statements must have monotype.</p>
+<p>To adapt the <code>DeterminedType</code> predicate to polymorphism,
+we add the following rules to mirror our rules for type contexts: The
+argument and return types of functions are always determined, and
+determined types are closed also under inverses of type constructors
+(for cases such as the <code>apply</code> function above).</p>
+<pre class="eqlog"><code>Axiom
+    ConsArgListNode(_, _, arg_type, _)
+    &amp; ty = SemanticOptType(arg_type)
+    =&gt;
+    DeterminedType(ty)
+    ;
+Axiom
+    Function(_, _, _, ret_type, _)
+    &amp; ty = SemanticOptType(cod_type)
+    =&gt;
+    DeterminedType(ty)
+    ;
+Axiom
+    DeterminedType(FunctionType(dom, cod))
+    =&gt;
+    DeterminedTypes(dom)
+    &amp; DeterminedType(cod)
+    ;</code></pre>
+<h3 id="type-conflicts">Type conflicts</h3>
+<p>Consider the following function definiton:</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">foo</span> (x) {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">x</span>(x)<span class="op">;</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Our rules will infer that <code>x</code> must be have function type
+<code>(a) =&gt; b</code>. Since <code>x</code> is applied to itself, we
+infer a type equality <code>a = (a) =&gt; b</code>. Now every
+instantiation of <code>foo</code> in which the type of <code>x</code> is
+concrete type (i.e., does not contain type variables) would result into
+a type conflict. But if <code>foo</code> is never used, then our type
+checker will not report an error for it, since our rules for type
+conflicts take only concrete types into account but not type
+variables.</p>
+<p>To detect such errors, we introduce a predicate
+<code>SmallerType : Type * Type</code> such that
+<code>SmallerType(sigma, tau)</code> holds if and only if
+<code>sigma</code> is structurally strictly smaller than
+<code>tau</code>:</p>
+<pre class="eqlog"><code>// SmallerType is transitive.
+Axiom
+    SmallerType(sigma, tau)
+    &amp; SmallerType(tau, kappa)
+    =&gt;
+    SmallerType(sigma, kappa)
+    ;
+
+// A function type is structurally greater than all of its domain types and
+// its codomain type.
+Axiom
+    kappa = FunctionType(sigmas, tau)
+    =&gt;
+    SmallerTypes(sigmas, kappa)
+    &amp; SmallerType(tau, kappa)
+    ;</code></pre>
+<p>Here <code>SmallerTypes : TypeList * Type</code> is a predicate that
+holds if and only if each type in the first argument is a
+<code>SmallerType</code> than the second argument.</p>
+<p>Now consider again the example of the function <code>foo</code>
+above. Our rules imply that <code>SmallerType(a, (a) =&gt; b)</code>
+holds, hence due to the type equality <code>a = (a) =&gt; b</code>, we
+have <code>SmallerType(a, a)</code>. Thus, the rule</p>
+<pre class="eqlog"><code>Axiom SmallerType(sigma, sigma) =&gt; ConflictingTypes();</code></pre>
+<p>lets us detect this and similar errors.</p>
 </body>
 </html>
