@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+        <item>
+      <title>Type Checking with Eqlog: Typing</title>
+      <link>https://www.mbid.me/posts/type-checking-with-eqlog-typing</link>
+      <pubDate>August 06, 2023</pubDate>
+    </item>
+        <item>
+      <title>Type Checking with Eqlog: Types</title>
+      <link>https://www.mbid.me/posts/type-checking-with-eqlog-types</link>
+      <pubDate>August 05, 2023</pubDate>
+    </item>
+        <item>
+      <title>Type Checking with Eqlog: Variable Binding</title>
+      <link>https://www.mbid.me/posts/type-checking-with-eqlog-variable-binding</link>
+      <pubDate>August 01, 2023</pubDate>
+    </item>
+        <item>
+      <title>Type Checking with Eqlog: Parsing</title>
+      <link>https://www.mbid.me/posts/type-checking-with-eqlog-parsing</link>
+      <pubDate>July 23, 2023</pubDate>
+    </item>
+      </channel>
+</rss>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    $for(posts)$
+    <item>
+      <title>$it.title$</title>
+      <link>https://www.mbid.me/posts/$it.url$</link>
+      <pubDate>$it.date$</pubDate>
+    </item>
+    $endfor$
+  </channel>
+</rss>

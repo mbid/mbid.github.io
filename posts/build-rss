@@ -1,0 +1,7 @@
+#!/bin/sh
+
+template_file="$(dirname "$0")/rss-template.xml"
+metadata_file="$(dirname "$0")/posts.yaml"
+rss_file="$(dirname "$0")/rss.xml"
+
+echo "" | pandoc --template="$template_file" --metadata-file="$metadata_file" --verbose --output="$rss_file" "$@"
