@@ -425,7 +425,7 @@ function foo (x) {
 Our type checker infers that `x` must be have function type `(a) => b`.
 Since `x` is applied to itself, we infer a type equality `a = (a) => b`.
 Every instantiation of `foo` in which the argument type is a concrete type (i.e., it does not contain type variables) would result into a type conflict.
-But if `foo` is never used, then our type checker will not report an error, because our rules for type conflicts fire only for concrete types but not for type variables.
+But if `foo` is never used, then our type checker will not report an error, because our rules for type conflicts fire only for concrete types, not for type variables.
 
 To detect errors such as the `foo` function, we introduce a predicate `SmallerType : Type * Type` such that `SmallerType(sigma, tau)` holds if and only if `sigma` is structurally strictly smaller than `tau`.
 ```eqlog
