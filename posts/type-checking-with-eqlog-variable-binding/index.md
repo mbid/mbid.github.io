@@ -12,7 +12,7 @@ You can find the other posts here:
 2. **[Variable binding](../type-checking-with-eqlog-variable-binding) [[code](https://github.com/eqlog/examples-inference/tree/binding)] (this post)**
 3. [Types](../type-checking-with-eqlog-types) [[code](https://github.com/eqlog/examples-inference/tree/types)]
 4. [Typing](../type-checking-with-eqlog-typing) [[code](https://github.com/eqlog/examples-inference/tree/typing)]
-5. Hindley-Milner polymorphism [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
+5. [Polymorphism](../type-checking-with-eqlog-polymorphism) [[code](https://github.com/eqlog/examples-inference/tree/hindley-milner)]
 
 As usual, the code we discuss in this post is available as a [branch](https://github.com/eqlog/examples-inference/tree/binding) in the associated repository.
 
