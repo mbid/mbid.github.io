@@ -2,6 +2,11 @@
 <rss version="2.0">
   <channel>
         <item>
+      <title>Type Checking with Eqlog: Polymorsphim</title>
+      <link>https://www.mbid.me/posts/type-checking-with-eqlog-polymorphism</link>
+      <pubDate>August 22, 2023</pubDate>
+    </item>
+        <item>
       <title>Type Checking with Eqlog: Typing</title>
       <link>https://www.mbid.me/posts/type-checking-with-eqlog-typing</link>
       <pubDate>August 06, 2023</pubDate>

@@ -1,6 +1,9 @@
 title: "Posts"
 lang: en_US
 posts:
+  - title: "Type Checking with Eqlog: Polymorsphim"
+    date: August 22, 2023
+    url: type-checking-with-eqlog-polymorphism
   - title: "Type Checking with Eqlog: Typing"
     date: August 06, 2023
     url: type-checking-with-eqlog-typing

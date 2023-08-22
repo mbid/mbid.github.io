@@ -1,5 +1,6 @@
 ---
 title: "Type Checking with Eqlog: Polymorphism"
+date: August 22, 2023
 lang: "en_US"
 ---
 
