@@ -2,6 +2,11 @@
 <rss version="2.0">
   <channel>
         <item>
+      <title>Control flow for datalog</title>
+      <link>https://www.mbid.me/posts/control-flow-for-datalog</link>
+      <pubDate>November 01, 2023</pubDate>
+    </item>
+        <item>
       <title>Type Checking with Eqlog: Polymorphism</title>
       <link>https://www.mbid.me/posts/type-checking-with-eqlog-polymorphism</link>
       <pubDate>August 22, 2023</pubDate>

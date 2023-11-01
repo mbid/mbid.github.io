@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Control flow for Datalog</title>
+  <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<nav>
+<a href="/posts">posts</a>
+<a href="/">about</a>
+</nav>
+<header id="title-block-header">
+<h1 class="title">Control flow for Datalog</h1>
+<p class="date">November 01, 2023</p>
+</header>
+<p>This post outlines some ideas for control flow features that I would
+like to add to the <a href="https://github.com/eqlog/eqlog">Eqlog</a>
+Datalog engine:</p>
+<ol type="1">
+<li><a href="#interleaving-premise-and-conclusion">Interleaving premise
+and conclusion</a></li>
+<li><a href="#forks">Forks</a></li>
+<li><a href="#sum-types">Sum types</a></li>
+</ol>
+<p>I believe all of these features make sense for a general Datalog
+engine, but some aspects I’ll discuss are about the interaction with
+native equality and function symbols, which Eqlog adds on top of basic
+Datalog. If you haven’t heard of Eqlog, I encourage you to have a look
+at the <a href="https://github.com/eqlog/eqlog">README</a> or some of
+the posts I wrote on implementing a Hindley-Milner style type checker
+using Eqlog starting <a
+href="https://www.mbid.me/posts/type-checking-with-eqlog-parsing/">here</a>.</p>
+<figure>
+<img src="picture.jpg" title="Boka Waterfall, Slovenia"
+alt="Boka Waterfall, Slovenia" />
+<figcaption aria-hidden="true">Boka Waterfall, Slovenia</figcaption>
+</figure>
+<h2 id="interleaving-premise-and-conclusion">Interleaving premise and
+conclusion</h2>
+<p>Eqlog currently supports only one very basic kind of rule, which I
+will refer to as an <em>implication</em> in this post. I’ve changed
+Eqlog’s syntax recently (more on this below), but such implications used
+to look something like this:</p>
+<pre class="eqlog"><code>Axiom
+    LessThan(a, b)
+    &amp; LessThan(b, c)
+    =&gt;
+    LessThan(a, c)
+    &amp; GreaterThan(c, a)
+    ;</code></pre>
+<p>The part before the implication symbol <code>=&gt;</code> is the
+<em>premise</em>, <em>query</em> or <em>body</em> of the implication,
+and everything after is the <em>conclusion</em> or <em>head</em>. Both
+premise and conclusion are given by conjunctions of <em>clauses</em> or
+<em>atoms</em>. Eqlog evaluates such an implication by repeatedly
+enumerating matches of the premise, and then adding data corresponding
+to the conclusion.</p>
+<p>I don’t want to change Eqlog’s fundamental execution model, but I
+would like for it to be less verbose and less error-prone to specify
+certain sets of implications. As an example, consider the following
+implications taken from the <a
+href="https://www.mbid.me/posts/type-checking-with-eqlog-parsing/">Hindley-Milner
+type checker</a> I mentioned above, which has to do with instantiating
+types of variables with polymorphic type. The definition of the
+predicates and functions in these implications are not relevant here,
+it’s the general shape of those implications that I want to draw
+attention to:</p>
+<pre><code>Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = PolyType(_)
+    =&gt;
+    ExprInstantiation(expr)!
+    ;
+Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = PolyType(_)
+    &amp; instance = ExprInstantiation(expr)
+    &amp; ctx = ExprTypeContext(expr)
+    =&gt;
+    InstantiationTarget(instance) = ctx
+    ;</code></pre>
+<p>Taken together, these two implications assert the following:</p>
+<ol type="A">
+<li>If
+<code>VariableExprNode(expr, var) &amp; VarTypeInExpr(var, expr) = PolyType(_)</code>
+holds,</li>
+<li>then <code>ExprInstantiation(expr)</code> is defined. We’ll refer to
+this element by <code>instance</code> henceforth.</li>
+<li>Furthermore, if <code>ctx = ExprTypeContext(expr)</code>,</li>
+<li>then <code>InstantiationTarget(instance) = ctx</code>.</li>
+</ol>
+<p>Abstracting away from the concrete formulas, these two implications
+are of the form</p>
+<pre><code>A =&gt; B        A &amp; B &amp; C =&gt; D</code></pre>
+<p>for formulas <span
+class="math inline"><em>A</em>, <em>B</em>, <em>C</em></span> and <span
+class="math inline"><em>D</em></span>. With Eqlog’s current syntax,
+we’re forced to state <span class="math inline"><em>A</em></span> and
+<span class="math inline"><em>B</em></span> twice, in each implication.
+That’s the first problem we’re going to tackle: Allow going back and
+forth between specifying premises and conclusions, so that implications
+can be specified similarly to the list above, without duplication.
+Another way to look at this is that Eqlog should understand something to
+the effect of the English “furthermore” as used in <span
+class="math inline"><em>C</em></span>.</p>
+<p>Unfortunately, I couldn’t come up with a natural way of extending
+Eqlog’s original syntax to accommodate for this. But since Eqlog
+programs are supposed to be embedded into Rust projects, it would
+probably be better in any case if Eqlog looked more similar to Rust than
+the original syntax allowed it to. So this was a good opportunity for a
+major revision of Eqlog’s syntax.</p>
+<p>With the new syntax I came up with, the two implications above can be
+written as a single <em>rule</em> as follows:</p>
+<pre class="eql"><code>rule expr_instantiation_target {
+    if variable_expr_node(expr, var);
+    if var_type_in_expr(var, expr) = poly_type(_);
+    then instance := expr_instantiation(expr)!;
+    if ctx = expr_type_context(expr);
+    then instantiation_target(instance) = ctx;
+}</code></pre>
+<p>Thus:</p>
+<ul>
+<li><p>The <code>rule</code> keyword replaces the old <code>Axiom</code>
+keyword. Rules have an optional name, and are given by a list of
+statements:</p>
+<pre><code>rule &lt;optional_name&gt; {
+    stmt1;
+    stmt2;
+    ...
+    stmtn;
+}</code></pre></li>
+<li><p>Each statement is either an <code>if</code> statement of the form
+<code>if &lt;atom&gt;</code>, corresponding to what was previously a
+clause in a premise, or a <code>then</code> statement of the form
+<code>then &lt;atom&gt;</code>, corresponding to what was previously a
+clause in a conclusion.</p></li>
+<li><p>Crucially, <code>if</code> and <code>then</code> statements can
+be freely interleaved.</p></li>
+<li><p>Semantically, every rule is equivalent to a <em>set</em> of
+implications, one for each <code>then</code> statement in the rule: The
+implication corresponding to a statement
+<code>then &lt;atom_k&gt;</code> occurring as <span
+class="math inline"><em>k</em></span>th statement in a rule is as
+follows: If
+<code>&lt;atom_1&gt;, &lt;atom_2&gt;, ..., &lt;atom_{k - 1}&gt;</code>
+are the atoms of statements before statement <span
+class="math inline"><em>k</em></span> (regardless of whether they’re
+<code>if</code> or <code>then</code> statements!), then the implication
+is given by</p>
+<pre><code>&lt;atom_1&gt; &amp; ... &amp; &lt;atom_{k - 1}&gt; =&gt; &lt;atom_k&gt;;</code></pre></li>
+</ul>
+<p>A naive Rust implementation of the example rule above might look like
+this:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// if variable_expr_node(expr, var);</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (expr<span class="op">,</span> var) <span class="kw">in</span> iter_variable_expr_node() <span class="op">{</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// if var_type_in_expr(var, expr) = poly_type(_);</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (var0<span class="op">,</span> expr0<span class="op">,</span> res0) <span class="kw">in</span> iter_poly_type() <span class="op">{</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> var0 <span class="op">!=</span> var <span class="op">||</span> expr <span class="op">!=</span> expr0 <span class="op">{</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span><span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// then instance := expr_instantiation(expr)!;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> instance <span class="op">=</span> <span class="cf">match</span> expr_instantiation(expr) <span class="op">{</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>            <span class="cn">Some</span>(instance) <span class="op">=&gt;</span> instance<span class="op">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            <span class="cn">None</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                <span class="kw">let</span> instance <span class="op">=</span> new_instantiation()<span class="op">;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                insert_expr_instantation(expr<span class="op">,</span> instance)<span class="op">;</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                instance</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// if ctx = expr_type_context(expr);</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="cn">Some</span>(ctx) <span class="op">=</span> expr_type_context(expr) <span class="op">{</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>            <span class="co">// then instantiation_target(instance) = ctx;</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            insert_instantiation_target(instance<span class="op">,</span> ctx)<span class="op">;</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Thus, we don’t actually have to emit the equivalent of separate
+nested loops for each <code>then</code> statement and can instead reuse
+outer loops.</p>
+<p>I’ve already implemented the new syntax, but only original Eqlog
+semantics (i.e., implications) are supported yet. Thus, every rule must
+be given by a list of <code>if</code> statements, followed by a list of
+<code>then</code> statements, and interleaving the two doesn’t work
+yet.</p>
+<h2 id="forks">Forks</h2>
+<p>The Hindley-Milner type checker that the example implications above
+are taken from defines a third, related implication:</p>
+<pre class="eqlog"><code>Axiom
+    VariableExprNode(expr, var)
+    &amp; VarTypeInExpr(var, expr) = PolyType(sigma)
+    &amp; instance = ExprInstantiation(expr)
+    &amp; expr_ty = ExprType(expr)
+    =&gt;
+    Instantiate(instance, sigma) = expr_ty
+    ;</code></pre>
+<p>The first three clauses of this implication are the same as in one of
+the implications we’ve already seen, but the atom
+<code>expr_ty = ExprType(expr)</code> in the premise and the conclusion
+are specific to this implication. Even with the ability to interleave
+<code>if</code> and <code>then</code> statement, we’d need to add a
+second rule for this implication that would duplicate the three initial
+clauses/statements. What we would need to avoid this duplication is a
+mechanism to fork a rule after a number of statements. That’s the
+purpose of the <code>fork</code> keyword.</p>
+<p>Using <code>fork</code>, this third premise can be incorporated into
+the existing <code>expr_instantiation_target</code> rule we’ve seen in
+the previous section as follows:</p>
+<pre class="eql"><code>rule expr_instantiation_target {
+    if variable_expr_node(expr, var);
+    if var_type_in_expr(var, expr) = poly_type(sigma);
+    then instance := expr_instantiation(expr)!;
+    fork {
+        if ctx = expr_type_context(expr);
+        then instantiation_target(instance) = ctx;
+    } or {
+        if expr_ty = expr_type(expr);
+        then instantiate(instance, sigma) = sigma;
+    }
+}</code></pre>
+<p>Thus:</p>
+<ul>
+<li>Rules can now contain statements of the form
+<code>fork { &lt;block_1&gt; } or { &lt;block_2&gt; } ... or { &lt;block_n }</code>.
+Each block is a list of statements, and can recursively contain other
+<code>fork</code> statements.</li>
+<li>Semantically, usage of the <code>fork</code> statement in a rule can
+be desugared by duplicating the rule <span
+class="math inline"><em>n</em></span> times, once for each block of the
+<code>fork</code> statement. In the <span
+class="math inline"><em>i</em></span>th copy of the rule, the
+<code>fork</code> statement is replaced by
+<code>&lt;block_i&gt;</code>.</li>
+<li>In particular, <code>fork</code> statements need not necessarily
+occur at the end of the rule.</li>
+</ul>
+<p>A good implementation will probably desugar a <code>fork</code>
+statement into several rules though: Instead, results of queries for the
+shared part of a rule can be used for each block of a subsequent
+<code>fork</code> statement.</p>
+<p>I’m not completely sure about the <code>fork</code> keyword itself
+though, and especially whether <code>or</code> is the right keyword to
+separate the individual blocks. I’ve also considered
+“<code>allof</code>” instead of <code>fork</code> and “<code>and</code>”
+instead of <code>or</code>, since <em>all</em> of the following blocks
+apply after the statements before the <code>fork</code> have matched.
+But statements after the <code>fork</code> apply if <em>any</em> of the
+blocks of the fork statement have matched, suggesting keywords
+“<code>anyof</code>” and “<code>or</code>”. So perhaps <code>fork</code>
+is the best we can do here, although I don’t like that it emphasizes the
+operational aspects of the mechanism instead of the semantics. The
+<code>or</code> keyword is somewhat misleading though, and a good
+alternative eludes me at the moment. One option might be to just not
+have a keyword between blocks, so that only closing and opening curly
+braces <code>} {</code> would separate blocks.</p>
+<h2 id="sum-types">Sum types</h2>
+<p>Sum types are probably among the most impactful features that have
+made it from the academic programming language ivory tower into
+mainstream languages in recent years. Once you’re used to sum types, you
+see them crop up almost everywhere, and they make many classes of
+problems much easier to deal with.</p>
+<p>One such problem class are algorithms that have to traverse abstract
+syntax tree (AST) nodes. For example, here’s how we might define a type
+of AST nodes representing (a subset of) boolean expressions in Rust:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> BoolExpr <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    True()<span class="op">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    False()<span class="op">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    Or(<span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;,</span> <span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;</span>)<span class="op">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    And(<span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;,</span> <span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;</span>)<span class="op">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The main benefit of sum types is that they enable destructuring
+pattern matching. Continuing with the <code>BoolExpr</code> example,
+here’s a Rust function that evaluates a <code>BoolExpr</code>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> eval(e<span class="op">:</span> <span class="op">&amp;</span>BoolExpr) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">use</span> <span class="pp">BoolExpr::</span><span class="op">*;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> e <span class="op">{</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        True() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        False() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">false</span> <span class="op">}</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        Or(lhs<span class="op">,</span> rhs) <span class="op">=&gt;</span> <span class="op">{</span> eval(lhs) <span class="op">||</span> eval(rhs) <span class="op">}</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        And(lhs<span class="op">,</span> rhs) <span class="op">=&gt;</span> <span class="op">{</span> eval(lhs) <span class="op">&amp;&amp;</span> eval(rhs) <span class="op">}</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Crucially, the Rust compiler checks statically that there is a match
+arm for every possible value of <code>e</code>. If we forget one of the
+constructors of <code>BoolExpr</code>, for example
+<code>BoolExpr::Or</code>, then the compiler will immediately point us
+to the bug.</p>
+<p>Standard Datalog doesn’t have sum types, and neither does Eqlog.
+Instead, Datalog programs that deal with ASTs typically define a
+separate relation/predicate for each different constructor of a given
+kind of AST node. In Eqlog, we can use functions to encode AST nodes
+(unless we want to distinguish structurally equal AST nodes), for
+example like so:</p>
+<pre class="eql"><code>type BoolExpr;
+func true_expr() -&gt; BoolExpr;
+func false_expr() -&gt; BoolExpr;
+func or_expr(BoolExpr, BoolExpr) -&gt; BoolExpr;
+func and_expr(BoolExpr, BoolExpr) -&gt; BoolExpr;</code></pre>
+<p>We can then define an analogue of the <code>eval</code> function
+above in Eqlog as follows:</p>
+<pre class="eql"><code>// We&#39;ll add rules such that this predicate holds
+// for expressions that evaluate to true.
+pred evals_to_true(BoolExpr);
+
+rule true_eval {
+    if expr = true_expr();
+    then evals_to_true(expr);
+}
+// No rule for false_expr -- it doesn&#39;t evaluate to true.
+rule or_eval {
+    if expr = or_expr(lhs, rhs);
+    fork {
+        if evals_to_true(lhs);
+    } or {
+        if evals_to_true(rhs);
+    }
+    then evals_to_true(expr);
+}
+rule and_eval {
+    if expr = and_expr(lhs, rhs);
+    if evals_to_true(lhs);
+    if evals_to_true(rhs);
+    then evals_to_true(expr);
+}</code></pre>
+<p>Note that nothing prevents us from removing or forgetting to add a
+rule governing <code>evals_to_true</code>, say the <code>or_eval</code>
+rule. What we’d need to catch such an error an is an equivalent of
+Rust’s exhaustive match statement in Eqlog, hence sum types.</p>
+<p>So here’s what sum types could look like in Eqlog:</p>
+<pre class="eql"><code>enum BoolExpr {
+    True(),
+    False(),
+    Or(BoolExpr, BoolExpr),
+    And(BoolExpr, BoolExpr),
+}
+
+pred evals_to_true(BoolExpr);
+rule evals_to_true_laws {
+    if e: BoolExpr;
+    match e {
+        True() =&gt; {
+            then evals_to_true(e);
+        }
+        False() =&gt; {}
+        Or(lhs, rhs) =&gt; {
+            fork {
+                if evals_to_true(lhs);
+            } or {
+                if evals_to_true(rhs);
+            }
+            then evals_to_true(e);
+        }
+        And(lhs, rhs) =&gt; {
+            if evals_to_true(lhs);
+            if evals_to_true(rhs);
+            then evals_to_true(e);
+        }
+    }
+}</code></pre>
+<p>Thus, every constructor of the <code>BoolExpr</code> enum implicitly
+defines a function, for example
+<code>Or(BoolExpr, BoolExpr) -&gt; BoolExpr</code>. If the type of a
+variable in a rule is an <code>enum</code> type, then the variable can
+be destructured with a <code>match</code> statement. Such
+<code>match</code> statements desugar into <code>fork</code> statements,
+with each arm in the <code>match</code> statement corresponding to an
+alternative block in the <code>fork</code>. The first statement in each
+block of the resulting <code>fork</code> statement corresponds to the
+constructor of the corresponding match arm and the rest of the block is
+given by the statements in the match arm. Thus, the
+<code>evals_to_true_laws</code> rule above would desugar into the
+following rule:</p>
+<pre class="eql"><code>rule evals_to_true_laws_desugared {
+    if e: BoolExpr;
+    fork {
+        if e = True();
+        then evals_to_true(e);
+    } or {
+        if e = False();
+    } or {
+        if e = Or(lhs, rhs);
+        fork {
+            if evals_to_true(lhs);
+        } or {
+            if evals_to_true(rhs);
+        }
+        then evals_to_true(e);
+    } or {
+        if e = And(lhs, rhs);
+        if evals_to_true(lhs);
+        if evals_to_true(rhs);
+        then evals_to_true(e);
+    }
+}</code></pre>
+<p>So far I think there’s not too much to argue about. However, there
+are some considerations regarding sum types that are specific to the
+Datalog (or Eqlog’s) evaluation model.</p>
+<h3 id="surjectivity-of-constructors">Surjectivity of constructors</h3>
+<p>Does every element of an <code>enum</code> type need to be equal to
+the result of applying a constructor? This is what you would expect from
+other languages with sum types. However, it’s not obvious how Eqlog can
+guarantee this property.</p>
+<p>That’s because Eqlog allows enforcing that a given function is
+defined on some element. For example, the
+<code>expr_instantiation_target</code> law above enforces that the
+<code>expr_instantiation</code> function is defined on an
+<code>expr</code> under certain conditions:</p>
+<pre class="eql"><code>rule expr_instantiation_target {
+    ...
+    then instance := expr_instantiation(expr)!;
+    ...
+}</code></pre>
+<p>When Eqlog infers during evaluation that a function should be defined
+on some arguments, it creates a new element (that is, Eqlog chooses a
+previously unused integer ID to represent the element), and records it
+as result of applying that function. But what if the result type of the
+function was declared as an <code>enum</code>? We now have an element of
+an enum type that is not given by one of the constructors.</p>
+<p>One option here is to prevent such situations from arising in the
+first place using a static compile time check. For example, we could
+require that every new element of an enum type that is introduced by a
+rule is later in that rule equated with the result of applying a
+constructor. Such a check cannot also consider arbitrary applications of
+other rules as well though, since that would mean that the check does
+not necessarily terminate. Thus, some generality would be lost.</p>
+<p>In some cases it can even be desirable to have elements of an
+<code>enum</code>-like type that are not equal to any of the
+constructors. One example is the type <code>Type</code> that the <a
+href="https://www.mbid.me/posts/type-checking-with-eqlog-parsing/">Hindley-Milner
+type checker I mentioned above</a> uses to represent the types of its
+input language. This type might be declared as an Eqlog enum like
+so:</p>
+<pre class="eql"><code>enum Type {
+    Boolean(),
+    String(),
+    Function(arg: Type, result: Type),
+    ...
+}</code></pre>
+<p>To account for generics in a Hindley-Milner type system,
+<code>Type</code> must be able to represent type variables. The type
+checker represents such type variables as elements of <code>Type</code>
+which are not given by any of the constructors, which is an intentional
+violation of surjectivity of constructors. So it might seem that
+<code>Type</code> should just not be an <code>enum</code> to begin with.
+But on the other hand, the type checker defines some rules that consider
+which, if any, of the constructors a type was obtained with and conclude
+accordingly, and there the <code>match</code> statement is useful.</p>
+<p>The other option is to simply drop the requirement that every element
+of an <code>enum</code> type must be obtained via one of the
+constructors. The desugaring of <code>match</code> to <code>fork</code>
+outlined above works perfectly fine; the <code>match</code> statement
+simply does nothing for elements that are not obtained via a
+constructor. But still, this situation will be surprising at first and
+not intended in the majority of cases. So a synthesis could be to make
+Eqlog recognize <code>enum</code> types declared as either
+<code>open</code> or <code>closed</code>, and then to let the user
+choose one or the other approach separately for each
+<code>enum</code>.</p>
+<h3 id="injectivity-of-constructors">Injectivity of constructors</h3>
+<p>When we speak of sum types, we usually mean a type representing the
+<em>disjoint</em> union of the summand types. That the union is
+“disjoint” means that elements obtained by one constructor are never
+equal to the result of applying a different constructor. As a
+consequence, there is a unique way in which a given element can be
+destructured in terms of the constructors of the enum type.</p>
+<p>What distinguishes Eqlog from other Datalog engines is that Eqlog
+rules can equate elements. When Eqlog infers during evaluation that an
+equation <code>lhs = rhs</code> of elements should hold, then
+<code>lhs</code> and <code>rhs</code> are completely interchangeable in
+all other contexts henceforth.</p>
+<p>But then what should happen when a rule equates elements of an enum
+type that were obtained from different constructors, or from different
+arguments of the same constructor? Here are two (nonsensical but valid)
+examples using the <code>Type</code> enum above:</p>
+<pre class="eql"><code>rule bool_is_string {
+    if b = Boolean();
+    if s = String();
+    then b = s;
+}
+
+rule function_is_commutative {
+    if f = Function(arg, result);
+    then f = Function(result, arg);
+}</code></pre>
+<p>One option is again to just allow this: This would mean that more
+than one arm of a match statement can apply to an element (for the
+example above, this could be both the <code>Boolean()</code> and
+<code>String()</code> arm of a match statement), or that one arm applies
+in more than one way (if <code>Function(arg, result)</code> matches,
+then also <code>Function(result, arg)</code> matches).</p>
+<p>Another option would be to stop evaluation and report an error as
+soon as an equality among different constructors is found. Such a
+dynamic check is perhaps the most pragmatic option, which is why I’m not
+very fond of it.</p>
+<p>And a third option would be to statically ensure that no rule can be
+used to infer any equality whatsoever of elements of an enum type. This
+is more difficult than it might seem at first, because many equalities
+stem from implicit functionality axioms and not explicitly enforced
+equalities in rules.</p>
+<p>As an example, consider types <code>A</code> and <code>B</code> where
+<code>B</code> is declared as an enum</p>
+<pre><code>enum B {
+    First(),
+    Second(),
+}</code></pre>
+<p>and suppose there is a function <code>foo(A) -&gt; B</code> such that
+<code>foo(a0) = First()</code> and <code>foo(a1) = Second()</code> for
+elements <code>a0</code> and <code>a1</code> of <code>A</code>. Now, if
+we infer that <code>a0 = a1</code> holds, then the functionality axiom
+for <code>foo</code> lets us deduce <code>First() = Second()</code>.
+Thus, we sometimes infer equalities in a type even if no rule explicitly
+enforces that equality. So what would be needed here is that we forbid
+rules from equating elements of enum types and all types for which there
+exists (transitively) a function into an enum type. That would usage of
+<code>enum</code> types in many instances though.</p>
+<p>From what I can tell, the most straightforward option for now is to
+just not enforce injectivity of constructors. Obfuscated in category
+theoretic language, this would mean that Eqlog’s <code>enum</code> types
+are <a
+href="https://en.wikipedia.org/wiki/Pushout_(category_theory)"><em>amalgamated
+sum</em> or <em>pushout</em></a> types. As before, it could make sense
+for Eqlog to support an optional annotation on <code>enum</code>
+declarations that would enable a check that constructors must be
+injective.</p>
+<h3 id="wildcards">Wildcards</h3>
+<p>Rust and other languages typically support wildcard patterns
+<code>_</code> in match arms statements:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> is_literal(e<span class="op">:</span> BoolExpr) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> e <span class="op">{</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        True() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>        False() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        _ <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">false</span> <span class="op">}</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Wildcard patterns apply when all other arms have <em>not</em>
+matched. That’s a negation, and Datalog’s fixed point semantics are
+incompatible with arbitrary negations. To see why, consider this
+hypothetical Eqlog program:</p>
+<pre class="eql"><code>pred p();
+rule paradox {
+    if not(p());
+    then p();
+}</code></pre>
+<p>After evaluation, should <code>p()</code> hold?</p>
+<p>So Eqlog can’t support arbitrary negations, but there’s no
+fundamental reason why it could not support <em>stratified</em>
+negations in the same way that other Datalog engines support it.
+Stratification prevents the paradox above by requiring that if a rule
+concludes from <code>p</code> that <code>q</code> holds, then there must
+be no rules that conclude (transitively) from <code>q</code> that
+<code>p</code> holds. In other words, there must be no recursion
+involving negations.</p>
+<p>Stratification could also be used to implement wildcards. Eqlog would
+evaluate the program until the enum constructors stabilize, i.e., until
+no rule can fire anymore that would change anything about the graphs of
+the enum constructors. At this point, Eqlog would apply the wildcard
+match arm (if any) to elements that no other arm applies to.</p>
+<p>An alternative to this that doesn’t require stratification could be
+for Eqlog to replace the wildcard with the complementary patterns to the
+ones that are explicitly given. For example, the match statement in</p>
+<pre><code>if e: BoolExpr;
+match e {
+    True() =&gt; { &lt;A&gt; }
+    False() =&gt; { &lt;B&gt; }
+    _ =&gt; { &lt;C&gt; }
+}</code></pre>
+<p>would desugar to</p>
+<pre><code>match e {
+    True() =&gt; { &lt;A&gt; }
+    False() =&gt; { &lt;B&gt; }
+    Or(_, _) =&gt; { &lt;C&gt; }
+    And(_, _) =&gt; { &lt;C&gt; }
+}</code></pre>
+<p>If we enforce that enum constructors are surjective and injective,
+then this second approach is strictly more powerful than the first,
+because it gives the same results but does not require stratification.
+But the first approach using stratification would still be useful for
+enums with non-surjective constructors, where the wildcard pattern would
+apply to elements that are not given by a constructor. And in case of
+non-injective constructors, the second approach would mean that the
+wildcard pattern can match even when there is already some other pattern
+that matches, which is not the case with the approach based on
+stratified negation. I don’t know which alternative would be preferable
+here, but luckily there’s no need to make a decision before sum types
+and <code>match</code> statements without wildcards are actually
+implemented :)</p>
+</body>
+</html>

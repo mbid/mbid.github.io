@@ -1,6 +1,9 @@
 title: "Posts"
 lang: en_US
 posts:
+  - title: "Control flow for datalog"
+    date: November 01, 2023
+    url: control-flow-for-datalog
   - title: "Type Checking with Eqlog: Polymorphism"
     date: August 22, 2023
     url: type-checking-with-eqlog-polymorphism

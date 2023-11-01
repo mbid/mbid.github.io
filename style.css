@@ -133,6 +133,9 @@ header {
   margin-bottom: 4em;
   text-align: center;
 }
+figure {
+  margin: 0;
+}
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
