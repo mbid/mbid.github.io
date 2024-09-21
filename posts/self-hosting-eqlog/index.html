@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Self-hosting Eqlog</title>
+  <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<nav>
+<a href="/posts">posts</a>
+<a href="/">about</a>
+</nav>
+<header id="title-block-header">
+<h1 class="title">Self-hosting Eqlog</h1>
+<p class="date">November 02, 2023</p>
+</header>
+<p>This post is about the my recent rewrite of Eqlog’s type checker in
+Eqlog itself.</p>
+<p>I finished prototyping a Hindley-Milner style type checker using
+Eqlog a while ago TODO:link. Type checking is one of the supposed killer
+applications of Datalog and especially Eqlog, and so it’s only fair to
+expect that Eqlog’s type checker is also written in Eqlog.</p>
+<p>I don’t want to go into too much detail, since a lot of what is
+entailed by implementing a type checker in Datalog or Eqlog is not
+particularly specific to Eqlog’s type system: We need to encode the AST
+emitted by the parser in a relational format so that it can be consumed
+by Eqlog, and, propagate data such as ambient symbol bindings through
+the AST and collect typing constraints on variables. To avoid confusion,
+I’ll refer to the Eqlog program that models Eqlog’s type system as
+“eqlog.eql”, whereas “Eqlog” refers to the Rust executable that compiles
+<code>.eql</code> files into Rust source code and happens to embed
+<code>eqlog.eql</code>.</p>
+<h2 id="locations-error-messages">Locations &amp; error messages</h2>
+<p>A generality that I do want to remark on is generating error
+messages, since I completely left this part out in the series on
+Hindley-Milner type checking. To be easily actionable, error messages
+must be associated with a location in the input source code. And to have
+access to locations also after parsing, we need to save locations along
+with AST nodes. The approach Eqlog uses here now is to associate each
+AST node a <code>Loc</code> element representing a location in source
+code:</p>
+<pre class="eql"><code>type Loc;
+func type_decl_node_loc(TypeDeclNode) -&gt; Loc;
+func pred_decl_node_loc(PredDeclNode) -&gt; Loc;
+...</code></pre>
+<p>Like all Eqlog types, <code>Loc</code> is actually just an integer ID
+under the hood. The actual source code range that a <code>Loc</code>
+represents is given by a <code>Map&lt;Loc, (usize, usize)&gt;</code>
+that is maintained in Rust, outside of <code>eqlog.eql</code>. Ideally,
+Eqlog would support some kind of “external” types and provide this
+mapping for us, but for now we have to maintain it manually.</p>
+<p>Now to the interesting part about error messages in Eqlog: Sorting
+and prioritizing error messages.</p>
+<p>In traditional compiler, there’s a usually natural ordering in which
+it encounters an error in the input source code. For example, the
+compiler might have a name resolution phase, which reports errors about
+undeclared identifiers, followed by a type inference phase, which
+reports errors about ambiguous types. Within each phase, or even when
+the compiler checks multiple properties in the same pass (i.e., in the
+same traversal of the AST), it will typically encounter the error that
+originates from the earliest position in the input first.</p>
+</body>
+</html>
