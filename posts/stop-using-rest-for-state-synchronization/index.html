@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Stop using REST for state synchronization</title>
+  <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<nav>
+<a href="/posts">posts</a>
+<a href="/">about</a>
+</nav>
+<header id="title-block-header">
+<h1 class="title">Stop using REST for state synchronization</h1>
+<p class="date">September 22, 2024</p>
+</header>
+<p><em><strong>tl;dr</strong>: Most apps need state
+</em>synchronization<em>, not state </em>transfer<em>. We should replace
+REST and friends with proper state synchronization protocols where
+appropriate.</em></p>
+<p>Apart from getting into van life in Europe and working on the <a
+href="../type-checking-with-eqlog-parsing">Eqlog</a> Datalog engine,
+I’ve also spent some time of my sabbatical building various webapps. The
+tech stack I used was React + Typescript for the frontend and a REST
+server implemented with Rust and the Axum library as backend. Rust might
+be somewhat unusual, but I think otherwise this is a very typical
+setup.</p>
+<p>What struck me is how incredibly cumbersome, repetitive and brittle
+this programming model is, and I think much of this is due to using REST
+as interface between the client and the server. REST is a state
+<em>transfer</em> protocol, but we usually want to <em>synchronize</em>
+a piece of state between the client and the server. This mismatch means
+that we usually implement ad-hoc state synchronization on top of REST,
+and it turns out that this is not entirely trivial and actually
+incredibly cumbersome to get right.</p>
+<hr />
+<p>It’s probably easiest to explain what I mean with an example that’s
+part of most webapps in some variant: An input element that allows the
+user to edit a piece of text that is saved to the backend database.
+Using REST we can model this as a path, say <code>/api/foo</code>, that
+supports GET and POST methods to fetch or replace the text by a given
+value (perhaps also DELETE and PUT if you want to complicate things). A
+React component that allows users to edit this piece of text will
+probably display a text input element, GET the initial value when the
+component is created and POST a new value when the text input loses
+focus. We show an error message with a retry button if a request failed,
+and we display a spinner while requests are in-flight. Here’s what it
+might look like:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">FooInput</span>()<span class="op">:</span> JSX<span class="op">.</span><span class="at">Element</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// The value of the input element. Should be != null after we&#39;ve fetched the</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// initial value.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> [value<span class="op">,</span> setValue] <span class="op">=</span> <span class="fu">useState</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">|</span><span class="dt">null</span><span class="op">&gt;</span>(<span class="kw">null</span>)<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> [showSpinner<span class="op">,</span> setShowSpinner] <span class="op">=</span> <span class="fu">useState</span><span class="op">&lt;</span><span class="dt">boolean</span><span class="op">&gt;</span>(<span class="kw">true</span>)<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> [showError<span class="op">,</span> setShowError] <span class="op">=</span> <span class="fu">useState</span><span class="op">&lt;</span><span class="dt">boolean</span><span class="op">&gt;</span>(<span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">useEffect</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">async</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="bu">console</span><span class="op">.</span><span class="fu">assert</span>(showSpinner<span class="op">,</span> <span class="st">&#39;showSpinner should be true initially&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">try</span> {</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(<span class="st">&#39;/api/foo&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="op">!</span>response<span class="op">.</span><span class="at">ok</span>) {</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>          <span class="cf">throw</span> <span class="kw">new</span> <span class="bu">Error</span>(<span class="st">&#39;Failed to fetch&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> response<span class="op">.</span><span class="fu">json</span>()<span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setValue</span>(data)<span class="op">;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">catch</span> (err) {</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setShowError</span>(<span class="kw">true</span>)<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">finally</span> {</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setShowSpinner</span>(<span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    })()<span class="op">;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span> [])<span class="op">;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="kw">function</span> <span class="fu">postValue</span>()<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setShowSpinner</span>(<span class="kw">true</span>)<span class="op">;</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> {</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(<span class="st">&#39;/api/foo&#39;</span><span class="op">,</span> {</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        method<span class="op">:</span> <span class="st">&#39;POST&#39;</span><span class="op">,</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        headers<span class="op">:</span> {</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>          <span class="st">&#39;Content-Type&#39;</span><span class="op">:</span> <span class="st">&#39;application/json&#39;</span><span class="op">,</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        body<span class="op">:</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">stringify</span>(value)<span class="op">,</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>      })<span class="op">;</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="op">!</span>response<span class="op">.</span><span class="at">ok</span>) {</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="kw">new</span> <span class="bu">Error</span>(<span class="st">&#39;Failed to save&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>      <span class="fu">setShowError</span>(<span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (err) {</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>      <span class="fu">setShowError</span>(<span class="kw">true</span>)<span class="op">;</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">finally</span> {</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>      <span class="fu">setShowSpinner</span>(<span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  <span class="kw">function</span> <span class="fu">handleChange</span>(event<span class="op">:</span> React<span class="op">.</span><span class="at">ChangeEvent</span><span class="op">&lt;</span><span class="bu">HTMLInputElement</span><span class="op">&gt;</span>)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setValue</span>(<span class="bu">event</span><span class="op">.</span><span class="at">target</span><span class="op">.</span><span class="at">value</span>)<span class="op">;</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>div<span class="op">&gt;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>      {value <span class="op">!=</span> <span class="kw">null</span> <span class="op">&amp;&amp;</span> <span class="op">&lt;</span>input <span class="kw">type</span><span class="op">=</span><span class="st">&#39;text&#39;</span> value<span class="op">=</span>{value} onChange<span class="op">=</span>{handleChange} onBlur<span class="op">=</span>{postValue} <span class="op">/&gt;</span>}</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>      {showSpinner <span class="op">&amp;&amp;</span> <span class="op">&lt;</span>div className<span class="op">=</span><span class="st">&#39;spinner&#39;</span><span class="op">&gt;</span>Loading<span class="op">...&lt;/</span>div<span class="op">&gt;</span>}</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>      {showError <span class="op">&amp;&amp;</span> (</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span>div<span class="op">&gt;</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>          An error occurred <span class="op">&lt;</span>button onClick<span class="op">=</span>{postValue}<span class="op">&gt;</span>Retry<span class="op">&lt;/</span>button<span class="op">&gt;</span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>      )}</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>  )<span class="op">;</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Given that we just want to enable the user to edit one string in the
+database, there’s quite a lot of boilerplate here. Ideally, we’d just
+need to specify how to display the user interface and where to find the
+string in the database, but here we have to also deal with sending state
+back and forth, showing errors and displaying a spinner. In a real app,
+you would admittedly put several controls in a single form, and you’d
+need a single set of this boilerplate for the whole form, not for each
+control. But we’re going to write similar but not quite the same code in
+several places since our app probably contains many more forms and the
+code above is difficult to abstract: Other controls might have to GET
+and POST complex data types instead of just a string. Or we might need
+several different endpoints to load and update data in our form. And we
+might need to put spinner and error messages at different places
+relative to our controls depending on the specific component, and make
+sure that there’s no weird jumping in the UI when we show or hide
+spinner and error message.</p>
+<p>More importantly though, the code above is not even correct when
+there’s more than one request in-flight at the same time. We might get
+into this situation if the user changes the value twice in quick
+succession, say first to <code>"A"</code> and then to <code>"B"</code>.
+This will fire off two POST requests with payload <code>"A"</code> and
+then payload <code>"B"</code> in this order. Unfortunately, HTTP does
+not guarantee that the requests also arrive in this order at our server.
+And even when the requests arrive in the same order that they were sent
+in, we’re in trouble: Since our server most likely handles multiple
+requests concurrently, it might still happen that the second request is
+processed before the first one. This means that we might first save
+<code>"B"</code> to our database and then overwrite it with the older
+value <code>"A"</code> even though the user meant the final value to be
+<code>"B"</code>. Our UI doesn’t even indicate that something is not
+quite right and instead just shows “B” to the user, so this is quite
+bad.</p>
+<p>One solution to this problem is to require the user to hit a “submit”
+button, which we disable while requests are in-flight, so that we cannot
+send the second request before we’ve received the response to the first
+request. This is arguably bad UX though, as evidenced by most highly
+polished UIs (e.g. your browser’s preference page) not requiring you to
+do this. An alternative is to queue up requests so that we postpone the
+second request until we’ve received the first request, for example by
+wrapping or monkey-patching <code>fetch</code>. The downside here is
+that we’ve now slowed down communication with the server. Depending on
+how critical the app is, it might also be OK to just ignore the problem
+since it usually doesn’t occur too often.</p>
+<p>But even when our backend receives and processes the two requests in
+the same order that they were sent in, our logic for displaying the
+spinner is wrong: Note that we set <code>showSpinner = true</code>
+before kicking of a POST request, and we set
+<code>showSpinner = false</code> when we receive the reply. The problem
+is that when we set <code>showSpinner = false</code> at the end of a
+request, we don’t take into account that other request might still be
+in-flight. This results in us hiding the spinner when we receive the
+first response already even though the second request is still in
+progress.</p>
+<p>We can fix the spinner logic by replacing the
+<code>showSpinner</code> flag by a <code>requestCount</code> integer,
+which we increment before and decrement after requests. We then show the
+spinner whenever the count is greater than 0.</p>
+<p>The final problem I want to mention, which most apps simply accept,
+is that if a user opens the app twice, then changes in one instance are
+not propagated to the second instance automatically. We could get around
+this problem by replacing our initial GET request to fetch data with a
+subscription to server-sent events by which the server notifies the
+client about changes of the value. This would require significant
+server-side work though.</p>
+<hr />
+<p>As I wrote in the beginning, I think all of this incidental
+complexity arises because we’re using a tool made for state
+<em>transfer</em> to solve a state <em>synchronization</em> problem. So
+just replacing REST with other state transfer protocols, for example
+gRPC, won’t help.</p>
+<p>I’m not in a position to give an accurate overview of the field, but
+there are some initiatives to push for actual state synchronization
+mechanisms: <a
+href="https://github.com/automerge/automerge">Automerge</a>, <a
+href="https://github.com/yjs/yjs">Yjs</a>, the <a
+href="https://braid.org/">Braid working group</a>, <a
+href="https://electric-sql.com/">Electric SQL</a> and others. Most of
+their approaches appear to be based on <a
+href="https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type">CRDTs</a>.
+Since I haven’t seriously tested those tools, I can’t say how mature
+they are at the moment.</p>
+<p>Something that worries me about some of the CRDT work I’ve seen is
+that they seem to be optimizing for a situation where clients disconnect
+for extended periods (“offline first”). But even for the very common
+situation where the involved parties are just a single client and the
+server over a reasonable internet connection (i.e., a normal webapp), so
+that state divergence occurs only for durations on the order of
+milliseconds or perhaps seconds, having a proper state synchronization
+mechanism would be incredibly useful.</p>
+<p>In any case, I hope state synchronization technology will eventually
+mature to the point where it’s common enough that I don’t have to build
+bug-ridden ad-hoc state synchronization on top of REST over and over
+again.</p>
+</body>
+</html>

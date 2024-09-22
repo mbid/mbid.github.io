@@ -1,6 +1,9 @@
 title: "Posts"
 lang: en_US
 posts:
+  - title: "Stop using REST for state synchronization"
+    date: September 22, 2024
+    url: stop-using-rest-for-state-synchronization 
   - title: "Control flow for Datalog"
     date: November 01, 2023
     url: control-flow-for-datalog
