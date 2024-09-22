@@ -134,7 +134,7 @@ I'm not in a position to give an accurate overview of the field, but there are s
 Most of their approaches appear to be based on [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type).
 Since I haven't seriously tested those tools, I can't say how mature they are at the moment.
 
-Something that worries me about some of the CRDT work I've seen is that they seem to be optimizing for a situation where clients disconnect for extended periods ("offline first").
+Something that worries me about some of the CRDT work I've seen is that they seem to be optimizing for a situation where clients disconnect for extended periods ("local first").
 But even for the very common situation where the involved parties are just a single client and the server over a reasonable internet connection (i.e., a normal webapp), so that state divergence occurs only for durations on the order of milliseconds or perhaps seconds, having a proper state synchronization mechanism would be incredibly useful.
 
 In any case, I hope state synchronization technology will eventually mature to the point where it's common enough that I don't have to build bug-ridden ad-hoc state synchronization on top of REST over and over again.
