@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Dependent types for Datalog</title>
+  <title>Dependent models for Datalog</title>
   <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
   <link rel="stylesheet" href="/style.css" />
 </head>
@@ -14,7 +14,7 @@
 <a href="/">about</a>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Dependent types for Datalog</h1>
+<h1 class="title">Dependent models for Datalog</h1>
 <p class="date">November 02, 2023</p>
 </header>
 <p><em>This is a high-level proposal of a Datalog extension that would
@@ -24,60 +24,65 @@ the ambient Datalog program, and types of the instantiated Datalog
 program are dependent on these elements.</em></p>
 <p><em>The main benefit of this language feature is to make it possible
 to compose small self-contained Datalog programs into larger programs,
-perhaps reminiscent of how classes in object oriented languages enable
-multiple instantiations of part of a program and its associated data. So
-while this feature also enables the compiler to detect more programming
-errors, the main benefit is compositionality, not correctness. The
-feature allows expressing locality to the Datalog compiler, which allows
-it to generate more efficient code.</em></p>
-<p><em>Dependent Datalog is a further generalization of Cartmell’s
-framework of generalized algebraic theories (GATs): Where GATs have a
-notion of dependent set, dependent Datalog has a notion of dependent
-model for any given Datalog theory.</em></p>
-<p>This will be a rather conceptual post, and unfortunately I can’t
-claim that I’ve fully worked through even the theoretical details let
-alone started to implement this. But there’s a good chance I’ll be a bit
-busier soon, so I figured it might be better to write down some of those
-ideas in case I can get back to them later.</p>
+similarly to how classes in object oriented languages enable multiple
+instantiations of part of a program and its associated data. A second
+benefit is that it enables the Datalog compiler to detect more
+programming errors. Finally, dependent models allows communicating
+locality to the Datalog compiler, which allows it to generate more
+efficient code.</em></p>
+<p><em>Dependent models are a further generalization of Cartmell’s
+framework of <a
+href="https://ncatlab.org/nlab/show/generalized+algebraic+theory">generalized
+algebraic theories (GATs)</a>: Where GATs have a notion of dependent
+type or set, dependent models exist for every user-supplied Datalog
+theory, in particular the theory of a single type.</em></p>
+<p>This will be a rather conceptual post, and unfortunately I haven’t
+even started to implement this. But there’s a good (bad?) chance I’ll be
+a bit busier soon, so I figured it might be better to write down some of
+those ideas in case I can get back to them later.</p>
 <h2 id="a-brief-overview-of-eqlog">A brief overview of Eqlog</h2>
-<p>In case you haven’t followed the work on the Eqlog Datalog compiler
-or the similar <a
-href="https://github.com/egraphs-good/egglog">Egglog</a> engine, let me
-try to briefly summarize. Eqlog implements an extension of Datalog with
-support for (partial) functions and equality. While I think that
-dependent types make sense for standard Datalog as well, dependent types
-interact non-trivally with equality, so I decided to write directly
-about dependent types in Eqlog.</p>
-<p>Eqlog represents a function <code>f(a : A) -&gt; B</code> by its
-graph, a predicate <code>graph_f : (a : A, b: B)</code> where
-<code>graph_f(x, y)</code> means that <code>f(x) = y</code>. Eqlog’s
-support for equality means that it can enforce that <code>graph_f</code>
-satisfies the functionality axiom, i.e. the following holds:</p>
+<p>In case you haven’t followed the work on the <a
+href="https://github.com/eqlog/eqlog">Eqlog Datalog compiler</a> or the
+similar <a href="https://github.com/egraphs-good/egglog">Egglog</a>
+engine, let me try to briefly summarize. Eqlog implements an extension
+of Datalog with support for (partial) functions and equality. And while
+I dependent models probably make sense without equality or functions as
+well, dependent models interact non-trivally with equality, so I decided
+to write directly about dependent models in Eqlog.</p>
+<p>Types, functions and predicates in Eqlog are declared as follows:</p>
+<pre class="eql"><code>type A;
+type B;
+pred p(x_0: A, x_1: A);
+func f(x: A) -&gt; B;</code></pre>
+<p>Rules consist of a sequence of <code>if</code> and <code>then</code>
+statements. For example, the following rule enforces transitivity for
+<code>p</code>:</p>
+<pre class="eql"><code>rule p_transitivity {
+    if p(x_0, x_1);
+    if p(x_1, x_2);
+    then p(x_0, x_2);
+}</code></pre>
+<p>In standard Datalog syntax this would be written as follows:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>p(x_0<span class="kw">,</span> x_2) <span class="kw">:-</span> p(x_0<span class="kw">,</span> x_1)<span class="kw">,</span> p(x_1<span class="kw">,</span> x_2)<span class="kw">.</span></span></code></pre></div>
+<p>Compiled Eqlog programs represent elements of types as integer IDs,
+predicates as sets of tuples and functions via their graphs. The graph
+of the function <code>f(a : A) -&gt; B</code> is a predicate
+<code>graph_f : (a : A, b: B)</code> where <code>graph_f(x, y)</code>
+means that <code>f(x) = y</code>. Eqlog’s support for equality means
+that it can enforce that <code>graph_f</code> satisfies the
+functionality axiom, i.e. the following holds:</p>
 <pre class="eql"><code>rule functionality {
     if graph_f(x, y_0);
     if graph_f(x, y_1);
     then y_0 = y_1;
 }</code></pre>
-<p>This is an example of the concrete input syntax accepted by the Eqlog
-compiler. In standard Datalog syntax this would be written like so:</p>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>y_0 <span class="kw">=</span> y_1 <span class="kw">:-</span> graph_f(x<span class="kw">,</span> y_0)<span class="kw">,</span> graph_f(x<span class="kw">,</span> y_1)<span class="kw">.</span></span></code></pre></div>
-<p>(Of course, standard Datalog doesn’t have equality, so the head would
-not be well-formed here.)</p>
-<p>Predicate and function arguments are typed. Types, functions and
-predicates are declared like so:</p>
-<pre class="eql"><code>type A;
-type B;
-pred example_predicate(y: B, x: A);
-func example_function(x_0: A, x_1: A) -&gt; B;</code></pre>
-<p>Compiled Eqlog programs represent elements of types as integer IDs.
-When the compiled Eqlog program infers an equality among elements
-<code>x</code> and <code>y</code> during evaluation, it will replace all
-occurrences of <code>y</code> in predicates and functions by
-<code>x</code>.</p>
-<p>Another extension over standard Datalog is the ability to enforce
-that a function is defined on given arguments via the exclamation mark
-operator:</p>
+<p>During evaluation, when an Eqlog program infers an equality among
+elements <code>x</code> and <code>y</code>, it replaces all occurrences
+of <code>y</code> in predicates and functions by <code>x</code>. Another
+extension over standard Datalog is the ability to quantify over all
+elements of a given type, and to enforce that a function is defined on
+given arguments via the exclamation mark operator:</p>
 <pre class="eql"><code>func f(x: A) -&gt; B;
 
 rule {
@@ -86,32 +91,29 @@ rule {
     // then the function f is defined on x
     then f(x)!;
 }</code></pre>
-<p>This feature makes Eqlog Turing complete. To prevent Eqlog
-programmers from inadvertedly introducing new elements in rules, leading
-to non-termination, Eqlog enforces <em>surjectivity</em> restrictions in
-rule definitions: Unless the exclamation mark operator is used,
-<code>then</code> statements can only mention elements that have been
-introduced earlier in the same rule by an <code>if</code> statement or
-via the exclamation mark operator.</p>
+<p>The exclamation mark operator means that Eqlog is Turing complete. To
+prevent Eqlog programmers from inadvertedly introducing new elements in
+rules, leading to non-termination, Eqlog enforces <em>surjectivity</em>
+restrictions in rule definitions: Unless the exclamation mark operator
+is used, <code>then</code> statements can only mention elements that
+have been introduced earlier in the same rule by an <code>if</code>
+statement or via the exclamation mark operator.</p>
 <p>The Eqlog compiler does not generate standalone executables. Instead,
-the generated code is meant to be included into a host program written
+the generated code is meant to be imported into a host program written
 in Rust. This generated code provides a data structure to represent the
-data declared in the Eqlog program: There’s a set of elements for each
-type in the Eqlog program, with each element represented by an integer
-ID, and sets of tuples to represent each predicate and function (via its
-graph) declared in the Eqlog program. Finally, the generated code
-provides a <code>close</code> method that operates on this data
-structure which adds data according to the rules of the Eqlog program
-until all rules are satisfied.</p>
+data declared in the Eqlog program, and it provides a <code>close</code>
+method that operates on this data structure which adds data according to
+the rules of the Eqlog program until all rules are satisfied.</p>
 <h2 id="example-control-flow-graphs">Example: Control flow graphs</h2>
 <p>Consider reachability analysis for the control flow graph (CFG) of a
-function in a given programming language. This is a common subtask in
-compilers and static analysis. A CFG is a representation of a function’s
-execution flow as directed graph: The nodes of the graph represent basic
-code blocks, and the edges represent possible direct execution flows
-between two basic blocks. The CFG of a function has a dedicated entry
-node, and we call a node <code>n</code> <em>reachable</em> if there is a
-path from the entry node to <code>n</code>.</p>
+function in a given programming language. This is a common subtask
+during compilation and static analysis of programming languages. A CFG
+is a representation of a function’s execution flow as directed graph:
+The nodes of the graph represent basic code blocks without branches, and
+edges represent possible direct execution flows between basic blocks.
+The CFG of a function has a dedicated entry node, and we call a node
+<code>n</code> <em>reachable</em> if there is a path from the entry node
+to <code>n</code>.</p>
 <p>Here’s a straightforward implementation of the CFG data structure and
 reachability in Eqlog:</p>
 <pre class="eql"><code>type Node;
@@ -129,8 +131,8 @@ rule reachable_step {
     if edge(n, m);
     then reachable(m);
 }</code></pre>
-<p>If we compile this Eqlog program, we get a module that provides a
-<code>CFG</code> data structure. Our host program can instantiate this
+<p>If we compile this Eqlog program, we get a Rust module that provides
+a <code>CFG</code> data structure. Our host program can instantiate this
 data structure, populate <code>Node</code>, <code>edge</code> and
 <code>entry_node</code> data based on the abstract syntax tree (AST) of
 a given function, and then run the <code>close</code> method to compute
@@ -140,12 +142,11 @@ move more logic into the Eqlog program and only instantiate the Eqlog
 program once for the whole AST, which will contain the ASTs of many
 functions. However, we can’t easily use the Eqlog program above as part
 of a larger Eqlog program that analyzes multiple functions at once. The
-problem is that we need need to instantiate separate CFGs for each
-function in our Eqlog program, but Eqlog does not provide a mechanism to
-dynamically instantiate fragments, for example the CFG program,
-dependent on other data.</p>
+problem is that we need to instantiate separate CFGs for each function
+in our Eqlog program, but Eqlog does not have a notion of “instance” of
+a subprogram, for example the CFG program.</p>
 <p>We can work around this by parametrizing types, predicates and
-functions in our CFG program with elements of a new type that represents
+functions in our CFG program with elements of a new type to encode
 different instances of the original CFG program:</p>
 <pre class="eql"><code>// A type representing instances of CFGs.
 type CFG;
@@ -199,20 +200,15 @@ went from the first to the second solution is to combine many separate
 small graphs into a single large graph with many isolated subgraphs and
 then compute reachability in the larger graph. The runtime of
 reachability computation is dominated by join computations on the
-respective edge tables. But while the total number of joins required is
-roughly the same with both appraoches, each join will be more costly
-with the second approach than with the first because the edge table is
-much larger.</p>
-<h2 id="model-definitions-and-members">Model definitions and
-members</h2>
+respective edge tables. And while the total number of joins required is
+roughly the same with both approaches, each join will be more costly
+with the second approach than with the first one because the edge table
+is much larger.</p>
 <p>Is there way to retain the advantages of our first CFG program while
 making it compose well into larger Eqlog programs like our second
-version? My hope is that adding dependent types to Eqlog will enable
-this.</p>
-<p>The minimal version of dependent Eqlog consists of (1) a way to
-define named fragments of Eqlog code and (2) a way to access members
-definitions.</p>
-<h3 id="the-model-keyword">1. The model keyword</h3>
+version? With the dependent models language feature, which I describe in
+the rest of this post, the answer is yes.</p>
+<h2 id="models-and-members">Models and members</h2>
 <p>The <code>model</code> keyword is used to designate a fragment of an
 Eqlog program for future instantiation:</p>
 <pre><code>model CFG {
@@ -239,11 +235,10 @@ Eqlog program for future instantiation:</p>
 Eqlog program in the model definition body. Similarly to classes in
 object oriented orientation, we’ll refer to the definitions in the body
 as <em>members</em> (here:
-<code>Node, edge, reachable, entry_node</code>). Members are only
-accessible via an element of the model type.</p>
-<h3 id="member-access">2. Member access</h3>
-<p>Whenever an expression <code>t</code> has model type, we expect a way
-to access members of the model instance associated to <code>t</code>.
+<code>Node, edge, reachable, entry_node</code>).</p>
+<p>Members are only accessible via an element of the model type.
+Whenever an expression <code>t</code> has model type, we expect a way to
+access members of the model instance associated to <code>t</code>.
 Following the convention of of the C programming language family, I
 suggest using a dot character here, so that
 <code>t.&lt;member&gt;</code> refers to the member.</p>
@@ -304,14 +299,15 @@ equality during type checking. Consider the following example:</p>
 <p>This program should not type check because <code>cfg_1.Node</code> is
 potentially different from <code>cfg_0.Node</code>. But if we added the
 assumption <code>if cfg_0 = cfg_1</code>, then we would expect the
-program to type check. To enforce the surjectivity restrictions I
-alluded to earlier, Eqlog already decides element equality to some
-extent, so I don’t think this would add significant additional
-complexity. Note that Eqlog’s element equality decision procedure takes
-only implicit functionality rules
-(i.e. <code>x = y =&gt; f(x) = f(y)</code>) into account, not other
-rules in the Eqlog program (this would make the type checker possibly
-non-terminating).</p>
+program to type check. This means that type checking Eqlog programs now
+involves deciding equality among expressions.</p>
+<p>To enforce the surjectivity restrictions I alluded to earlier, the
+Eqlog type checker already needs to decide equality of expressions in
+rules, so I don’t think this would add significant additional
+complexity. Note that the equality decision procedure takes only
+implicit functionality rules (i.e. <code>x = y =&gt; f(x) = f(y)</code>)
+into account but not user-supplied rules in the Eqlog program, as this
+would make the type checker run indefinitely on some input programs.</p>
 <h2 id="runtime-representation">Runtime representation</h2>
 <p>How should model definitions and elements of model types be
 represented at runtime?</p>
@@ -331,66 +327,67 @@ takes the arguments of the member and furthermore an argument of type
 argument <code>m: M</code> is added to all function and predicate
 applications.</li>
 </ul>
-<p>For <code>CFG</code> model example this would result in something
-like this Rust data structure:</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CFG(<span class="dt">u32</span>)<span class="op">;</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Node(<span class="dt">u32</span>)<span class="op">;</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CompiledProgramData <span class="op">{</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    cfgs<span class="op">:</span> Set<span class="op">&lt;</span>CFG<span class="op">&gt;,</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    node_belongs_to<span class="op">:</span> Map<span class="op">&lt;</span>Node<span class="op">,</span> CFG<span class="op">&gt;,</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    edge<span class="op">:</span> Set<span class="op">&lt;</span>(CFG<span class="op">,</span> Node<span class="op">,</span> Node)<span class="op">&gt;,</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    reachable<span class="op">:</span> Set<span class="op">&lt;</span>(CFG<span class="op">,</span> Node)<span class="op">&gt;,</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    entry_node<span class="op">:</span> Map<span class="op">&lt;</span>CFG<span class="op">,</span> Node<span class="op">&gt;,</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p><strong>Maps to model instances.</strong> Alternatively, we could
-compile the model body in isolation, which would give us a data
-structure representing just one instance of the model:</p>
+<p>For the <code>CFG</code> model example this would ultimately compile
+into something like this Rust code:</p>
 <div class="sourceCode" id="cb12"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Node(<span class="dt">u32</span>)<span class="op">;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CFGMembers <span class="op">{</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    edge<span class="op">:</span> Set<span class="op">&lt;</span>(Node<span class="op">,</span> Node)<span class="op">&gt;,</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    reachable<span class="op">:</span> Set<span class="op">&lt;</span>Node<span class="op">&gt;,</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    entry_node<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span>Node<span class="op">&gt;,</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CFG(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Node(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CompiledProgramData <span class="op">{</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    cfgs<span class="op">:</span> Set<span class="op">&lt;</span>CFG<span class="op">&gt;,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    node_belongs_to<span class="op">:</span> Map<span class="op">&lt;</span>Node<span class="op">,</span> CFG<span class="op">&gt;,</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    edge<span class="op">:</span> Set<span class="op">&lt;</span>(CFG<span class="op">,</span> Node<span class="op">,</span> Node)<span class="op">&gt;,</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    reachable<span class="op">:</span> Set<span class="op">&lt;</span>(CFG<span class="op">,</span> Node)<span class="op">&gt;,</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    entry_node<span class="op">:</span> Map<span class="op">&lt;</span>CFG<span class="op">,</span> Node<span class="op">&gt;,</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Maps to model instances.</strong> Alternatively, we could
+first compile the model body in isolation, which would give us a data
+structure representing just one instance of the model:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Node(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CFGMembers <span class="op">{</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    edge<span class="op">:</span> Set<span class="op">&lt;</span>(Node<span class="op">,</span> Node)<span class="op">&gt;,</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    reachable<span class="op">:</span> Set<span class="op">&lt;</span>Node<span class="op">&gt;,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    entry_node<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span>Node<span class="op">&gt;,</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>We would then use this data structure to represent instances in the
 ambient Eqlog program:</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CFG(<span class="dt">u32</span>)<span class="op">;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CompiledProgramData <span class="op">{</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    cfgs<span class="op">:</span> Map<span class="op">&lt;</span>CFG<span class="op">,</span> CFGMembers<span class="op">&gt;,</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CFG(<span class="dt">u32</span>)<span class="op">;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CompiledProgramData <span class="op">{</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    cfgs<span class="op">:</span> Map<span class="op">&lt;</span>CFG<span class="op">,</span> CFGMembers<span class="op">&gt;,</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This second representation leads to faster evaluation of member
 rules, since those can be evaluated in isolation for each instance. But
 it also takes up more memory if the members of model instances are
-mostly empty, and it often makes it more costly to access members when
-evaluating rules of the ambient program.</p>
-<p>Datalog engines often maintain indices on relations, i.e. multiple
-representations of the same data that are suitable for computing
-different types of joins efficiently. So perhaps some implementations
-would simply use both representations to improve runtime performance at
-the cost of memory usage.</p>
+mostly empty, and it will probably make it more costly to access members
+when evaluating rules of the ambient program involving those
+members.</p>
+<p>Eqlog and other Datalog engines often maintain indices on relations,
+i.e. multiple representations of the same data that are suitable for
+computing different types of joins efficiently. So perhaps that’s also
+the way to go here: Simply use both representations to improve runtime
+performance at the cost of memory usage.</p>
 <h2 id="morphisms">Morphisms</h2>
-<p>Originally I intended to also write at length about
-<em>morphisms</em> between instances here, but decided to postpone a
-proper discussion to some other time, since I haven’t worked out some
-relevant details. The rough idea is that we add a built-in type of
-morphisms between two instances of the same model. Semantically,
-morphisms should represent maps of data in the domain instance to data
-in the codomain instance. So if the <code>model</code> formalizes
-graphs, then morphisms would be edge-preserving maps on vertices, and
-for groups you’d get group morphisms.</p>
+<p>Originally I intended to also write at length about <a
+href="https://en.wikipedia.org/wiki/Category_(mathematics)"><em>morphisms</em></a>
+between instances, but decided to postpone a proper discussion to some
+other time because I haven’t worked out some relevant details. The rough
+idea is that we add a built-in type of morphisms between two elements of
+the same model. Semantically, morphisms should represent maps of data in
+the domain instance to data in the codomain instance. So if the model
+formalizes graphs, then morphisms would be edge-preserving maps on
+vertices, and for groups you’d get group morphisms.</p>
 <p>The point of having a built-in notion of morphisms is that the
 Datalog engine can implement those morphisms efficiently via
 <em>shallow</em> instead of deep copies of tables in the domain
 instance. For example, if there’s a morphisms <code>f : x -&gt; y</code>
-and no other rules asserting things about the instance <code>y</code>,
-then tables in <code>y</code> can be represented simply as pointers to
-the tables of <code>x</code>. And if we use <a
+and no other rules asserting facts about the codomain instance
+<code>y</code>, then tables in <code>y</code> can be represented simply
+as pointers to the tables of <code>x</code>. And if we use <a
 href="https://en.wikipedia.org/wiki/Persistent_data_structure">persistent
 insertion operations</a> into tables, then we can share chunks of tables
 among <code>x</code> and <code>y</code> even if the tables in
@@ -403,24 +400,25 @@ node and possibly its type. You could represent scopes like so:</p>
 <pre class="eql"><code>func var_type(node: ASTNode, var: Identifier) -&gt; Type;</code></pre>
 <p>The problem with this is that the program has to deal with a large
 number of AST nodes, and so the table representing <code>var_type</code>
-will be very large. Since many nodes share the same scope, we can
-improve this by introducing a <code>Scope</code> model:</p>
+will be prohibitively large.</p>
+<p>Since many nodes share the same scope, we can improve this by
+introducing a <code>Scope</code> model:</p>
 <pre><code>model Scope {
     func var_type(var: Identifier) -&gt; Type;
 }
 func scope(node: ASTNode) -&gt; Scope;</code></pre>
 <p>Now we can at least express when two nodes have the same scope. For
-example, expression (as opposed to statements) can usually not introduce
-new variables, so you can add a rule like this:</p>
+example, expressions (as opposed to statements) can usually not
+introduce new variables, so you can add a rule like this:</p>
 <pre><code>rule {
     if is_child_expression(child, parent);
     then scope(child) = scope(parent);
 }</code></pre>
 <p>This way, there’s only one <code>var_type</code> table for both
 <code>child</code> and <code>parent</code>.</p>
-<p>But a problem remains: Every variable declaration increases the
-<code>var_type</code> table of the associated scope. We could implement
-this like so:</p>
+<p>But a problem remains: Every variable declaration, for example by a
+<code>let</code> statement, increases the <code>var_type</code> table of
+the associated scope. We could implement this like so:</p>
 <pre><code>pred scope_extension(smaller: Scope: larger: Scope);
 rule scope_extension_var_type {
     if scope_extension(s_1, s_2);
@@ -433,14 +431,16 @@ rule {
     then scope(second_stmt).var_type(var) = typ
     then scope_extension(scope(first_stmt), scope(second_stmt));
 }</code></pre>
-<p>This means that whenever a new variable is introduced, we take a deep
-copy of the current scope and insert the new variable into it. For a
-sequence of <span class="math inline"><em>n</em></span> statements that
-each introduce a new variable, this would result in <span
-class="math inline">𝒪(<em>n</em><sup>2</sup>)</span> runtime and memory
-usage. With morphisms, we could express that one scope is an extension
-of another. If the compiler implements morphisms via shallow copies,
-then we’d cut the memory required for storgin scopes down to <span
-class="math inline">𝒪(<em>n</em>⋅log(<em>n</em>))</span>.</p>
+<p>But this would mean that whenever a new variable is introduced, we
+take a deep copy of the current scope and insert the new variable into
+it. For a sequence of <span class="math inline"><em>n</em></span>
+statements that each introduce a new variable, this would result in
+<span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span> memory
+usage.</p>
+<p>With morphisms, we could express that one scope is an extension of
+another. If the compiler implements morphisms via shallow copies, then
+we’d cut the memory required for storing scope tables down to <span
+class="math inline">𝒪(<em>n</em>⋅log(<em>n</em>))</span>, which is
+probably the best you can hope for in a language without mutation.</p>
 </body>
 </html>
