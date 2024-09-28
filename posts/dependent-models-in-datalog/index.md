@@ -1,10 +1,10 @@
 ---
-title: "Dependent models for Datalog"
+title: "Dependent models in Datalog"
 date: "November 02, 2023"
 lang: "en_US"
 ---
 
-*This is a high-level proposal of a Datalog extension that would allow instantiating multiple models of one Datalog program in a larger ambient Datalog program.
+*This is a high-level description of a Datalog extension that would allow instantiating multiple models of one Datalog program in a larger ambient Datalog program.
 These instances are represented as elements in the ambient Datalog program, and types of the instantiated Datalog program are dependent on these elements.*
 
 *The main benefit of this language feature is to make it possible to compose small self-contained Datalog programs into larger programs, similarly to how classes in object oriented languages enable multiple instantiations of part of a program and its associated data.
