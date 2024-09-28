@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Dependent models for Datalog</title>
+  <title>Dependent types for Datalog</title>
   <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
   <link rel="stylesheet" href="/style.css" />
 </head>
@@ -14,20 +14,20 @@
 <a href="/">about</a>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Dependent models for Datalog</h1>
-<p class="date">November 02, 2023</p>
+<h1 class="title">Dependent types for Datalog</h1>
+<p class="date">September 28, 2024</p>
 </header>
-<p><em>This is a high-level proposal of a Datalog extension that would
-allow instantiating multiple models of one Datalog program in a larger
-ambient Datalog program. These instances are represented as elements in
-the ambient Datalog program, and types of the instantiated Datalog
-program are dependent on these elements.</em></p>
-<p><em>The main benefit of this language feature is to make it possible
+<p><em>This is a high-level description of a Datalog extension that
+would allow instantiating multiple models of one Datalog program in a
+larger ambient Datalog program. These instances are represented as
+elements in the ambient Datalog program, and types of the instantiated
+Datalog program are dependent on these elements.</em></p>
+<p><em>The main purpose of this language feature is to make it possible
 to compose small self-contained Datalog programs into larger programs,
 similarly to how classes in object oriented languages enable multiple
 instantiations of part of a program and its associated data. A second
 benefit is that it enables the Datalog compiler to detect more
-programming errors. Finally, dependent models allows communicating
+programming errors. Finally, dependent models allow communicating
 locality to the Datalog compiler, which allows it to generate more
 efficient code.</em></p>
 <p><em>Dependent models are a further generalization of Cartmell’s
@@ -39,21 +39,21 @@ theory, in particular the theory of a single type.</em></p>
 <p>This will be a rather conceptual post, and unfortunately I haven’t
 even started to implement this. But there’s a good (bad?) chance I’ll be
 a bit busier soon, so I figured it might be better to write down some of
-those ideas in case I can get back to them later.</p>
+those ideas for when I can get back to them.</p>
 <h2 id="a-brief-overview-of-eqlog">A brief overview of Eqlog</h2>
 <p>In case you haven’t followed the work on the <a
 href="https://github.com/eqlog/eqlog">Eqlog Datalog compiler</a> or the
 similar <a href="https://github.com/egraphs-good/egglog">Egglog</a>
 engine, let me try to briefly summarize. Eqlog implements an extension
 of Datalog with support for (partial) functions and equality. And while
-I dependent models probably make sense without equality or functions as
-well, dependent models interact non-trivally with equality, so I decided
-to write directly about dependent models in Eqlog.</p>
+dependent models probably make sense without equality or functions,
+dependent models interact non-trivally with equality, so I decided to
+write directly about dependent models in Eqlog.</p>
 <p>Types, functions and predicates in Eqlog are declared as follows:</p>
 <pre class="eql"><code>type A;
 type B;
-pred p(x_0: A, x_1: A);
-func f(x: A) -&gt; B;</code></pre>
+func f(x: A) -&gt; B;
+pred p(x_0: A, x_1: A);</code></pre>
 <p>Rules consist of a sequence of <code>if</code> and <code>then</code>
 statements. For example, the following rule enforces transitivity for
 <code>p</code>:</p>
@@ -91,8 +91,8 @@ rule {
     // then the function f is defined on x
     then f(x)!;
 }</code></pre>
-<p>The exclamation mark operator means that Eqlog is Turing complete. To
-prevent Eqlog programmers from inadvertedly introducing new elements in
+<p>The exclamation mark operator make Eqlog Turing complete. To prevent
+Eqlog programmers (so: me) from inadvertedly introducing new elements in
 rules, leading to non-termination, Eqlog enforces <em>surjectivity</em>
 restrictions in rule definitions: Unless the exclamation mark operator
 is used, <code>then</code> statements can only mention elements that
@@ -183,7 +183,8 @@ rule function_cfg_total {
 func basic_block_node(block: BasicBlock, function: Function) -&gt; Node;
 rule basic_block_node_total {
     if basic_block_in_function(block, function);
-    then basic_block_node(block, function)!;
+    then node := basic_block_node(block, function)!;
+    then node_onwer(node) = function;
 }
 
 ...</code></pre>
@@ -193,21 +194,21 @@ code with mentions of a <code>CFG</code> element everywhere. Our Eqlog
 program also got more brittle, since it relies on the unenforced
 convention that we never create an edge between nodes of different
 CFGs.</p>
-<p>Finally, evaluation of the two rules governing the
-<code>reachable</code> predicate will now likely be slower than with the
-original approach. In terms of runtime behavior, what we’ve done as we
-went from the first to the second solution is to combine many separate
-small graphs into a single large graph with many isolated subgraphs and
-then compute reachability in the larger graph. The runtime of
-reachability computation is dominated by join computations on the
-respective edge tables. And while the total number of joins required is
-roughly the same with both approaches, each join will be more costly
-with the second approach than with the first one because the edge table
-is much larger.</p>
+<p>Finally, evaluation of the rules governing the <code>reachable</code>
+predicate will now likely be slower than with the original approach. In
+terms of runtime behavior, what we’ve done as we went from the first to
+the second solution is that we’ve combined many small graphs into a
+single large graph with many isolated subgraphs, and now we compute
+reachability in the larger graph.</p>
+<p>The runtime of reachability computation is dominated by join
+computations on the respective edge tables. And while the total number
+of joins required is roughly the same with both approaches, each join
+will be more costly with the second approach than with the first one
+because the edge table is much larger.</p>
 <p>Is there way to retain the advantages of our first CFG program while
 making it compose well into larger Eqlog programs like our second
-version? With the dependent models language feature, which I describe in
-the rest of this post, the answer is yes.</p>
+version? With dependent Datalog models, which I describe in the rest of
+this post, the answer is yes.</p>
 <h2 id="models-and-members">Models and members</h2>
 <p>The <code>model</code> keyword is used to designate a fragment of an
 Eqlog program for future instantiation:</p>
@@ -239,9 +240,9 @@ as <em>members</em> (here:
 <p>Members are only accessible via an element of the model type.
 Whenever an expression <code>t</code> has model type, we expect a way to
 access members of the model instance associated to <code>t</code>.
-Following the convention of of the C programming language family, I
-suggest using a dot character here, so that
-<code>t.&lt;member&gt;</code> refers to the member.</p>
+Following the typical convention, I think the dot character is
+appropriate here, so that <code>t.&lt;member&gt;</code> refers to the
+member.</p>
 <p>With the <code>CFG</code> model definition above, this allows us to
 write code like this:</p>
 <pre class="eql"><code>type BasicBlock;
@@ -283,9 +284,9 @@ equality
 the type <code>cfg.Node</code> of <code>n_0</code> and <code>n_1</code>
 depends on the element <code>cfg</code> that was introduced earlier in
 the rule. The rules <code>cfg_entry_block</code> and
-<code>cfg_reachability</code> demonstrate use of the member functions
-and member predicates, respectively.</p>
-<p>Member types depend on the elements they are accessed with. Since
+<code>cfg_reachability</code> demonstrate access of member functions and
+member predicates, respectively.</p>
+<p>Member types depend on the expressions they are accessed with. Since
 type checking requires comparing types, we now have to decide expression
 equality during type checking. Consider the following example:</p>
 <pre class="eql"><code>rule bad_argument {
@@ -324,8 +325,9 @@ model.</li>
 takes the arguments of the member and furthermore an argument of type
 <code>M</code>. Similarly for member functions.</li>
 <li>For every member rule, a desugared global rule in which a new
-argument <code>m: M</code> is added to all function and predicate
-applications.</li>
+argument <code>m: M</code> is added to all member function and member
+predicate applications. Quantifications <code>x: T</code> over member
+types desugar to equalities <code>belongs_to(x) = m</code>.</li>
 </ul>
 <p>For the <code>CFG</code> model example this would ultimately compile
 into something like this Rust code:</p>

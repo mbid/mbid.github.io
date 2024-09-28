@@ -1,34 +1,34 @@
 ---
-title: "Dependent models in Datalog"
-date: "November 02, 2023"
+title: "Dependent types for Datalog"
+date: "September 28, 2024"
 lang: "en_US"
 ---
 
 *This is a high-level description of a Datalog extension that would allow instantiating multiple models of one Datalog program in a larger ambient Datalog program.
 These instances are represented as elements in the ambient Datalog program, and types of the instantiated Datalog program are dependent on these elements.*
 
-*The main benefit of this language feature is to make it possible to compose small self-contained Datalog programs into larger programs, similarly to how classes in object oriented languages enable multiple instantiations of part of a program and its associated data.
+*The main purpose of this language feature is to make it possible to compose small self-contained Datalog programs into larger programs, similarly to how classes in object oriented languages enable multiple instantiations of part of a program and its associated data.
 A second benefit is that it enables the Datalog compiler to detect more programming errors.
-Finally, dependent models allows communicating locality to the Datalog compiler, which allows it to generate more efficient code.*
+Finally, dependent models allow communicating locality to the Datalog compiler, which allows it to generate more efficient code.*
 
 *Dependent models are a further generalization of Cartmell's framework of [generalized algebraic theories (GATs)](https://ncatlab.org/nlab/show/generalized+algebraic+theory):
 Where GATs have a notion of dependent type or set, dependent models exist for every user-supplied Datalog theory, in particular the theory of a single type.*
 
 This will be a rather conceptual post, and unfortunately I haven't even started to implement this.
-But there's a good (bad?) chance I'll be a bit busier soon, so I figured it might be better to write down some of those ideas in case I can get back to them later.
+But there's a good (bad?) chance I'll be a bit busier soon, so I figured it might be better to write down some of those ideas for when I can get back to them.
 
 ## A brief overview of Eqlog
 
 In case you haven't followed the work on the [Eqlog Datalog compiler](https://github.com/eqlog/eqlog) or the similar [Egglog](https://github.com/egraphs-good/egglog) engine, let me try to briefly summarize.
 Eqlog implements an extension of Datalog with support for (partial) functions and equality.
-And while I dependent models probably make sense without equality or functions as well, dependent models interact non-trivally with equality, so I decided to write directly about dependent models in Eqlog.
+And while dependent models probably make sense without equality or functions, dependent models interact non-trivally with equality, so I decided to write directly about dependent models in Eqlog.
 
 Types, functions and predicates in Eqlog are declared as follows:
 ```eql
 type A;
 type B;
-pred p(x_0: A, x_1: A);
 func f(x: A) -> B;
+pred p(x_0: A, x_1: A);
 ```
 
 Rules consist of a sequence of `if` and `then` statements.
@@ -67,8 +67,8 @@ rule {
     then f(x)!;
 }
 ```
-The exclamation mark operator means that Eqlog is Turing complete.
-To prevent Eqlog programmers from inadvertedly introducing new elements in rules, leading to non-termination, Eqlog enforces *surjectivity* restrictions in rule definitions:
+The exclamation mark operator make Eqlog Turing complete.
+To prevent Eqlog programmers (so: me) from inadvertedly introducing new elements in rules, leading to non-termination, Eqlog enforces *surjectivity* restrictions in rule definitions:
 Unless the exclamation mark operator is used, `then` statements can only mention elements that have been introduced earlier in the same rule by an `if` statement or via the exclamation mark operator.
 
 The Eqlog compiler does not generate standalone executables.
@@ -148,7 +148,8 @@ rule function_cfg_total {
 func basic_block_node(block: BasicBlock, function: Function) -> Node;
 rule basic_block_node_total {
     if basic_block_in_function(block, function);
-    then basic_block_node(block, function)!;
+    then node := basic_block_node(block, function)!;
+    then node_onwer(node) = function;
 }
 
 ...
@@ -158,13 +159,14 @@ This accomplishes the goal of moving more logic from the host program into the E
 We've had to clutter our original code with mentions of a `CFG` element everywhere.
 Our Eqlog program also got more brittle, since it relies on the unenforced convention that we never create an edge between nodes of different CFGs.
 
-Finally, evaluation of the two rules governing the `reachable` predicate will now likely be slower than with the original approach.
-In terms of runtime behavior, what we've done as we went from the first to the second solution is to combine many separate small graphs into a single large graph with many isolated subgraphs and then compute reachability in the larger graph.
+Finally, evaluation of the rules governing the `reachable` predicate will now likely be slower than with the original approach.
+In terms of runtime behavior, what we've done as we went from the first to the second solution is that we've combined many small graphs into a single large graph with many isolated subgraphs, and now we compute reachability in the larger graph.
+
 The runtime of reachability computation is dominated by join computations on the respective edge tables.
 And while the total number of joins required is roughly the same with both approaches, each join will be more costly with the second approach than with the first one because the edge table is much larger.
 
 Is there way to retain the advantages of our first CFG program while making it compose well into larger Eqlog programs like our second version?
-With the dependent models language feature, which I describe in the rest of this post, the answer is yes.
+With dependent Datalog models, which I describe in the rest of this post, the answer is yes.
 
 ## Models and members
 
@@ -195,7 +197,7 @@ Similarly to classes in object oriented orientation, we'll refer to the definiti
 
 Members are only accessible via an element of the model type.
 Whenever an expression `t` has model type, we expect a way to access members of the model instance associated to `t`.
-Following the convention of of the C programming language family, I suggest using a dot character here, so that `t.<member>` refers to the member.
+Following the typical convention, I think the dot character is appropriate here, so that `t.<member>` refers to the member.
 
 With the `CFG` model definition above, this allows us to write code like this:
 ```eql
@@ -233,9 +235,9 @@ Here the type of the second argument `node: cfg.Node` depends on the first argum
 
 The rule `basic_block_node_inverse` formalizes the equality `basic_block_node(cfg, node_basic_block(cfg, n)) = n`.
 Here the type `cfg.Node` of `n_0` and `n_1` depends on the element `cfg` that was introduced earlier in the rule.
-The rules `cfg_entry_block` and `cfg_reachability` demonstrate use of the member functions and member predicates, respectively.
+The rules `cfg_entry_block` and `cfg_reachability` demonstrate access of member functions and member predicates, respectively.
 
-Member types depend on the elements they are accessed with.
+Member types depend on the expressions they are accessed with.
 Since type checking requires comparing types, we now have to decide expression equality during type checking.
 Consider the following example:
 ```eql
@@ -267,7 +269,8 @@ So the Eqlog compiler would internally add the following definitions for each mo
 * For each type member, a global type `T` and a function `belongs_to(x: T) -> M`.
 * For each member predicate, a global predicate `p` that takes the arguments of the member and furthermore an argument of type `M`.
   Similarly for member functions.
-* For every member rule, a desugared global rule in which a new argument `m: M` is added to all function and predicate applications.
+* For every member rule, a desugared global rule in which a new argument `m: M` is added to all member function and member predicate applications.
+  Quantifications `x: T` over member types desugar to equalities `belongs_to(x) = m`.
 
 For the `CFG` model example this would ultimately compile into something like this Rust code:
 ```Rust
