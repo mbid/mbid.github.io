@@ -1,6 +1,9 @@
 title: "Posts"
 lang: en_US
 posts:
+  - title: "Dependent types for Datalog"
+    date: September 29, 2024
+    url: dependent-types-for-datalog
   - title: "Stop using REST for state synchronization"
     date: September 22, 2024
     url: stop-using-rest-for-state-synchronization 

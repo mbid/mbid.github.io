@@ -1,6 +1,6 @@
 ---
 title: "Dependent types for Datalog"
-date: "September 28, 2024"
+date: "September 29, 2024"
 lang: "en_US"
 ---
 
