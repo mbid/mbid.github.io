@@ -9,7 +9,7 @@ These instances are represented as elements in the ambient Datalog program, and 
 
 *The main purpose of this language feature is to make it possible to compose small self-contained Datalog programs into larger programs, similarly to how classes in object oriented languages enable multiple instantiations of part of a program and its associated data.
 A second benefit is that it enables the Datalog compiler to detect more programming errors.
-Finally, dependent models allow informing the Datalog compiler about locality in data and rules, which allows it to generate more efficient code.*
+Finally, dependent models allow informing the Datalog compiler about locality in data and rules, which enables it to generate more efficient code.*
 
 *Dependent models are a further generalization of Cartmell's framework of [generalized algebraic theories (GATs)](https://ncatlab.org/nlab/show/generalized+algebraic+theory):
 Where GATs have a notion of dependent type or set, dependent models exist for every user-supplied Datalog theory, in particular the theory of a single type.*
