@@ -67,7 +67,7 @@ rule {
     then f(x)!;
 }
 ```
-The exclamation mark operator make Eqlog Turing complete.
+The exclamation mark operator makes Eqlog Turing complete.
 To prevent Eqlog programmers (so: me) from inadvertedly introducing new elements in rules, leading to non-termination, Eqlog enforces *surjectivity* restrictions in rule definitions:
 Unless the exclamation mark operator is used, `then` statements can only mention elements that have been introduced earlier in the same rule by an `if` statement or via the exclamation mark operator.
 
@@ -317,11 +317,11 @@ Simply use both representations to improve runtime performance at the cost of me
 ## Morphisms
 
 Originally I intended to also write at length about [*morphisms*](https://en.wikipedia.org/wiki/Category_(mathematics)) between instances, but decided to postpone a proper discussion to some other time because I haven't worked out some relevant details.
-The rough idea is that we add a built-in type of morphisms between two elements of the same model.
+I do want to outline the rough idea though, which is to add a built-in type of morphisms between two elements of the same model.
 Semantically, morphisms should represent maps of data in the domain instance to data in the codomain instance.
-So if the model formalizes graphs, then morphisms would be edge-preserving maps on vertices, and for groups you'd get group morphisms.
+So if the model formalizes graphs, then morphisms would be edge-preserving maps of nodes, and for groups you'd get group morphisms.
 
-The point of having a built-in notion of morphisms is that the Datalog engine can implement those morphisms efficiently via *shallow* instead of deep copies of tables in the domain instance.
+The point of having a built-in notion of morphism is that the Datalog engine can implement those morphisms efficiently via *shallow* instead of deep copies of tables in the domain instance.
 For example, if there's a morphisms `f : x -> y` and no other rules asserting facts about the codomain instance `y`, then tables in `y` can be represented simply as pointers to the tables of `x`.
 And if we use [persistent insertion operations](https://en.wikipedia.org/wiki/Persistent_data_structure) into tables, then we can share chunks of tables among `x` and `y` even if the tables in `y` have some more entries.
 

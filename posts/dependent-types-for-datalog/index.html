@@ -91,7 +91,7 @@ rule {
     // then the function f is defined on x
     then f(x)!;
 }</code></pre>
-<p>The exclamation mark operator make Eqlog Turing complete. To prevent
+<p>The exclamation mark operator makes Eqlog Turing complete. To prevent
 Eqlog programmers (so: me) from inadvertedly introducing new elements in
 rules, leading to non-termination, Eqlog enforces <em>surjectivity</em>
 restrictions in rule definitions: Unless the exclamation mark operator
@@ -377,19 +377,20 @@ performance at the cost of memory usage.</p>
 <p>Originally I intended to also write at length about <a
 href="https://en.wikipedia.org/wiki/Category_(mathematics)"><em>morphisms</em></a>
 between instances, but decided to postpone a proper discussion to some
-other time because I haven’t worked out some relevant details. The rough
-idea is that we add a built-in type of morphisms between two elements of
-the same model. Semantically, morphisms should represent maps of data in
-the domain instance to data in the codomain instance. So if the model
-formalizes graphs, then morphisms would be edge-preserving maps on
-vertices, and for groups you’d get group morphisms.</p>
-<p>The point of having a built-in notion of morphisms is that the
-Datalog engine can implement those morphisms efficiently via
-<em>shallow</em> instead of deep copies of tables in the domain
-instance. For example, if there’s a morphisms <code>f : x -&gt; y</code>
-and no other rules asserting facts about the codomain instance
-<code>y</code>, then tables in <code>y</code> can be represented simply
-as pointers to the tables of <code>x</code>. And if we use <a
+other time because I haven’t worked out some relevant details. I do want
+to outline the rough idea though, which is to add a built-in type of
+morphisms between two elements of the same model. Semantically,
+morphisms should represent maps of data in the domain instance to data
+in the codomain instance. So if the model formalizes graphs, then
+morphisms would be edge-preserving maps of nodes, and for groups you’d
+get group morphisms.</p>
+<p>The point of having a built-in notion of morphism is that the Datalog
+engine can implement those morphisms efficiently via <em>shallow</em>
+instead of deep copies of tables in the domain instance. For example, if
+there’s a morphisms <code>f : x -&gt; y</code> and no other rules
+asserting facts about the codomain instance <code>y</code>, then tables
+in <code>y</code> can be represented simply as pointers to the tables of
+<code>x</code>. And if we use <a
 href="https://en.wikipedia.org/wiki/Persistent_data_structure">persistent
 insertion operations</a> into tables, then we can share chunks of tables
 among <code>x</code> and <code>y</code> even if the tables in
