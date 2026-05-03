@@ -96,7 +96,7 @@ However, strongly normalizing rewriting systems do not exist for every type theo
 The most famous example is extensional type theory, where definitional equality is undecidable.
 This is the principal reason that most dependently typed proof assistants are based on intensional rather than extensional type theory.
 
-It comes at a cost, though.
+This comes at a cost, though.
 Implementors must integrate every extension of the base theory into the rewriting system without breaking strong normalization, and users of the system must reason about two distinct notions of equality, namely *definitional* equality, which is checked automatically by the proof assistant, and *propositional* equality, which is not.
 This distinction is the source of the familiar quirk whereby the expression `1 + n` cannot be substituted for `n + 1` in arbitrary positions even though the two expressions are provably equal.
 
