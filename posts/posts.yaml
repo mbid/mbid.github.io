@@ -1,6 +1,9 @@
 title: "Posts"
 lang: en_US
 posts:
+  - title: "Datalog for type theorists"
+    date: May 03, 2026
+    url: datalog-for-type-theorists
   - title: "Dependent types for Datalog"
     date: September 29, 2024
     url: dependent-types-for-datalog

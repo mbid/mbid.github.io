@@ -1,35 +1,115 @@
-<?xml version="1.0"?>
-<rss version="2.0">
-  <channel>
-        <item>
-      <title>Control flow for datalog</title>
-      <link>https://www.mbid.me/posts/control-flow-for-datalog</link>
-      <pubDate>November 01, 2023</pubDate>
-    </item>
-        <item>
-      <title>Type Checking with Eqlog: Polymorphism</title>
-      <link>https://www.mbid.me/posts/type-checking-with-eqlog-polymorphism</link>
-      <pubDate>August 22, 2023</pubDate>
-    </item>
-        <item>
-      <title>Type Checking with Eqlog: Typing</title>
-      <link>https://www.mbid.me/posts/type-checking-with-eqlog-typing</link>
-      <pubDate>August 06, 2023</pubDate>
-    </item>
-        <item>
-      <title>Type Checking with Eqlog: Types</title>
-      <link>https://www.mbid.me/posts/type-checking-with-eqlog-types</link>
-      <pubDate>August 05, 2023</pubDate>
-    </item>
-        <item>
-      <title>Type Checking with Eqlog: Variable Binding</title>
-      <link>https://www.mbid.me/posts/type-checking-with-eqlog-variable-binding</link>
-      <pubDate>August 01, 2023</pubDate>
-    </item>
-        <item>
-      <title>Type Checking with Eqlog: Parsing</title>
-      <link>https://www.mbid.me/posts/type-checking-with-eqlog-parsing</link>
-      <pubDate>July 23, 2023</pubDate>
-    </item>
-      </channel>
-</rss>
+<?xml version='1.0' ?>
+<Pandoc api-version="1,23,1,1">
+<meta>
+<entry key="lang">
+<MetaInlines>en_US</MetaInlines>
+</entry>
+<entry key="posts">
+<MetaList>
+<MetaMap>
+<entry key="date">
+<MetaInlines>May 03, 2026</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Datalog for type theorists</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>datalog-for-type-theorists</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>September 29, 2024</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Dependent types for Datalog</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>dependent-types-for-datalog</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>September 22, 2024</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Stop using REST for state synchronization</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>stop-using-rest-for-state-synchronization</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>November 01, 2023</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Control flow for Datalog</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>control-flow-for-datalog</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>August 22, 2023</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Type Checking with Eqlog: Polymorphism</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>type-checking-with-eqlog-polymorphism</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>August 06, 2023</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Type Checking with Eqlog: Typing</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>type-checking-with-eqlog-typing</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>August 05, 2023</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Type Checking with Eqlog: Types</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>type-checking-with-eqlog-types</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>August 01, 2023</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Type Checking with Eqlog: Variable Binding</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>type-checking-with-eqlog-variable-binding</MetaInlines>
+</entry>
+</MetaMap>
+<MetaMap>
+<entry key="date">
+<MetaInlines>July 23, 2023</MetaInlines>
+</entry>
+<entry key="title">
+<MetaInlines>Type Checking with Eqlog: Parsing</MetaInlines>
+</entry>
+<entry key="url">
+<MetaInlines>type-checking-with-eqlog-parsing</MetaInlines>
+</entry>
+</MetaMap>
+</MetaList>
+</entry>
+<entry key="title">
+<MetaInlines>Posts</MetaInlines>
+</entry>
+</meta>
+<blocks />
+</Pandoc>
