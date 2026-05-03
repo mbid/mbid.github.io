@@ -30,7 +30,6 @@ type checking that is closely analogous to the role parser generators
 play for parsing. The second is that Datalog suggests an alternative to
 strong normalization for deciding equality during type checking, namely
 <em>equality saturation</em>.</p>
-<p>I assume basic familiarity with type theory and with Datalog.</p>
 <h2
 id="datalog-ought-to-be-to-type-checking-as-parser-generators-are-to-parsing">Datalog
 ought to be to type checking as parser generators are to parsing</h2>
@@ -226,14 +225,17 @@ in Eqlog</a>, although I am working on reverting this, since compiling
 the generated Rust code is slow enough to make iteration painful.</p>
 <p>Several fundamental issues currently stand in the way of using
 Datalog as the basis for a production type checker. The one I find most
-central is the lack of language-level support for composing
-self-contained Datalog programs into larger ones. I have written about
-this issue and the <em>dependent Datalog</em> extension I propose to
-address it in <a href="../dependent-types-for-datalog">a separate blog
-post</a>, and in an extended abstract for TYPES 2026. Until problems of
-this kind are addressed, I would not recommend Datalog as the basis for
-a serious type checker, although it may already be possible to isolate
-parts of an existing type checker that can profitably be moved to a
-Datalog engine.</p>
+central is that Datalog has no way to express copy-on-write sharing of
+related data, which leads to extreme memory duplication. A motivating
+case is variable scopes that extend each other: without sharing, each
+new variable binding forces a deep copy of the entire scope table. I
+sketch the problem and a proposed solution based on morphisms between
+Datalog model instances in the last section of <a
+href="../dependent-types-for-datalog">a separate blog post</a> on
+dependent Datalog, and in an extended abstract for TYPES 2026. Until
+problems of this kind are addressed, I would not recommend Datalog as
+the basis for a serious type checker, although it may already be
+possible to isolate parts of an existing type checker that can
+profitably be moved to a Datalog engine.</p>
 </body>
 </html>

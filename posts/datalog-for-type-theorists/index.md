@@ -10,8 +10,6 @@ I think this view is unjustified, and I will argue for two reasons in support of
 The first reason is that Datalog, in suitably extended form, ought to play a role for type checking that is closely analogous to the role parser generators play for parsing.
 The second is that Datalog suggests an alternative to strong normalization for deciding equality during type checking, namely *equality saturation*.
 
-I assume basic familiarity with type theory and with Datalog.
-
 ## Datalog ought to be to type checking as parser generators are to parsing
 
 A parser generator takes a formal description of a language to be parsed, typically in the form of a context-free grammar, and produces an executable that recognizes the language and emits an abstract syntax tree.
@@ -133,6 +131,7 @@ Closer to a fully Datalog-implemented type checker, though strictly a toy and in
 The Eqlog compiler itself has its type checker [written in Eqlog](https://github.com/eqlog/eqlog/blob/3337ec49c0acf9a610dfe660782a1806554c26fb/eqlog-eqlog/src/eqlog.eql), although I am working on reverting this, since compiling the generated Rust code is slow enough to make iteration painful.
 
 Several fundamental issues currently stand in the way of using Datalog as the basis for a production type checker.
-The one I find most central is the lack of language-level support for composing self-contained Datalog programs into larger ones.
-I have written about this issue and the *dependent Datalog* extension I propose to address it in [a separate blog post](../dependent-types-for-datalog), and in an extended abstract for TYPES 2026.
+The one I find most central is that Datalog has no way to express copy-on-write sharing of related data, which leads to extreme memory duplication.
+A motivating case is variable scopes that extend each other: without sharing, each new variable binding forces a deep copy of the entire scope table.
+I sketch the problem and a proposed solution based on morphisms between Datalog model instances in the last section of [a separate blog post](../dependent-types-for-datalog) on dependent Datalog, and in an extended abstract for TYPES 2026.
 Until problems of this kind are addressed, I would not recommend Datalog as the basis for a serious type checker, although it may already be possible to isolate parts of an existing type checker that can profitably be moved to a Datalog engine.
