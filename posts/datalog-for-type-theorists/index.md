@@ -1,18 +1,17 @@
 ---
-title: "Datalog for type theorists"
+title: "The case for Datalog for type theorists"
 date: "May 03, 2026"
 lang: "en_US"
 ---
 
-This post is intended as an introduction to Datalog specifically for type theorists.
-At the moment, my impression is that many type theorists are not deeply familiar with Datalog and view it as perhaps vaguely related but not particularly relevant to their work.
-I think this view is unjustified.
-There are good reasons for type theorists in particular to learn about Datalog, and this post argues for two of them.
+This post argues that type theorists should pay more attention to Datalog than they currently do.
+My impression is that many type theorists view Datalog as perhaps vaguely related to their work but not particularly relevant to it.
+I think this view is unjustified, and I will argue for two reasons in support of this position.
 The first reason is that Datalog, in suitably extended form, plays a role for type checking that is closely analogous to the role of parser generators for parsing.
 The second is that Datalog suggests an alternative to strong normalization for deciding equality during type checking, namely *equality saturation*.
 
-I assume basic familiarity with type theory, but only the vaguest familiarity with Datalog.
-Readers who would like a hands-on introduction to Datalog before continuing can have a look at my [series on type checking with Eqlog](../type-checking-with-eqlog-parsing), which covers the syntax and operational behavior of Datalog from scratch.
+I assume basic familiarity with type theory and with Datalog.
+Readers who would like a more hands-on refresher on Datalog can have a look at my [series on type checking with Eqlog](../type-checking-with-eqlog-parsing), which covers the syntax and operational behavior of Datalog with equality from scratch.
 
 ## Datalog is to type checking as parser generators are to parsing
 
@@ -21,20 +20,15 @@ Outside of educational contexts, no one writes parsers by hand for non-trivial g
 The corresponding promise for type checking is to take some formal description of a type theory and produce an executable type checker.
 The claim of this section is that Datalog, in suitably extended form, occupies the role of the parser generator.
 
-To see what this looks like concretely, consider the typical typing rule for function application:
-
+The mechanical part of this correspondence is that the typical natural deduction style typing rules of a type theory translate almost line by line into Datalog rules.
+For example, the typing rule for function application
 ```
    ctx |- f : fun_ty    fun_ty = a_ty -> b_ty    ctx |- a : a_ty
    --------------------------------------------------------------
                      ctx |- app(f, a) : b_ty
 ```
-
-We can transcribe this rule almost mechanically as a Datalog rule:
+becomes the Datalog rule
 ```eql
-pred has_type(ctx: Ctx, term: Term, ty: Type);
-func arrow_type(arg: Type, res: Type) -> Type;
-func app(f: Term, a: Term) -> Term;
-
 rule type_app {
     if has_type(ctx, f, fun_ty);
     if fun_ty = arrow_type(a_ty, b_ty);
@@ -42,47 +36,35 @@ rule type_app {
     then has_type(ctx, app(f, a), b_ty);
 }
 ```
-Each premise above the inference line corresponds to an `if` statement in the rule, and the conclusion below the line corresponds to a `then` statement.
-A Datalog engine evaluates a set of such rules by repeatedly searching for matches of the premises in its database and inserting the corresponding conclusions, until no further conclusions can be drawn.
+Each premise above the inference line corresponds to an `if` statement and the conclusion below the line corresponds to a `then` statement.
 The Datalog encoding factors out the operational details of how typing rules are searched, matched and applied, and it leaves only the rules themselves to be specified by hand.
 
-### Why equality matters
+### Equality and fresh elements
 
-Plain Datalog suffices for some simple type systems, but it falls short as soon as type equality enters the picture.
-Most type theories of interest involve a non-trivial equality on types.
+Standard Datalog is too restrictive to fully play the role sketched above.
+Two restrictions in particular are limiting.
+
+The first is that standard Datalog has no native notion of equality.
+This is a problem because most type theories of interest involve a non-trivial equality on types.
 For example, in dependent type theory the type `Vec(2 + 2)` is meant to be the same type as `Vec(4)`, even though the two expressions are not syntactically equal.
 A type checker has to decide such equalities, and any encoding of typing rules into Datalog must therefore be able to express that two elements of the `Type` sort should be considered equal.
 
-Standard Datalog does not support equality natively.
-The Datalog extensions implemented by [Eqlog](https://github.com/eqlog/eqlog) and [Egglog](https://github.com/egraphs-good/egglog) lift this restriction.
-Both engines allow rules to conclude equalities between elements, and they propagate inferred equalities throughout the database via congruence closure.
-The rewriting rules of a type theory then become Datalog rules of the form
-```eql
-rule {
-    if <pattern>;
-    then <expr_lhs> = <expr_rhs>;
-}
-```
-
-### Why fresh elements matter
-
-A second restriction of standard Datalog is that rules cannot introduce new elements.
+The second is that standard Datalog cannot introduce fresh elements during evaluation.
 Every element occurring in the database must already be present, either as part of the input or as the result of an explicit constructor application.
-For type checking this restriction is also problematic.
-Type inference frequently has to assert that some term or type exists before its concrete identity is known.
+This is also problematic for type checking, because type inference frequently has to assert that some term or type exists before its concrete identity is known.
 For example, when typing the variable bound by a function literal, the type checker must record that there is *some* type assigned to the variable, even though no concrete type is yet available.
 
-Eqlog and Egglog both support this kind of existential conclusion by allowing a rule to enforce that a partial function is defined on a given input, introducing a fresh element if no value is yet associated.
-In Eqlog syntax, this looks as follows:
+The Datalog extensions implemented by [Eqlog](https://github.com/eqlog/eqlog) and [Egglog](https://github.com/egraphs-good/egglog) lift both of these restrictions.
+Both engines support partial functions, conclusion of equalities between elements (with congruence closure to propagate inferred equalities through the database), and existential conclusions that introduce a fresh element when no suitable value already exists.
+In Eqlog syntax, the existential conclusion is written using an exclamation mark.
+The rule
 ```eql
-func var_type(v: Var) -> Type;
-
 rule {
     if v: Var;
     then var_type(v)!;
 }
 ```
-The exclamation mark forces `var_type` to be defined on every variable, introducing a fresh `Type` element if no value has been assigned to `v` yet.
+forces the partial function `var_type` to be defined on every variable, introducing a fresh `Type` element when no value has been assigned to `v` yet.
 
 ### The connection to essentially algebraic theories
 
