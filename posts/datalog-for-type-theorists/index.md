@@ -64,7 +64,7 @@ rule {
 ```
 forces the partial function `var_type` to be defined on every variable, introducing a fresh `Type` element when no value has been assigned to `v` yet.
 
-### The connection to essentially algebraic theories
+### Essentially algebraic theories
 
 The two extensions described above are not independent or arbitrary.
 Together with partial functions, they make the resulting language equivalent in expressive power to *essentially algebraic theories* in the sense of Freyd, which are also known as *finite limit sketches* or theories of *partial Horn logic*.
