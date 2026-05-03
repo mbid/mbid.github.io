@@ -41,7 +41,7 @@ Standard Datalog is too restrictive to fully play the role sketched above.
 Two restrictions in particular are limiting.
 
 The first is that standard Datalog has no native notion of equality.
-This is a problem because most type theories of interest involve a non-trivial equality on types.
+This is a problem because most type theories of interest involve non-trivial equalities on types.
 For example, in dependent type theory the type `Vec(2 + 2)` is meant to be the same type as `Vec(4)`, even though the two expressions are not syntactically equal.
 A type checker has to decide such equalities, and any encoding of typing rules into Datalog must therefore be able to express that two elements of the `Type` sort should be considered equal.
 
