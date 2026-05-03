@@ -42,7 +42,10 @@ Two restrictions in particular are limiting.
 
 The first is that standard Datalog has no native notion of equality.
 This is a problem because most type theories of interest involve non-trivial equalities on types.
-For example, in dependent type theory the type `Vec(2 + 2)` is meant to be the same type as `Vec(4)`, even though the two expressions are not syntactically equal.
+Even for non-dependent type systems, type checkers regularly have to compare two types that are not syntactically equal.
+A Hindley-Milner inference engine, for example, repeatedly equates type variables with concrete types as it unifies the types of subexpressions, and Rust's trait system equates types via associated type projections such as `<T as Iterator>::Item`.
+In dependent type theories the situation is even more pronounced, since type equality there can depend on arbitrary computation:
+the type `Vec(2 + 2)` is meant to be the same type as `Vec(4)`, even though the two expressions are not syntactically equal.
 A type checker has to decide such equalities, and any encoding of typing rules into Datalog must therefore be able to express that two elements of the `Type` sort should be considered equal.
 
 The second is that standard Datalog cannot introduce fresh elements during evaluation.
