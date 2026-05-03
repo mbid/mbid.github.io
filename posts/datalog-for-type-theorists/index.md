@@ -132,7 +132,7 @@ Chalk has since been sunset in favor of an in-tree next-generation trait solver 
 Closer to a fully Datalog-implemented type checker, though strictly a toy and intended as an educational example, is my [series on Hindley-Milner type checking with Eqlog](../type-checking-with-eqlog-parsing), which expresses most of the type checker as an Eqlog program.
 The Eqlog compiler itself has its type checker [written in Eqlog](../self-hosting-eqlog), although I am working on reverting this, since compiling the generated Rust code is slow enough to make iteration painful.
 
-The principal obstacle to using Datalog as the basis for type checkers of dependently typed proof assistants is, in my view, the lack of language-level support for composing self-contained Datalog programs.
-This is the problem that *dependent Datalog* is intended to address.
-I have written about dependent Datalog informally in an [earlier blog post](../dependent-types-for-datalog), and I have proposed the language design more formally in an extended abstract for TYPES 2026.
-Even before dependent Datalog matures, however, it may be possible to isolate parts of an existing type checker that can profitably be moved into a Datalog engine.
+Several fundamental issues currently stand in the way of using Datalog as the basis for a production type checker.
+The one I find most central is the lack of language-level support for composing self-contained Datalog programs into larger ones.
+I have written about this issue and the *dependent Datalog* extension I propose to address it in [a separate blog post](../dependent-types-for-datalog), and in an extended abstract for TYPES 2026.
+Until problems of this kind are addressed, I would not recommend Datalog as the basis for a serious type checker, although it may already be possible to isolate parts of an existing type checker that can profitably be moved to a Datalog engine.
