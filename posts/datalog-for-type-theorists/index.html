@@ -95,10 +95,10 @@ href="https://github.com/eqlog/eqlog">Eqlog</a> and <a
 href="https://github.com/egraphs-good/egglog">Egglog</a> lift both of
 these restrictions. Both engines support partial functions, conclusion
 of equalities between elements (with congruence closure to propagate
-inferred equalities through the database), and existential conclusions
-that introduce a fresh element when no suitable value already exists. In
-Eqlog syntax, the existential conclusion is written using an exclamation
-mark. The rule</p>
+inferred equalities through the database), and conclusions that force a
+partial function to be defined on a given input, introducing a fresh
+element when no value is yet associated. In Eqlog syntax, the latter is
+written using an exclamation mark. The rule</p>
 <pre class="eql"><code>rule {
     if v: Var;
     then var_type(v)!;

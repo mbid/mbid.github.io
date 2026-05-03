@@ -53,8 +53,8 @@ This is also problematic for type checking, because type inference frequently ha
 For example, when typing the variable bound by a function literal, the type checker must record that there is *some* type assigned to the variable, even though no concrete type is yet available.
 
 The Datalog extensions implemented by [Eqlog](https://github.com/eqlog/eqlog) and [Egglog](https://github.com/egraphs-good/egglog) lift both of these restrictions.
-Both engines support partial functions, conclusion of equalities between elements (with congruence closure to propagate inferred equalities through the database), and existential conclusions that introduce a fresh element when no suitable value already exists.
-In Eqlog syntax, the existential conclusion is written using an exclamation mark.
+Both engines support partial functions, conclusion of equalities between elements (with congruence closure to propagate inferred equalities through the database), and conclusions that force a partial function to be defined on a given input, introducing a fresh element when no value is yet associated.
+In Eqlog syntax, the latter is written using an exclamation mark.
 The rule
 ```eql
 rule {
