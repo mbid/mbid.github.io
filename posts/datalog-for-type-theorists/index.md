@@ -92,7 +92,7 @@ Type checkers cannot operate this way.
 A type checker must accept exactly the well-typed programs and reject the others, which means that type equality must be decided definitely.
 For this reason, most modern type theories rely on a strongly normalizing rewriting system on terms, where two terms are judged equal if and only if they reduce to the same normal form.
 
-However, strongly normalizing rewriting systems do not exist for every type theory of interest.
+Unfortunately, strongly normalizing rewriting systems do not exist for every type theory of interest.
 The most famous example is extensional type theory, where definitional equality is undecidable.
 This is the principal reason that most dependently typed proof assistants are based on intensional rather than extensional type theory.
 
