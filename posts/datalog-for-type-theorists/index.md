@@ -80,8 +80,8 @@ I will return to these problems further below.
 
 The previous section argues that Datalog could be a tidy specification language for type checkers.
 This would already be valuable, but the parser generator analogy promises more.
-Modern parser generators have not just made parser implementation more pleasant, they have also unlocked algorithms that no one would seriously consider implementing by hand, such as the construction of LR tables.
-We can ask whether Datalog could also enable new algorithms for type checking, and I think the answer is yes.
+Parser generators also enable parsing algorithms that nobody would write by hand, like the construction of LR tables.
+We can ask whether Datalog enables new algorithms for type checking too, and I think the answer is yes.
 The most striking example is *equality saturation* as an alternative to strong normalization for deciding type equality.
 
 Equality saturation is well-established as a technique for compiler optimization, and the problem it solves there is the choice of a good ordering of optimization passes.
