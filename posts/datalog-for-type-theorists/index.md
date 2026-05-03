@@ -35,7 +35,7 @@ The Eqlog encoding factors out the operational details of how typing rules are s
 ### Equality and fresh elements
 
 Standard Datalog is too restrictive to fully play the role sketched above.
-Two restrictions in particular are limiting.
+Two specific restrictions are responsible.
 
 The first is that standard Datalog has no native notion of equality.
 This is a problem because most type theories of interest involve non-trivial equalities on types.
