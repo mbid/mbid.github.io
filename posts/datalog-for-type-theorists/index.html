@@ -50,23 +50,20 @@ line by line into Datalog rules. For example, the typing rule for
 function application <span class="math display">\[
 \frac{\Gamma \vdash f : A \to B \qquad \Gamma \vdash a : A}{\Gamma
 \vdash f\,a : B}
-\]</span> becomes the Datalog rule</p>
+\]</span> becomes the following rule in <a
+href="https://github.com/eqlog/eqlog">Eqlog</a>, the Datalog dialect
+with equality I will use as a running example:</p>
 <pre class="eql"><code>rule type_app {
-    if has_type(ctx, f, fun_ty);
-    if fun_ty = func_type(a_ty, b_ty);
+    if has_type(ctx, f, func_type(a_ty, b_ty));
     if has_type(ctx, a, a_ty);
     then has_type(ctx, app(f, a), b_ty);
 }</code></pre>
-<p>The premises above the inference line correspond to <code>if</code>
-statements and the conclusion below the line corresponds to a
-<code>then</code> statement. The decomposition
-<code>fun_ty = func_type(a_ty, b_ty)</code> is needed in the Datalog
-version because Eqlog patterns bind variables explicitly, whereas the
-natural deduction rule reads <span class="math inline">\(A \to
-B\)</span> directly off the type of <code>f</code>. The Datalog encoding
-factors out the operational details of how typing rules are searched,
-matched and applied, and it leaves only the rules themselves to be
-specified by hand.</p>
+<p>Each premise above the inference line corresponds to an
+<code>if</code> statement and the conclusion below the line corresponds
+to a <code>then</code> statement. The Eqlog encoding factors out the
+operational details of how typing rules are searched, matched and
+applied, and it leaves only the rules themselves to be specified by
+hand.</p>
 <h3 id="equality-and-fresh-elements">Equality and fresh elements</h3>
 <p>Standard Datalog is too restrictive to fully play the role sketched
 above. Two restrictions in particular are limiting.</p>

@@ -24,18 +24,16 @@ For example, the typing rule for function application
 $$
 \frac{\Gamma \vdash f : A \to B \qquad \Gamma \vdash a : A}{\Gamma \vdash f\,a : B}
 $$
-becomes the Datalog rule
+becomes the following rule in [Eqlog](https://github.com/eqlog/eqlog), the Datalog dialect with equality I will use as a running example:
 ```eql
 rule type_app {
-    if has_type(ctx, f, fun_ty);
-    if fun_ty = func_type(a_ty, b_ty);
+    if has_type(ctx, f, func_type(a_ty, b_ty));
     if has_type(ctx, a, a_ty);
     then has_type(ctx, app(f, a), b_ty);
 }
 ```
-The premises above the inference line correspond to `if` statements and the conclusion below the line corresponds to a `then` statement.
-The decomposition `fun_ty = func_type(a_ty, b_ty)` is needed in the Datalog version because Eqlog patterns bind variables explicitly, whereas the natural deduction rule reads $A \to B$ directly off the type of `f`.
-The Datalog encoding factors out the operational details of how typing rules are searched, matched and applied, and it leaves only the rules themselves to be specified by hand.
+Each premise above the inference line corresponds to an `if` statement and the conclusion below the line corresponds to a `then` statement.
+The Eqlog encoding factors out the operational details of how typing rules are searched, matched and applied, and it leaves only the rules themselves to be specified by hand.
 
 ### Equality and fresh elements
 
