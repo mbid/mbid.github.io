@@ -1,74 +1,157 @@
-# Datalog for Type Theorists
+---
+title: "Datalog for type theorists"
+date: "May 03, 2026"
+lang: "en_US"
+---
 
-This text is meant as an introduction to Datalog specifically for type theorists.
-At the moment, I believe many type theorists are not deeply familiar with Datalog, seeing it as perhaps vaguely related but not particularly relevant to their work.
-I believe this to be wrong:
-There are good reasons why type theorists should familiarize themselves with Datalog.
+This post is intended as an introduction to Datalog specifically for type theorists.
+At the moment, my impression is that many type theorists are not deeply familiar with Datalog and view it as perhaps vaguely related but not particularly relevant to their work.
+I think this view is unjustified.
+There are good reasons for type theorists in particular to learn about Datalog, and this post argues for two of them.
+The first reason is that Datalog, in suitably extended form, plays a role for type checking that is closely analogous to the role of parser generators for parsing.
+The second is that Datalog suggests an alternative to strong normalization for deciding equality during type checking, namely *equality saturation*.
 
-## Datalog is to type checking as parser generators are to parsing:
+I assume basic familiarity with type theory, but only the vaguest familiarity with Datalog.
+Readers who would like a hands-on introduction to Datalog before continuing can have a look at my [series on type checking with Eqlog](../type-checking-with-eqlog-parsing), which covers the syntax and operational behavior of Datalog from scratch.
 
-Given a formal grammar, parser generators provide an executable module that recognizes the grammar or generate an AST.
-Similarly, Datalog engines (with some extensions) produce a type checker given just the formal description of the type system.
-See: My blog posts on hindley-milner type checking with Eqlog.
+## Datalog is to type checking as parser generators are to parsing
 
-<Add some examples: natural deduction rules and the equvialent datalog rule, how datalog evaluates them.>
-<Why is equality needed? Why is non-surjectivity needed (i.e. introducing new elements during datalog evaluation)?>
-<Add conceptual reason: These two extensions make Datalog equivalent to essentially algebraic theories/finite limit sketches. It's well-known that most type theories can be encoded as theories of this type, e.g. CwFs.>
+A parser generator takes a formal description of a language to be parsed, typically in the form of a context-free grammar, and produces an executable that recognizes the language and emits an abstract syntax tree.
+Outside of educational contexts, no one writes parsers by hand for non-trivial grammars anymore.
+The corresponding promise for type checking is to take some formal description of a type theory and produce an executable type checker.
+The claim of this section is that Datalog, in suitably extended form, occupies the role of the parser generator.
 
-## Datalog/equality saturation as alternative to strong normalization
+To see what this looks like concretely, consider the typical typing rule for function application:
 
-The previous section just makes the point that Datalog is perhaps neater, tidier way of implementing type checkers.
-But similarly to how parser generators unlock new algorithms (nobody's writing LR tables by hand), Datalog offers a new method for deciding equality during type checking:
-Equality saturation.
+```
+   ctx |- f : fun_ty    fun_ty = a_ty -> b_ty    ctx |- a : a_ty
+   --------------------------------------------------------------
+                     ctx |- app(f, a) : b_ty
+```
 
-This method is already being applied to compiler optimzations:
-There, the problem it solves is that it removes the need for finding a good optimization pass ordering.
-These orderings make changes in optimization passes brittle, since improvements in one pass can result in regression in unrelated ones.
+We can transcribe this rule almost mechanically as a Datalog rule:
+```eql
+pred has_type(ctx: Ctx, term: Term, ty: Type);
+func arrow_type(arg: Type, res: Type) -> Type;
+func app(f: Term, a: Term) -> Term;
 
-Equality saturation tries to work around this architecturally:
-e-graphs are used to efficiently enumerate all equivalent expressions according to repeated rewrite rules.
-The optimized expression is then selected among this set according to a cost function.
+rule type_app {
+    if has_type(ctx, f, fun_ty);
+    if fun_ty = arrow_type(a_ty, b_ty);
+    if has_type(ctx, a, a_ty);
+    then has_type(ctx, app(f, a), b_ty);
+}
+```
+Each premise above the inference line corresponds to an `if` statement in the rule, and the conclusion below the line corresponds to a `then` statement.
+A Datalog engine evaluates a set of such rules by repeatedly searching for matches of the premises in its database and inserting the corresponding conclusions, until no further conclusions can be drawn.
+The Datalog encoding factors out the operational details of how typing rules are searched, matched and applied, and it leaves only the rules themselves to be specified by hand.
 
-Optimizing compilers work on a best-effort basis.
-They typically make no or very few guarantees about which optimizations they find.
-Type checkers cannot operate like this:
-They must accept valid programs and reject invalid ones, and for that they need a definite equality decision procedure.
+### Why equality matters
 
-This is why most type systems rely on strongly normalization rewriting system for checking equality.
-Under strong normalization, rewriting expressions eventually results in a unique normal form, and two expression are equal iff they have the same normal forms.
+Plain Datalog suffices for some simple type systems, but it falls short as soon as type equality enters the picture.
+Most type theories of interest involve a non-trivial equality on types.
+For example, in dependent type theory the type `Vec(2 + 2)` is meant to be the same type as `Vec(4)`, even though the two expressions are not syntactically equal.
+A type checker has to decide such equalities, and any encoding of typing rules into Datalog must therefore be able to express that two elements of the `Type` sort should be considered equal.
 
-However, strongly normalizing rewriting systems do not exist for all type systems.
-Famously, no such system exists for expressions in extensional type theory.
-As a result, extensional type theory is considered unsuitable as a foundation for a practical proof checker, and most dependently typed proof systems are isntead based on intensional type theory.
+Standard Datalog does not support equality natively.
+The Datalog extensions implemented by [Eqlog](https://github.com/eqlog/eqlog) and [Egglog](https://github.com/egraphs-good/egglog) lift this restriction.
+Both engines allow rules to conclude equalities between elements, and they propagate inferred equalities throughout the database via congruence closure.
+The rewriting rules of a type theory then become Datalog rules of the form
+```eql
+rule {
+    if <pattern>;
+    then <expr_lhs> = <expr_rhs>;
+}
+```
 
-The advantages of systems based on intenstional type theory are well-known (e.g. their application to higher mathematics), but they come at a cost:
-Implementors need to fit every extension of the base type theory into its rewriting system while preserving the strong normalization property.
-On the other end, users of the system need to be aware of the different kinds of equality:
-Definitional equality, which is inferred automatically by the proof system, and propositional equality, which isn't.
-This leads to the famous awkwardness where the expression 1 + n cannot be used interchangeably with the expression n + 1 even though they are provably (but not definitionally) equal.
+### Why fresh elements matter
 
-Equality saturation offers an alternative strategy that does not require a strongly normalizing rewrite system:
-The type checker applies the rewrite rules of type system to each context of the input program, enumerating expressions and their equivalence classes.
-It applies rules iteratively until teither a fixed point is reached or up to fixed iteration number (i.e. derivation tree depth).
-When it requires equality of two expressions in the input program, th type system reports an error if they haven't been found to be in the same equivalence class.
+A second restriction of standard Datalog is that rules cannot introduce new elements.
+Every element occurring in the database must already be present, either as part of the input or as the result of an explicit constructor application.
+For type checking this restriction is also problematic.
+Type inference frequently has to assert that some term or type exists before its concrete identity is known.
+For example, when typing the variable bound by a function literal, the type checker must record that there is *some* type assigned to the variable, even though no concrete type is yet available.
 
-Readers will rightly object that program correctness under this system is now dependent on the number of rule application iterations.
-This is, indeed, awkward.
-However, this is arguably the case in practice already for systems based on intensional type systems, where proofs can require superexponentially many reduction steps.
-To verify an untrusted proof, it is thus not enough to be only given the proof itself: an upper bound for the computation needed to verify it is for every verifies constraint by physical constraints.
-<This is phrased very awkwardly. What I want to say is that every practically existing person that wants to accept a proof attempt needs to know how long they are supposed to run the proof checker, since otherwise they cannot distinguish between proofs that are wrong but hang until after the heat death of the universe on a superexponential blowup, and proofs that are correct but just take equally long to verify.>
-In any case, the argument I want to make here is not that equality saturation is necessarily superior to strong normalization, but rather, that it represents a different and underexplored trade-off.
+Eqlog and Egglog both support this kind of existential conclusion by allowing a rule to enforce that a partial function is defined on a given input, introducing a fresh element if no value is yet associated.
+In Eqlog syntax, this looks as follows:
+```eql
+func var_type(v: Var) -> Type;
 
-## Real-world type checkers using Datalog
+rule {
+    if v: Var;
+    then var_type(v)!;
+}
+```
+The exclamation mark forces `var_type` to be defined on every variable, introducing a fresh `Type` element if no value has been assigned to `v` yet.
 
-I believe this is currently blocked on at least the problems described in <blog post to dependendent datalog, extended abstract>.
-However, perhaps there are already some parts of the type checker that can isolated sufficiently so as to make Datalog a practical solution.
+### The connection to essentially algebraic theories
 
-Prior work:
-- Most relevant, Rust tried this.
-  They ended up with something else than the Chalk Datalog engine they started out with.
-  <TODO: What exactly do they have now?>
-- This series shows how to implement a basic Hindley-Milner system:
-  <TODO: Link to blog post series>
-- My Eqlog Datalog engine is currently self-hosting its type checker.
-  However, I'm currently working on reverting this, since the eqlog program used in eqlog itself takes very long to compile (or rather, the generated rust program takes very long to compile).
+The two extensions described above are not independent or arbitrary.
+Together with partial functions, they make the resulting language equivalent in expressive power to *essentially algebraic theories* in the sense of Freyd, which are also known as *finite limit sketches* or theories of *partial Horn logic*.
+I have written about [the relevant semantics elsewhere](https://www.mbid.me/eqlog-semantics/).
+
+Many type theorists will already recognize that essentially algebraic theories are closely related to Cartmell's *generalized algebraic theories* (GATs).
+Both formalisms have the same expressive power, but they encode the same content differently.
+Generalized algebraic theories support dependent sorts directly, whereas essentially algebraic theories represent dependent sorts as ambient sorts together with predicates that pick out which elements lie in which dependent sort.
+
+This correspondence is significant because most modern formulations of dependent type theory, in particular *categories with families* (CwFs), are essentially algebraic.
+Specifying a type theory and specifying a Datalog program with equality and partial functions are therefore, up to encoding, the same activity.
+The remaining work in turning a type theory specification into a working type checker is largely engineering, namely fitting the specification to the operational behavior of a particular Datalog engine.
+
+## Equality saturation as an alternative to strong normalization
+
+The previous section argues that Datalog is a tidy specification language for type checkers.
+This is already valuable, but the parser generator analogy promises more.
+Modern parser generators have not just made parser implementation more pleasant, they have also unlocked algorithms that no one would seriously consider implementing by hand, such as the construction of LR tables.
+We can ask whether Datalog also enables new algorithms for type checking, and I think the answer is yes.
+The most striking example is *equality saturation* as an alternative to strong normalization for deciding type equality.
+
+Equality saturation is well-established as a technique for compiler optimization, and the problem it solves there is the choice of a good ordering of optimization passes.
+Phase ordering is a notorious source of brittleness, since an improvement to one pass can introduce regressions in another depending on the order in which the passes run.
+Equality saturation circumvents this issue architecturally.
+An *e-graph* compactly represents all expressions reachable from a given input expression by repeated application of a fixed set of rewrite rules, and the optimized expression is selected from this set according to some cost function.
+
+Optimizing compilers operate on a best-effort basis and offer few formal guarantees about which optimizations they discover.
+Type checkers cannot operate this way.
+A type checker must accept exactly the well-typed programs and reject the others, which means that type equality must be decided definitely.
+For this reason, most modern type theories rely on a strongly normalizing rewriting system on terms, where two terms are judged equal if and only if they reduce to the same normal form.
+
+However, strongly normalizing rewriting systems do not exist for every type theory of interest.
+The most famous example is extensional type theory, where definitional equality is undecidable.
+This is the principal reason that most dependently typed proof assistants are based on intensional rather than extensional type theory.
+The cost of this choice is well known.
+Implementors must integrate every extension of the base theory into the rewriting system without breaking strong normalization, and users of the system must reason about two distinct notions of equality, namely *definitional* equality, which is checked automatically by the proof assistant, and *propositional* equality, which is not.
+This distinction is the source of the familiar awkwardness whereby the expression `1 + n` cannot be substituted for `n + 1` in arbitrary positions even though the two expressions are provably equal.
+
+Equality saturation suggests an alternative strategy that does not require a strongly normalizing rewriting system.
+The type checker applies the rewriting rules of the type theory to the subexpressions of the input program and enumerates equivalence classes of expressions, either to a fixed point or up to a fixed iteration depth.
+When the type checker requires two expressions to be equal, it consults the resulting e-graph.
+The check succeeds if the two expressions belong to the same equivalence class, and otherwise it fails.
+
+Readers will rightly object that the verdict of such a type checker depends on the chosen iteration depth.
+This is awkward.
+However, an analogous awkwardness already exists for proof assistants based on intensional type theory.
+Verifying a proof there can require superexponentially many reduction steps, and so any agent who wishes to verify an untrusted proof must agree on a budget for the verification effort.
+Without such a budget, there is no way to distinguish a proof that fails verification from a proof that simply has not finished verifying within the available time.
+Equality saturation makes this budget explicit, rather than tucking it away inside the rewriting strategy of the proof checker.
+
+To be clear, my claim is not that equality saturation is necessarily superior to strong normalization for deciding type equality, but rather that it represents a different and underexplored point in the design space, and that this design space deserves more attention from type theorists than it currently receives.
+
+## Real-world type checkers based on Datalog
+
+Type theorists familiar with the implementation of existing proof assistants will have noticed that the picture above is somewhat idealized.
+No major proof assistant is currently implemented in Datalog.
+Several efforts move in this direction, however.
+
+The most prominent attempt to use Datalog in a production type checker is the Rust compiler's [Chalk](https://github.com/rust-lang/chalk) project, which started out as a Datalog-based engine for Rust's trait system.
+Chalk was eventually superseded by Rust's next-generation trait solver, which is no longer a Datalog engine.
+I do not know the precise reasons for this transition.
+On a related front, the [Polonius](https://github.com/rust-lang/polonius) borrow checker is built on top of the [Datafrog](https://github.com/rust-lang/datafrog) Datalog engine.
+
+A more pedestrian example is my [series on Hindley-Milner type checking with Eqlog](../type-checking-with-eqlog-parsing), which walks through a complete implementation of Hindley-Milner type inference as an Eqlog program.
+The Eqlog compiler itself currently has its type checker [written in Eqlog](../self-hosting-eqlog), although I am working on reverting this because the Rust code generated by Eqlog from its own type checker takes a long time to compile.
+
+The principal obstacle to using Datalog as the basis for type checkers of dependently typed proof assistants is, in my view, the lack of language-level support for composing self-contained Datalog programs.
+This is the problem that *dependent Datalog* is intended to address.
+I have written about dependent Datalog informally in an [earlier blog post](../dependent-types-for-datalog), and I have proposed the language design more formally in an extended abstract for TYPES 2026.
+Even before dependent Datalog matures, however, it may be possible to isolate parts of an existing type checker that can profitably be moved into a Datalog engine.

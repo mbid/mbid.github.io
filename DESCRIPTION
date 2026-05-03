@@ -1,0 +1,10 @@
+Flesh out datalog-for-type-theorists post
+
+Expand the draft into a full post. Fill in the natural deduction example
+and Datalog encoding in the parser-generator-analogy section, the
+discussion of why equality and fresh elements are needed, and the
+connection to essentially algebraic theories and CwFs. Tighten the
+equality saturation section and replace the placeholder paragraph about
+proof verification budgets with a clean phrasing. Expand the section on
+real-world type checkers with concrete pointers to Chalk, Polonius, the
+Hindley-Milner series, self-hosting Eqlog and dependent Datalog.
