@@ -22,18 +22,19 @@ The claim of this section is that Datalog, in suitably extended form, is well-su
 The mechanical part of this correspondence is that the typical natural deduction style typing rules of a type theory translate almost line by line into Datalog rules.
 For example, the typing rule for function application
 $$
-\frac{\Gamma \vdash f : T \qquad T = A \to B \qquad \Gamma \vdash a : A}{\Gamma \vdash f\,a : B}
+\frac{\Gamma \vdash f : A \to B \qquad \Gamma \vdash a : A}{\Gamma \vdash f\,a : B}
 $$
 becomes the Datalog rule
 ```eql
 rule type_app {
     if has_type(ctx, f, fun_ty);
-    if fun_ty = arrow_type(a_ty, b_ty);
+    if fun_ty = func_type(a_ty, b_ty);
     if has_type(ctx, a, a_ty);
     then has_type(ctx, app(f, a), b_ty);
 }
 ```
-Each premise above the inference line corresponds to an `if` statement and the conclusion below the line corresponds to a `then` statement.
+The premises above the inference line correspond to `if` statements and the conclusion below the line corresponds to a `then` statement.
+The decomposition `fun_ty = func_type(a_ty, b_ty)` is needed in the Datalog version because Eqlog patterns bind variables explicitly, whereas the natural deduction rule reads $A \to B$ directly off the type of `f`.
 The Datalog encoding factors out the operational details of how typing rules are searched, matched and applied, and it leaves only the rules themselves to be specified by hand.
 
 ### Equality and fresh elements
