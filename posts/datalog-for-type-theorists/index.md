@@ -72,9 +72,9 @@ I have written about [the relevant semantics elsewhere](https://www.mbid.me/eqlo
 
 This is significant because most modern formulations of dependent type theory, in particular *categories with families* (CwFs), are essentially algebraic.
 Up to encoding, specifying a type theory and specifying a Datalog program with equality and partial functions can therefore be the same activity.
-What remains in turning such a specification into a working type checker is mostly engineering, namely fitting the specification to the operational behavior of a particular Datalog engine.
-My impression is that Datalog is not yet routinely used in production type checkers primarily because the option is not on most implementors' radar.
-As I discuss further below, there are also some technical problems that I think need to be solved before I would actually recommend the approach in practice.
+In an ideal world, what would remain in turning such a specification into a working type checker is mostly engineering, namely fitting the specification to the operational behavior of a particular Datalog engine.
+We are not quite in that world yet, however, since there are some technical problems to be solved before this becomes practical.
+I will return to these problems further below.
 
 ## Equality saturation as an alternative to strong normalization
 
