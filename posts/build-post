@@ -4,4 +4,4 @@ template_file="$(dirname "$0")/post-template.html"
 input_file="$1"
 shift
 
-pandoc --template="$template_file" --verbose --standalone "$input_file" --output="${input_file%.*}.html" "$@"
+pandoc --template="$template_file" --verbose --standalone --mathjax=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js "$input_file" --output="${input_file%.*}.html" "$@"

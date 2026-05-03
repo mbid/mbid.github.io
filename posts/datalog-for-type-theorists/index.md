@@ -21,11 +21,9 @@ The claim of this section is that Datalog, in suitably extended form, is well-su
 
 The mechanical part of this correspondence is that the typical natural deduction style typing rules of a type theory translate almost line by line into Datalog rules.
 For example, the typing rule for function application
-```
-   ctx |- f : fun_ty    fun_ty = a_ty -> b_ty    ctx |- a : a_ty
-   --------------------------------------------------------------
-                     ctx |- app(f, a) : b_ty
-```
+$$
+\frac{\Gamma \vdash f : T \qquad T = A \to B \qquad \Gamma \vdash a : A}{\Gamma \vdash f\,a : B}
+$$
 becomes the Datalog rule
 ```eql
 rule type_app {
