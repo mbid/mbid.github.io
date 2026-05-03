@@ -130,7 +130,7 @@ A separate Rust effort in the broader family of logic-programming-based type sys
 Chalk has since been sunset in favor of an in-tree next-generation trait solver in rustc that inherits its conceptual approach but is implemented as a recursive solver rather than as a tabling Prolog or Datalog engine.
 
 Closer to a fully Datalog-implemented type checker, though strictly a toy and intended as an educational example, is my [series on Hindley-Milner type checking with Eqlog](../type-checking-with-eqlog-parsing), which expresses most of the type checker as an Eqlog program.
-The Eqlog compiler itself has its type checker [written in Eqlog](../self-hosting-eqlog), although I am working on reverting this, since compiling the generated Rust code is slow enough to make iteration painful.
+The Eqlog compiler itself has its type checker [written in Eqlog](https://github.com/eqlog/eqlog/blob/3337ec49c0acf9a610dfe660782a1806554c26fb/eqlog-eqlog/src/eqlog.eql), although I am working on reverting this, since compiling the generated Rust code is slow enough to make iteration painful.
 
 Several fundamental issues currently stand in the way of using Datalog as the basis for a production type checker.
 The one I find most central is the lack of language-level support for composing self-contained Datalog programs into larger ones.

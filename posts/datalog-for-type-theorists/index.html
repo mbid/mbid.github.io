@@ -221,9 +221,9 @@ toy and intended as an educational example, is my <a
 href="../type-checking-with-eqlog-parsing">series on Hindley-Milner type
 checking with Eqlog</a>, which expresses most of the type checker as an
 Eqlog program. The Eqlog compiler itself has its type checker <a
-href="../self-hosting-eqlog">written in Eqlog</a>, although I am working
-on reverting this, since compiling the generated Rust code is slow
-enough to make iteration painful.</p>
+href="https://github.com/eqlog/eqlog/blob/3337ec49c0acf9a610dfe660782a1806554c26fb/eqlog-eqlog/src/eqlog.eql">written
+in Eqlog</a>, although I am working on reverting this, since compiling
+the generated Rust code is slow enough to make iteration painful.</p>
 <p>Several fundamental issues currently stand in the way of using
 Datalog as the basis for a production type checker. The one I find most
 central is the lack of language-level support for composing
