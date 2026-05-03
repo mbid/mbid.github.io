@@ -160,16 +160,17 @@ form.</p>
 every type theory of interest. The most famous example is extensional
 type theory, where definitional equality is undecidable. This is the
 principal reason that most dependently typed proof assistants are based
-on intensional rather than extensional type theory. The cost of this
-choice is well known. Implementors must integrate every extension of the
-base theory into the rewriting system without breaking strong
-normalization, and users of the system must reason about two distinct
-notions of equality, namely <em>definitional</em> equality, which is
-checked automatically by the proof assistant, and <em>propositional</em>
-equality, which is not. This distinction is the source of the familiar
-awkwardness whereby the expression <code>1 + n</code> cannot be
-substituted for <code>n + 1</code> in arbitrary positions even though
-the two expressions are provably equal.</p>
+on intensional rather than extensional type theory.</p>
+<p>This comes at a cost, however. Implementors must integrate every
+extension of the base theory into the rewriting system without breaking
+strong normalization, and users of the system must reason about two
+distinct notions of equality, namely <em>definitional</em> equality,
+which is checked automatically by the proof assistant, and
+<em>propositional</em> equality, which is not. This distinction is the
+source of the familiar awkwardness whereby the expression
+<code>1 + n</code> cannot be substituted for <code>n + 1</code> in
+arbitrary positions even though the two expressions are provably
+equal.</p>
 <p>Equality saturation suggests an alternative strategy that does not
 require a strongly normalizing rewriting system. The type checker
 applies the rewriting rules of the type theory to the subexpressions of
