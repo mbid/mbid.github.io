@@ -15,7 +15,6 @@ I assume basic familiarity with type theory and with Datalog.
 ## Datalog ought to be to type checking as parser generators are to parsing
 
 A parser generator takes a formal description of a language to be parsed, typically in the form of a context-free grammar, and produces an executable that recognizes the language and emits an abstract syntax tree.
-Outside of educational contexts, no one writes parsers by hand for non-trivial grammars anymore.
 The corresponding promise for type checking would be to take some formal description of a type theory and produce an executable type checker.
 The claim of this section is that Datalog, in suitably extended form, is well-suited to play the role of the parser generator, even though it is not yet routinely used in this way.
 
