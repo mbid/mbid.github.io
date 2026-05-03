@@ -86,7 +86,7 @@ The most striking example is *equality saturation* as an alternative to strong n
 
 Equality saturation has been proposed in recent years as a technique for compiler optimization, and is currently an active research topic.
 The problem it addresses there is the choice of a good ordering of optimization passes.
-Phase ordering is a notorious source of brittleness, since an improvement to one pass can introduce regressions in another depending on the order in which the passes run.
+Phase ordering is a source of brittleness, since an improvement to one pass can introduce regressions in another depending on the order in which the passes run.
 Equality saturation circumvents this issue architecturally.
 An *e-graph* compactly represents all expressions reachable from a given input expression by repeated application of a fixed set of rewrite rules, and the optimized expression is selected from this set according to some cost function.
 
