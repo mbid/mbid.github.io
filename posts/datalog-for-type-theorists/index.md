@@ -70,11 +70,7 @@ The two extensions described above are not independent or arbitrary.
 Together with partial functions, they make the resulting language equivalent in expressive power to *essentially algebraic theories* in the sense of Freyd, which are also known as *finite limit sketches* or theories of *partial Horn logic*.
 I have written about [the relevant semantics elsewhere](https://www.mbid.me/eqlog-semantics/).
 
-Many type theorists will already recognize that essentially algebraic theories are closely related to Cartmell's *generalized algebraic theories* (GATs).
-Both formalisms have the same expressive power, but they encode the same content differently.
-Generalized algebraic theories support dependent sorts directly, whereas essentially algebraic theories represent dependent sorts as ambient sorts together with predicates that pick out which elements lie in which dependent sort.
-
-This correspondence is significant because most modern formulations of dependent type theory, in particular *categories with families* (CwFs), are essentially algebraic.
+This is significant because most modern formulations of dependent type theory, in particular *categories with families* (CwFs), are essentially algebraic.
 Up to encoding, specifying a type theory and specifying a Datalog program with equality and partial functions can therefore be the same activity.
 What remains in turning such a specification into a working type checker is mostly engineering, namely fitting the specification to the operational behavior of a particular Datalog engine.
 This remaining engineering effort is non-trivial, and as I will discuss further below, it is the main reason why Datalog is not yet routinely used in production type checkers.

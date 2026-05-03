@@ -115,24 +115,16 @@ theories</em> in the sense of Freyd, which are also known as <em>finite
 limit sketches</em> or theories of <em>partial Horn logic</em>. I have
 written about <a href="https://www.mbid.me/eqlog-semantics/">the
 relevant semantics elsewhere</a>.</p>
-<p>Many type theorists will already recognize that essentially algebraic
-theories are closely related to Cartmell’s <em>generalized algebraic
-theories</em> (GATs). Both formalisms have the same expressive power,
-but they encode the same content differently. Generalized algebraic
-theories support dependent sorts directly, whereas essentially algebraic
-theories represent dependent sorts as ambient sorts together with
-predicates that pick out which elements lie in which dependent sort.</p>
-<p>This correspondence is significant because most modern formulations
-of dependent type theory, in particular <em>categories with
-families</em> (CwFs), are essentially algebraic. Up to encoding,
-specifying a type theory and specifying a Datalog program with equality
-and partial functions can therefore be the same activity. What remains
-in turning such a specification into a working type checker is mostly
-engineering, namely fitting the specification to the operational
-behavior of a particular Datalog engine. This remaining engineering
-effort is non-trivial, and as I will discuss further below, it is the
-main reason why Datalog is not yet routinely used in production type
-checkers.</p>
+<p>This is significant because most modern formulations of dependent
+type theory, in particular <em>categories with families</em> (CwFs), are
+essentially algebraic. Up to encoding, specifying a type theory and
+specifying a Datalog program with equality and partial functions can
+therefore be the same activity. What remains in turning such a
+specification into a working type checker is mostly engineering, namely
+fitting the specification to the operational behavior of a particular
+Datalog engine. This remaining engineering effort is non-trivial, and as
+I will discuss further below, it is the main reason why Datalog is not
+yet routinely used in production type checkers.</p>
 <h2
 id="equality-saturation-as-an-alternative-to-strong-normalization">Equality
 saturation as an alternative to strong normalization</h2>
