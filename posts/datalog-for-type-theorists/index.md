@@ -111,7 +111,8 @@ The check succeeds if the two expressions belong to the same equivalence class, 
 Readers will rightly object that the verdict of such a type checker depends on the chosen iteration depth.
 This is awkward.
 However, an analogous situation already exists for proof assistants based on intensional type theory.
-Verifying a proof there can require superexponentially many reduction steps, and so any agent who wishes to verify an untrusted proof must agree on a budget for the verification effort.
+Verifying a proof there can in principle require enormous numbers of reduction steps, since reduction in dependent type theory is non-elementary in the worst case.
+Any agent who wishes to verify an untrusted proof must therefore agree on a budget for the verification effort.
 Without such a budget, there is no way to distinguish a proof that fails verification from a proof that simply has not finished verifying within the available time.
 Equality saturation makes this budget explicit, rather than tucking it away inside the rewriting strategy of the proof checker.
 
