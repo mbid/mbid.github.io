@@ -167,10 +167,9 @@ strong normalization, and users of the system must reason about two
 distinct notions of equality, namely <em>definitional</em> equality,
 which is checked automatically by the proof assistant, and
 <em>propositional</em> equality, which is not. This distinction is the
-source of the familiar awkwardness whereby the expression
-<code>1 + n</code> cannot be substituted for <code>n + 1</code> in
-arbitrary positions even though the two expressions are provably
-equal.</p>
+source of the familiar quirk whereby the expression <code>1 + n</code>
+cannot be substituted for <code>n + 1</code> in arbitrary positions even
+though the two expressions are provably equal.</p>
 <p>Equality saturation suggests an alternative strategy that does not
 require a strongly normalizing rewriting system. The type checker
 applies the rewriting rules of the type theory to the subexpressions of
@@ -181,7 +180,7 @@ e-graph. The check succeeds if the two expressions belong to the same
 equivalence class, and otherwise it fails.</p>
 <p>Readers will rightly object that the verdict of such a type checker
 depends on the chosen iteration depth. This is awkward. However, an
-analogous awkwardness already exists for proof assistants based on
+analogous situation already exists for proof assistants based on
 intensional type theory. Verifying a proof there can require
 superexponentially many reduction steps, and so any agent who wishes to
 verify an untrusted proof must agree on a budget for the verification

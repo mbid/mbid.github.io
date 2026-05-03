@@ -101,7 +101,7 @@ This is the principal reason that most dependently typed proof assistants are ba
 
 It comes at a cost, though.
 Implementors must integrate every extension of the base theory into the rewriting system without breaking strong normalization, and users of the system must reason about two distinct notions of equality, namely *definitional* equality, which is checked automatically by the proof assistant, and *propositional* equality, which is not.
-This distinction is the source of the familiar awkwardness whereby the expression `1 + n` cannot be substituted for `n + 1` in arbitrary positions even though the two expressions are provably equal.
+This distinction is the source of the familiar quirk whereby the expression `1 + n` cannot be substituted for `n + 1` in arbitrary positions even though the two expressions are provably equal.
 
 Equality saturation suggests an alternative strategy that does not require a strongly normalizing rewriting system.
 The type checker applies the rewriting rules of the type theory to the subexpressions of the input program and enumerates equivalence classes of expressions, either to a fixed point or up to a fixed iteration depth.
@@ -110,7 +110,7 @@ The check succeeds if the two expressions belong to the same equivalence class, 
 
 Readers will rightly object that the verdict of such a type checker depends on the chosen iteration depth.
 This is awkward.
-However, an analogous awkwardness already exists for proof assistants based on intensional type theory.
+However, an analogous situation already exists for proof assistants based on intensional type theory.
 Verifying a proof there can require superexponentially many reduction steps, and so any agent who wishes to verify an untrusted proof must agree on a budget for the verification effort.
 Without such a budget, there is no way to distinguish a proof that fails verification from a proof that simply has not finished verifying within the available time.
 Equality saturation makes this budget explicit, rather than tucking it away inside the rewriting strategy of the proof checker.
