@@ -62,7 +62,7 @@ In an ideal world, what would remain in turning such a specification into a work
 We are not quite in that world yet, however, since there are some technical problems to be solved before this becomes practical.
 I will return to these problems further below.
 
-## Equality saturation as equality decision procedure
+## Equality saturation
 
 The previous section argues that Datalog could be a tidy specification language for type checkers.
 This would already be valuable, but the parser generator analogy promises more.
