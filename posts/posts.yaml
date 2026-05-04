@@ -1,7 +1,7 @@
 title: "Posts"
 lang: en_US
 posts:
-  - title: "The case for Datalog for type theorists"
+  - title: "The type-theoretic case for Datalog"
     date: May 03, 2026
     url: datalog-for-type-theorists
   - title: "Dependent types for Datalog"

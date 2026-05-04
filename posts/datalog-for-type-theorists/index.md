@@ -1,5 +1,5 @@
 ---
-title: "The case for Datalog for type theorists"
+title: "The type-theoretic case for Datalog"
 date: "May 03, 2026"
 lang: "en_US"
 ---
