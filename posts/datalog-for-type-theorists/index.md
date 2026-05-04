@@ -111,7 +111,7 @@ However, an analogous situation already exists for proof assistants based on int
 Verifying a proof there can in principle require enormous numbers of reduction steps, since reduction in dependent type theory is non-elementary in the worst case.
 Any agent who wishes to verify an untrusted proof must therefore agree on a budget for the verification effort.
 Without such a budget, there is no way to distinguish a proof that fails verification from a proof that simply has not finished verifying within the available time.
-Equality saturation makes this budget explicit, rather than tucking it away inside the rewriting strategy of the proof checker.
+Equality saturation makes this budget explicit.
 
 To be clear, my claim is not that equality saturation is necessarily superior to strong normalization for deciding equality, but rather that it represents a different and underexplored point in the design space, and that this design space deserves more attention from type theorists than it currently receives.
 In particular, the two approaches could potentially be combined: normalization is a natural fit for evaluation-like, directed rewrite rules and avoids the space overhead of reifying every intermediate term into an e-graph, while equality saturation is the natural fit for undirected equalities that have no obvious orientation as rewrite rules.
