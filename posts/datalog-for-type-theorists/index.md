@@ -131,5 +131,5 @@ The Eqlog compiler itself has its type checker [written in Eqlog](https://github
 Several fundamental issues currently stand in the way of using Datalog as the basis for a production type checker.
 The one I find most central is that Datalog has no way to express copy-on-write sharing of related data, which leads to extreme memory duplication.
 A motivating case is variable scopes that extend each other: without sharing, each new variable binding forces a deep copy of the entire scope table.
-I sketch the problem and a proposed solution based on morphisms between Datalog model instances in the last section of [a separate blog post](../dependent-types-for-datalog) on dependent Datalog, and in an extended abstract for TYPES 2026.
+I sketch the problem and a proposed solution based on morphisms between Datalog model instances in the last section of [a separate blog post](../dependent-types-for-datalog) on dependent Datalog, and in an [extended abstract for TYPES 2026](https://types2026.cse.chalmers.se/abstracts/33.pdf).
 Until problems of this kind are addressed, I would not recommend Datalog as the basis for a serious type checker, although it may already be possible to isolate parts of an existing type checker that can profitably be moved to a Datalog engine.
