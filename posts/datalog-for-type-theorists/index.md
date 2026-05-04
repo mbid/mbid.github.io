@@ -12,7 +12,7 @@ The second is that Datalog suggests an alternative to strong normalization for d
 
 ## Datalog as type checker generator
 
-A parser generator takes a formal description of a language to be parsed, typically in the form of a context-free grammar, and produces an executable that recognizes the language and emits an abstract syntax tree.
+A parser generator takes a formal description of a language to be parsed, typically in the form of a context-free grammar, and produces an executable module that recognizes the language and emits an abstract syntax tree.
 The corresponding promise for type checking would be to take some formal description of a type theory and produce an executable type checker.
 The claim of this section is that Datalog, in suitably extended form, is well-suited to play the role of the parser generator, even though it is not yet routinely used in this way.
 
