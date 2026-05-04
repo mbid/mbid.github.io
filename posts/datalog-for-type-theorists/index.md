@@ -49,15 +49,6 @@ For example, when typing the variable bound by a function literal, the type chec
 
 The Datalog extensions implemented by [Eqlog](https://github.com/eqlog/eqlog) and [Egglog](https://github.com/egraphs-good/egglog) lift both of these restrictions.
 Both engines support partial functions, conclusion of equalities between elements (with congruence closure to propagate inferred equalities through the database), and conclusions that force a partial function to be defined on a given input, introducing a fresh element when no value is yet associated.
-In Eqlog syntax, the latter is written using an exclamation mark.
-The rule
-```eql
-rule {
-    if v: Var;
-    then var_type(v)!;
-}
-```
-forces the partial function `var_type` to be defined on every variable, introducing a fresh `Type` element when no value has been assigned to `v` yet.
 
 ### Essentially algebraic theories
 

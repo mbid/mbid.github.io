@@ -91,15 +91,7 @@ these restrictions. Both engines support partial functions, conclusion
 of equalities between elements (with congruence closure to propagate
 inferred equalities through the database), and conclusions that force a
 partial function to be defined on a given input, introducing a fresh
-element when no value is yet associated. In Eqlog syntax, the latter is
-written using an exclamation mark. The rule</p>
-<pre class="eql"><code>rule {
-    if v: Var;
-    then var_type(v)!;
-}</code></pre>
-<p>forces the partial function <code>var_type</code> to be defined on
-every variable, introducing a fresh <code>Type</code> element when no
-value has been assigned to <code>v</code> yet.</p>
+element when no value is yet associated.</p>
 <h3 id="essentially-algebraic-theories">Essentially algebraic
 theories</h3>
 <p>The two extensions described above are not independent or arbitrary.
