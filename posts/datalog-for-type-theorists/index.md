@@ -73,8 +73,10 @@ The example I have in mind is *equality saturation* to amend or as an alternativ
 [Equality saturation](https://dl.acm.org/doi/10.1145/1480881.1480915) has been proposed in recent years as a technique for compiler optimization, and is currently an active research topic.
 The problem it addresses there is the choice of a good ordering of optimization passes.
 Phase ordering is a source of brittleness, since an improvement to one pass can introduce regressions in another depending on the order in which the passes run.
+
 Equality saturation circumvents this issue architecturally.
 An *e-graph* compactly represents all expressions reachable from a given input expression by repeated application of a fixed set of rewrite rules, and the optimized expression is selected from this set according to some cost function.
+
 Eqlog and Egglog generalize the e-graph into a data structure for evaluating arbitrary Datalog programs with equality, of which equality saturation is a special case.
 
 Optimizing compilers operate on a best-effort basis and offer few formal guarantees about which optimizations they discover.
