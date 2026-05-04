@@ -73,12 +73,7 @@ types of subexpressions, and Rust’s trait system equates types via
 associated type projections such as
 <code>&lt;T as Iterator&gt;::Item</code>. In dependent type theories the
 situation is even more pronounced, since type equality there can depend
-on arbitrary computation: the type <code>Vec(2 + 2)</code> is meant to
-be the same type as <code>Vec(4)</code>, even though the two expressions
-are not syntactically equal. A type checker has to decide such
-equalities, and any encoding of typing rules into Datalog must therefore
-be able to express that two elements of the <code>Type</code> sort
-should be considered equal.</p>
+on arbitrary computation.</p>
 <p>The second is that standard Datalog cannot introduce fresh elements
 during evaluation. Every element occurring in the database must already
 be present, either as part of the input or as the result of an explicit
