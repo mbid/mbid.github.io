@@ -1,6 +1,6 @@
 ---
 title: "The type-theoretic case for Datalog"
-date: "May 03, 2026"
+date: "May 04, 2026"
 lang: "en_US"
 ---
 
