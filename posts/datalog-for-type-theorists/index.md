@@ -24,9 +24,9 @@ $$
 becomes the following rule in [Eqlog](https://github.com/eqlog/eqlog), the Datalog dialect with equality I will use as a running example:
 ```eql
 rule type_app {
-    if has_type(ctx, f, func_type(a_ty, b_ty));
-    if has_type(ctx, a, a_ty);
-    then has_type(ctx, app(f, a), b_ty);
+    if has_type(ctx, f, func_type(A, B));
+    if has_type(ctx, a, A);
+    then has_type(ctx, app(f, a), B);
 }
 ```
 Each premise above the inference line corresponds to an `if` statement and the conclusion below the line corresponds to a `then` statement.

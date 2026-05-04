@@ -50,9 +50,9 @@ function application <span class="math display">\[
 href="https://github.com/eqlog/eqlog">Eqlog</a>, the Datalog dialect
 with equality I will use as a running example:</p>
 <pre class="eql"><code>rule type_app {
-    if has_type(ctx, f, func_type(a_ty, b_ty));
-    if has_type(ctx, a, a_ty);
-    then has_type(ctx, app(f, a), b_ty);
+    if has_type(ctx, f, func_type(A, B));
+    if has_type(ctx, a, A);
+    then has_type(ctx, app(f, a), B);
 }</code></pre>
 <p>Each premise above the inference line corresponds to an
 <code>if</code> statement and the conclusion below the line corresponds
