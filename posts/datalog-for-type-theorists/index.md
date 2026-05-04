@@ -42,7 +42,7 @@ Even for non-dependent type systems, type checkers regularly have to compare two
 A Hindley-Milner inference engine, for example, repeatedly equates type variables with concrete types as it unifies the types of subexpressions, and Rust's trait system equates types via associated type projections such as `<T as Iterator>::Item`.
 In dependent type theories the situation is even more pronounced, since type equality there can depend on arbitrary computation.
 
-The second is that standard Datalog cannot introduce fresh elements during evaluation.
+The second is that standard Datalog cannot introduce fresh elements during evaluation, a property known as the *range restriction*.
 Every element occurring in the database must already be present, either as part of the input or as the result of an explicit constructor application.
 This is also problematic for type checking, because type inference frequently has to assert that some term or type exists before its concrete identity is known.
 For example, when typing the variable bound by a function literal, the type checker must record that there is *some* type assigned to the variable, even though no concrete type is yet available.

@@ -75,14 +75,15 @@ associated type projections such as
 situation is even more pronounced, since type equality there can depend
 on arbitrary computation.</p>
 <p>The second is that standard Datalog cannot introduce fresh elements
-during evaluation. Every element occurring in the database must already
-be present, either as part of the input or as the result of an explicit
-constructor application. This is also problematic for type checking,
-because type inference frequently has to assert that some term or type
-exists before its concrete identity is known. For example, when typing
-the variable bound by a function literal, the type checker must record
-that there is <em>some</em> type assigned to the variable, even though
-no concrete type is yet available.</p>
+during evaluation, a property known as the <em>range restriction</em>.
+Every element occurring in the database must already be present, either
+as part of the input or as the result of an explicit constructor
+application. This is also problematic for type checking, because type
+inference frequently has to assert that some term or type exists before
+its concrete identity is known. For example, when typing the variable
+bound by a function literal, the type checker must record that there is
+<em>some</em> type assigned to the variable, even though no concrete
+type is yet available.</p>
 <p>The Datalog extensions implemented by <a
 href="https://github.com/eqlog/eqlog">Eqlog</a> and <a
 href="https://github.com/egraphs-good/egglog">Egglog</a> lift both of
