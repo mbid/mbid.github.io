@@ -76,7 +76,6 @@ Phase ordering is a source of brittleness, since an improvement to one pass can 
 
 Equality saturation circumvents this issue architecturally.
 An *e-graph* compactly represents all expressions reachable from a given input expression by repeated application of a fixed set of rewrite rules, and the optimized expression is selected from this set according to some cost function.
-
 Eqlog and Egglog generalize the e-graph into a data structure for evaluating arbitrary Datalog programs with equality, of which equality saturation is a special case.
 
 Optimizing compilers operate on a best-effort basis and offer few formal guarantees about which optimizations they discover.
