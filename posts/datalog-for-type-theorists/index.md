@@ -113,6 +113,11 @@ Any agent who wishes to verify an untrusted proof must therefore agree on a budg
 Without such a budget, there is no way to distinguish a proof that fails verification from a proof that simply has not finished verifying within the available time.
 Equality saturation makes this budget explicit, rather than tucking it away inside the rewriting strategy of the proof checker.
 
+The two approaches can also be combined.
+Normalization is a natural fit for evaluation-like, directed rewrite rules, and avoids the space overhead of equality saturation where every intermediate term has to be reified into the e-graph.
+Equality saturation, on the other hand, is a natural fit for undirected equalities that have no obvious orientation as rewrite rules.
+A type checker can in principle apply normalization to the rules where it is suitable and fall back to equality saturation for the rest.
+
 To be clear, my claim is not that equality saturation is necessarily superior to strong normalization for deciding type equality, but rather that it represents a different and underexplored point in the design space, and that this design space deserves more attention from type theorists than it currently receives.
 
 ## Real-world type checkers based on Datalog
