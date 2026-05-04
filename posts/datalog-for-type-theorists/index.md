@@ -107,7 +107,7 @@ Equality saturation makes this budget explicit.
 To be clear, my claim is not that equality saturation is necessarily superior to strong normalization for deciding equality, but rather that it represents a different and underexplored point in the design space, and that this design space deserves more attention from type theorists than it currently receives.
 In particular, the two approaches could potentially be combined: normalization is a natural fit for evaluation-like, directed rewrite rules and avoids the space overhead of reifying every intermediate term into an e-graph, while equality saturation is the natural fit for undirected equalities that have no obvious orientation as rewrite rules.
 
-## Real-world type checkers based on Datalog
+## Existing type checkers based on Datalog
 
 Type theorists familiar with the implementation of existing proof assistants will have noticed that the picture above is somewhat idealized.
 No major proof assistant is currently implemented in Datalog.
