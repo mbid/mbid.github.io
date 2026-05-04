@@ -216,11 +216,11 @@ the generated Rust code is slow enough to make iteration painful.</p>
 <p>Several fundamental issues currently stand in the way of using
 Datalog as the basis for a production type checker. The one I find most
 central is that Datalog has no way to express copy-on-write sharing of
-related data, which leads to extreme memory duplication. A motivating
-case is variable scopes that extend each other: without sharing, each
-new variable binding forces a deep copy of the entire scope table. I
-sketch the problem and a proposed solution based on morphisms between
-Datalog model instances in the last section of <a
+related data, which leads to extreme data duplication. A motivating case
+is variable scopes that extend each other: without sharing, each new
+variable binding forces a deep copy of the entire scope table. I sketch
+the problem and a proposed solution based on morphisms between Datalog
+model instances in the last section of <a
 href="../dependent-types-for-datalog">a separate blog post</a> on
 dependent Datalog, and in an <a
 href="https://types2026.cse.chalmers.se/abstracts/33.pdf">extended
