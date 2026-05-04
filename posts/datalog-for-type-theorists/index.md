@@ -73,13 +73,13 @@ In an ideal world, what would remain in turning such a specification into a work
 We are not quite in that world yet, however, since there are some technical problems to be solved before this becomes practical.
 I will return to these problems further below.
 
-## Equality saturation as an alternative to strong normalization
+## Equality saturation as equality decision procedure
 
 The previous section argues that Datalog could be a tidy specification language for type checkers.
 This would already be valuable, but the parser generator analogy promises more.
 Parser generators also enable parsing algorithms that nobody would write by hand, like the construction of LR tables.
 We can ask whether Datalog enables new algorithms for type checking too, and I think the answer is yes.
-The most striking example is *equality saturation* as an alternative to strong normalization for deciding type equality.
+The most striking example is *equality saturation* to amend or as an alternative to strong normalization for deciding type equality.
 
 Equality saturation has been proposed in recent years as a technique for compiler optimization, and is currently an active research topic.
 The problem it addresses there is the choice of a good ordering of optimization passes.
@@ -121,8 +121,7 @@ Type theorists familiar with the implementation of existing proof assistants wil
 No major proof assistant is currently implemented in Datalog.
 Several efforts move in this direction, however.
 
-Within Rust, the most closely related effort is [Polonius](https://github.com/rust-lang/polonius), an experimental implementation of the borrow checker.
-The original Polonius prototype is built on the [Datafrog](https://github.com/rust-lang/datafrog) Datalog engine, but the in-tree successor that is currently being prepared for stabilization is a hand-rolled graph reachability analysis rather than a Datalog program.
+Within Rust, the most closely related effort is [Polonius](https://github.com/rust-lang/polonius), an experimental implementation of the borrow checker built on the [Datafrog](https://github.com/rust-lang/datafrog) Datalog engine.
 A separate Rust effort in the broader family of logic-programming-based type system implementations is the [Chalk](https://github.com/rust-lang/chalk) project, which experimented with a Prolog-style engine for Rust's trait system.
 Chalk has since been sunset in favor of an in-tree next-generation trait solver in rustc that inherits its conceptual approach but is implemented as a recursive solver rather than as a tabling Prolog or Datalog engine.
 
