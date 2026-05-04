@@ -10,7 +10,7 @@ I think this view is unjustified, and I will argue for two reasons in support of
 The first reason is that Datalog, in suitably extended form, ought to play a role for type checking that is closely analogous to the role parser generators play for parsing.
 The second is that Datalog suggests an alternative to strong normalization for deciding equality during type checking, namely *equality saturation*.
 
-## Datalog ought to be to type checking as parser generators are to parsing
+## Datalog as type checker generator
 
 A parser generator takes a formal description of a language to be parsed, typically in the form of a context-free grammar, and produces an executable that recognizes the language and emits an abstract syntax tree.
 The corresponding promise for type checking would be to take some formal description of a type theory and produce an executable type checker.
