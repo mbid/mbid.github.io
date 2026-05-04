@@ -52,7 +52,7 @@ Both engines support partial functions, conclusion of equalities between element
 
 ### Essentially algebraic theories
 
-The two extensions described above are not independent or arbitrary.
+The two extensions described above are not arbitrary.
 Together with partial functions, they make the resulting language equivalent in expressive power to *essentially algebraic theories* in the sense of Freyd, which are also known as *finite limit sketches* or theories of *partial Horn logic*.
 I have written about [the relevant semantics elsewhere](https://www.mbid.me/eqlog-semantics/).
 
