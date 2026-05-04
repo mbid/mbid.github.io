@@ -70,7 +70,7 @@ Parser generators also enable parsing algorithms that nobody would write by hand
 We can ask whether Datalog enables new algorithms for type checking too, and I think the answer is yes.
 The example I have in mind is *equality saturation* to amend or as an alternative to strong normalization for deciding equality.
 
-Equality saturation has been proposed in recent years as a technique for compiler optimization, and is currently an active research topic.
+[Equality saturation](https://dl.acm.org/doi/10.1145/1480881.1480915) has been proposed in recent years as a technique for compiler optimization, and is currently an active research topic.
 The problem it addresses there is the choice of a good ordering of optimization passes.
 Phase ordering is a source of brittleness, since an improvement to one pass can introduce regressions in another depending on the order in which the passes run.
 Equality saturation circumvents this issue architecturally.
