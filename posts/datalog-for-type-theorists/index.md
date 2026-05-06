@@ -56,7 +56,7 @@ The two extensions described above are not arbitrary.
 They make the resulting language equivalent in expressive power to *essentially algebraic theories* in the sense of Freyd, which are also known as *finite limit sketches* or theories of *partial Horn logic*.
 I have written about [the relevant semantics elsewhere](https://arxiv.org/abs/2302.03167).
 
-This is significant because most modern formulations of dependent type theory, in particular *categories with families* (CwFs), are essentially algebraic.
+This is significant because most modern formulations of dependent type theory, in particular *categories with families*, are essentially algebraic.
 Up to encoding, specifying a type theory and specifying a Datalog program with equality and partial functions can therefore be the same activity.
 In an ideal world, what would remain in turning such a specification into a working type checker is mostly plumbing, namely feeding the AST to the Datalog engine in suitable form and routing its results into downstream tasks such as error message generation and compilation.
 We are not quite in that world yet, however, since there are some technical problems to be solved before this becomes practical.
@@ -113,7 +113,7 @@ Type theorists familiar with the implementation of existing proof assistants wil
 No major proof assistant is currently implemented in Datalog.
 Several efforts move in this direction, however.
 
-Within Rust, the most closely related effort is [Polonius](https://github.com/rust-lang/polonius), an experimental implementation of the borrow checker built on the [Datafrog](https://github.com/rust-lang/datafrog) Datalog engine.
+Within Rust, the most closely related effort is [Polonius](https://github.com/rust-lang/polonius), an experimental implementation of the borrow checker.
 A separate Rust effort in the broader family of logic-programming-based type system implementations is the [Chalk](https://github.com/rust-lang/chalk) project, which experimented with a Prolog-style engine for Rust's trait system.
 Chalk has since been sunset in favor of an in-tree next-generation trait solver in rustc that inherits its conceptual approach but is implemented as a recursive solver rather than as a tabling Prolog or Datalog engine.
 
