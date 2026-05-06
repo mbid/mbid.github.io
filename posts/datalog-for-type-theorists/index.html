@@ -7,7 +7,7 @@
   <title>The type-theoretic case for Datalog</title>
   <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
   <link rel="stylesheet" href="/style.css" />
-  <script
+  <script defer=""
   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
   type="text/javascript"></script>
 </head>
@@ -18,7 +18,7 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">The type-theoretic case for Datalog</h1>
-<p class="date">May 04, 2026</p>
+<p class="date">May 06, 2026</p>
 </header>
 <p>This post argues that type theorists should pay more attention to
 Datalog than they currently do. My impression is that many type
@@ -102,7 +102,7 @@ logic</em>. I have written about <a
 href="https://arxiv.org/abs/2302.03167">the relevant semantics
 elsewhere</a>.</p>
 <p>This is significant because most modern formulations of dependent
-type theory, in particular <em>categories with families</em> (CwFs), are
+type theory, in particular <em>categories with families</em>, are
 essentially algebraic. Up to encoding, specifying a type theory and
 specifying a Datalog program with equality and partial functions can
 therefore be the same activity. In an ideal world, what would remain in
@@ -195,18 +195,13 @@ idealized. No major proof assistant is currently implemented in Datalog.
 Several efforts move in this direction, however.</p>
 <p>Within Rust, the most closely related effort is <a
 href="https://github.com/rust-lang/polonius">Polonius</a>, an
-experimental implementation of the borrow checker built on the <a
-href="https://github.com/rust-lang/datafrog">Datafrog</a> Datalog
-engine. A separate Rust effort in the broader family of
-logic-programming-based type system implementations is the <a
+experimental implementation of the borrow checker. A separate Rust
+effort in the broader family of logic-programming-based type system
+implementations is the <a
 href="https://github.com/rust-lang/chalk">Chalk</a> project, which
-experimented with a Prolog-style engine for Rust’s trait system. Chalk
-has since been sunset in favor of an in-tree next-generation trait
-solver in rustc that inherits its conceptual approach but is implemented
-as a recursive solver rather than as a tabling Prolog or Datalog
-engine.</p>
-<p>Closer to a fully Datalog-implemented type checker, though strictly a
-toy and intended as an educational example, is my <a
+experimented with a Prolog-style engine for Rust’s trait system.</p>
+<p>Closer to a fully Datalog-implemented type checker, though intended
+as just an educational example, is my <a
 href="../type-checking-with-eqlog-parsing">series on Hindley-Milner type
 checking with Eqlog</a>, which expresses most of the type checker as an
 Eqlog program. The Eqlog compiler itself has its type checker <a
@@ -214,20 +209,23 @@ href="https://github.com/eqlog/eqlog/blob/3337ec49c0acf9a610dfe660782a1806554c26
 in Eqlog</a>, although I am working on reverting this, since compiling
 the generated Rust code is slow enough to make iteration painful.</p>
 <p>Several fundamental issues currently stand in the way of using
-Datalog as the basis for a production type checker. The one I find most
-central is that Datalog has no way to express copy-on-write sharing of
-related data, which leads to extreme data duplication. A motivating case
-is variable scopes that extend each other: without sharing, each new
-variable binding forces a deep copy of the entire scope table. I sketch
-the problem and a proposed solution based on morphisms between Datalog
-model instances in the last section of <a
-href="../dependent-types-for-datalog">a separate blog post</a> on
+Datalog as the basis for a production type checker. The one I am
+currently looking into is that Datalog has no way to express
+copy-on-write sharing of related data, which leads to extreme data
+duplication. A motivating case is variable scopes that extend each
+other: without sharing, each new variable binding forces a deep copy of
+the entire scope table. I sketch the problem and a proposed solution
+based on morphisms between Datalog model instances in the last section
+of <a href="../dependent-types-for-datalog">a separate blog post</a> on
 dependent Datalog, and in an <a
 href="https://types2026.cse.chalmers.se/abstracts/33.pdf">extended
 abstract for TYPES 2026</a>.</p>
 <p>Until problems of this kind are addressed, I would not recommend
 Datalog as the basis for a serious type checker, although it may already
 be possible to isolate parts of an existing type checker that can
-profitably be moved to a Datalog engine.</p>
+profitably be moved to a Datalog engine. But this is itself a reason to
+care about Datalog, since the improvements needed to make Datalog
+practical for type checking are themselves largely problems in
+programming language design and implementation.</p>
 </body>
 </html>
