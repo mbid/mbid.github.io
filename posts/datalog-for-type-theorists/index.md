@@ -125,4 +125,4 @@ A motivating case is variable scopes that extend each other: without sharing, ea
 I sketch the problem and a proposed solution based on morphisms between Datalog model instances in the last section of [a separate blog post](../dependent-types-for-datalog) on dependent Datalog, and in an [extended abstract for TYPES 2026](https://types2026.cse.chalmers.se/abstracts/33.pdf).
 
 Until problems of this kind are addressed, I would not recommend Datalog as the basis for a serious type checker, although it may already be possible to isolate parts of an existing type checker that can profitably be moved to a Datalog engine.
-This is itself a reason for type theorists to care about Datalog, since the improvements needed to make Datalog practical for type checking are largely type-theoretic in nature.
+But this is itself a reason to care about Datalog, since the improvements needed to make Datalog practical for type checking are largely type-theoretic in nature.
