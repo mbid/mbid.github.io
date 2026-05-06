@@ -116,7 +116,7 @@ Several efforts move in this direction, however.
 Within Rust, the most closely related effort is [Polonius](https://github.com/rust-lang/polonius), an experimental implementation of the borrow checker.
 A separate Rust effort in the broader family of logic-programming-based type system implementations is the [Chalk](https://github.com/rust-lang/chalk) project, which experimented with a Prolog-style engine for Rust's trait system.
 
-Closer to a fully Datalog-implemented type checker, though strictly a toy and intended as an educational example, is my [series on Hindley-Milner type checking with Eqlog](../type-checking-with-eqlog-parsing), which expresses most of the type checker as an Eqlog program.
+Closer to a fully Datalog-implemented type checker, though intended as just an educational example, is my [series on Hindley-Milner type checking with Eqlog](../type-checking-with-eqlog-parsing), which expresses most of the type checker as an Eqlog program.
 The Eqlog compiler itself has its type checker [written in Eqlog](https://github.com/eqlog/eqlog/blob/3337ec49c0acf9a610dfe660782a1806554c26fb/eqlog-eqlog/src/eqlog.eql), although I am working on reverting this, since compiling the generated Rust code is slow enough to make iteration painful.
 
 Several fundamental issues currently stand in the way of using Datalog as the basis for a production type checker.
