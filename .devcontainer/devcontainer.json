@@ -1,0 +1,15 @@
+{
+    "name": "homepage",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "runArgs": ["--runtime=kata"],
+    "forwardPorts": [8000],
+    "portsAttributes": {
+        "8000": {
+            "label": "homepage",
+            "onAutoForward": "notify"
+        }
+    }
+}
