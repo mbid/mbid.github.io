@@ -1,6 +1,7 @@
 ---
 title: "Type Checking with Eqlog: Polymorphism"
 date: August 22, 2023
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
@@ -258,7 +259,7 @@ With all rules about type contexts in place, we can now assume that a type eleme
 
 ## Instantiation
 
-Our function `VarTypeInExpr : Var -> GeneralType` can result into a polytype, whereas we still expect the function `ExprType : ExprNode -> Type` to result into a type in the current context, i.e., into a monotype.
+Our function `VarTypeInExpr : Var -> GeneralType` can result in a polytype, whereas we still expect the function `ExprType : ExprNode -> Type` to result in a type in the current context, i.e., into a monotype.
 This means that we need to revisit our typing rules for variable usages.
 
 In case the variable has monotype, we can continue to equate the type of the variable expression with the type of the variable:
@@ -303,7 +304,7 @@ Axiom
 ```
 
 The typing rules that we've added in the previous post constrain the expression types of usages of polymorphic variables based on where the variables appear.
-For example, if a variable is used in position of the function in an application expression, then the instantation of the variable's type must be a function type.
+For example, if a variable is used in function position in an application expression, then the instantiation of the variable's type must be a function type.
 However, we haven't encoded any constraints based on the type scheme of the variable's polytype so far, which is our next task.
 
 ### Instantiation and type constructors
@@ -318,7 +319,7 @@ Axiom
     NumberType() = instance_number
     ;
 
-// If a funnction type is instantiated, then also the domain and
+// If a function type is instantiated, then also the domain and
 // codomain are instantiated, and instantiate commutes with the
 // function type constructor.
 Axiom
@@ -343,10 +344,10 @@ Note that commutativity of the `Instantiate(inst, -)` operation with type constr
 Unbound type variables cannot be freely instantiated because they are fixed by the ambient type context of the polytype already.
 In case of the convoluted identity function above, this means that every instantiation of `const_x : (b) => a` must map `a` to itself.
 
-Since we're not allowing higher-ranked types, we don't allow returning values with polytypes from functions; even if we return a variable with polymorphic type, our type checker implicitly instantiates the variable's type scheme into a monotype first.
+Since we're not allowing higher-ranked types, we don't allow returning values with polytypes from functions; even if we return a variable with a polymorphic type, our type checker implicitly instantiates the variable's type scheme into a monotype first.
 As a consequence, polytypes cannot escape the ambient type context in which they were defined:
-The type context of a usage site of a variable with polytype is always an iterated extension of the ambient type context of the where the polytype was defined.
-It follows that at every usage site of a polytype, a type element occuring in the polytype scheme is unbound if and only if it is in the ambient type context of a usage site.
+The type context of a usage site of a variable with polytype is always an iterated extension of the ambient type context where the polytype was defined.
+It follows that at every usage site of a polytype, a type element occurring in the polytype scheme is unbound if and only if it is in the ambient type context of a usage site.
 ```eqlog
 Func InstantiationTarget : Instantiation -> TypeContext;
 Axiom
@@ -389,7 +390,7 @@ function absurd() {
 let x = absurd();
 ```
 The type of `absurd` is `() => b`, so its return type is entirely unrestricted.
-This means that also the type of `x` is undetermined (i.e., a type variable), but we require that all let bindings must have monotype.
+This means that the type of `x` is also undetermined (i.e., a type variable), but we require that all let bindings must have monotype.
 
 To adapt the `DeterminedType` predicate to polymorphism, we add the following rules mirroring our rules for type contexts:
 The argument and return types of functions are always determined, and determined types are closed also under inverses of type constructors (for cases such as the `apply` function above).
@@ -416,15 +417,15 @@ Axiom
 
 ### Type conflicts
 
-Consider the following function definiton:
+Consider the following function definition:
 ```typescript
 function foo (x) {
     x(x);
 }
 ```
-Our type checker infers that `x` must be have function type `(a) => b`.
+Our type checker infers that `x` must have function type `(a) => b`.
 Since `x` is applied to itself, we infer a type equality `a = (a) => b`.
-Every instantiation of `foo` in which the argument type is a concrete type (i.e., it does not contain type variables) would result into a type conflict.
+Every instantiation of `foo` in which the argument type is a concrete type (i.e., it does not contain type variables) would result in a type conflict.
 But if `foo` is never used, then our type checker will not report an error, because our rules for type conflicts fire only for concrete types, not for type variables.
 
 To detect errors such as the `foo` function, we introduce a predicate `SmallerType : Type * Type` such that `SmallerType(sigma, tau)` holds if and only if `sigma` is structurally strictly smaller than `tau`.

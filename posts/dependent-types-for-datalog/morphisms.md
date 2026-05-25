@@ -106,7 +106,7 @@ What data should a morphism `f : k_0 -> k_1` between instances of `K` represent?
 For the `a()` constant, we want
 
 I also thought a bit about incorporating the Yoneda embedding, so that inside of a model definition there would be a type `Hom(<foo>, <type dependent on this>)` of morphisms into a type dependent on the current instance of the model being defined.
-This would be useful to representing *type contexts* in languages with generics.
+This would be useful for representing *type contexts* in languages with generics.
 In languages with generics, it's not enough to associate a simple type to a variable binding, since at the instantiation site you need to know which of the type variables must or must not be instantiated.
 
 Compare these cases:
@@ -177,5 +177,5 @@ To instantiate the type into `current_context`, we would then add a morphism and
       ∨         ∨
    current_ctx
 ```
-If we find the existence of this `subst` morphism implies that bad type equation in current_ctx holds, for example that the number type must be equal to the string type, then we issue a typing error.
+If we find the existence of this `subst` morphism implies that a bad type equation in current_ctx holds, for example that the number type must be equal to the string type, then we issue a typing error.
 In the second example The commutativity of the diagram enforces that 

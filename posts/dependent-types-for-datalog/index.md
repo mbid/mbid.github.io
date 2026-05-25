@@ -1,13 +1,14 @@
 ---
 title: "Dependent types for Datalog"
 date: "September 29, 2024"
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
 *This is a high-level description of a Datalog extension that would allow instantiating multiple models of one Datalog program in a larger ambient Datalog program.
 These instances are represented as elements in the ambient Datalog program, and types of the instantiated Datalog program are dependent on these elements.*
 
-*The main purpose of this language feature is to make it possible to compose small self-contained Datalog programs into larger programs, similarly to how classes in object oriented languages enable multiple instantiations of part of a program and its associated data.
+*The main purpose of this language feature is to make it possible to compose small self-contained Datalog programs into larger programs, similarly to how classes in object-oriented languages enable multiple instantiations of part of a program and its associated data.
 A second benefit is that it enables the Datalog compiler to detect more programming errors.
 Finally, dependent models allow informing the Datalog compiler about locality in data and rules, which enables it to generate more efficient code.*
 
@@ -21,7 +22,7 @@ But there's a good (bad?) chance I'll be a bit busier soon, so I figured it migh
 
 In case you haven't followed the work on the [Eqlog Datalog compiler](https://github.com/eqlog/eqlog) or the similar [Egglog](https://github.com/egraphs-good/egglog) engine, let me try to briefly summarize.
 Eqlog implements an extension of Datalog with support for (partial) functions and equality.
-And while dependent models probably make sense without equality or functions, dependent models interact non-trivally with equality, so I decided to write directly about dependent models in Eqlog.
+And while dependent models probably make sense without equality or functions, dependent models interact non-trivially with equality, so I decided to write directly about dependent models in Eqlog.
 
 Types, functions and predicates in Eqlog are declared as follows:
 ```eql
@@ -68,7 +69,7 @@ rule {
 }
 ```
 The exclamation mark operator makes Eqlog Turing complete.
-To prevent Eqlog programmers (so: me) from inadvertedly introducing new elements in rules, leading to non-termination, Eqlog enforces *surjectivity* restrictions in rule definitions:
+To prevent Eqlog programmers (so: me) from inadvertently introducing new elements in rules, leading to non-termination, Eqlog enforces *surjectivity* restrictions in rule definitions:
 Unless the exclamation mark operator is used, `then` statements can only mention elements that have been introduced earlier in the same rule by an `if` statement or via the exclamation mark operator.
 
 The Eqlog compiler does not generate standalone executables.
@@ -193,7 +194,7 @@ model CFG {
 }
 ```
 Each `model` definition introduces a type (here: `CFG`) whose elements represent separate instances of the Eqlog program in the model definition body.
-Similarly to classes in object oriented orientation, we'll refer to the definitions in the body as *members* (here: `Node, edge, reachable, entry_node`).
+Similarly to classes in object-oriented languages, we'll refer to the definitions in the body as *members* (here: `Node, edge, reachable, entry_node`).
 
 Members are only accessible via an element of the model type.
 Whenever an expression `t` has model type, we expect a way to access members of the model instance associated to `t`.
@@ -322,13 +323,13 @@ Semantically, morphisms should represent maps of data in the domain instance to 
 So if the model formalizes graphs, then morphisms would be edge-preserving maps of nodes, and for groups you'd get group morphisms.
 
 The point of having a built-in notion of morphism is that the Datalog engine can implement those morphisms efficiently via *shallow* instead of deep copies of tables in the domain instance.
-For example, if there's a morphisms `f : x -> y` and no other rules asserting facts about the codomain instance `y`, then tables in `y` can be represented simply as pointers to the tables of `x`.
+For example, if there's a morphism `f : x -> y` and no other rules asserting facts about the codomain instance `y`, then tables in `y` can be represented simply as pointers to the tables of `x`.
 And if we use [persistent insertion operations](https://en.wikipedia.org/wiki/Persistent_data_structure) into tables, then we can share chunks of tables among `x` and `y` even if the tables in `y` have some more entries.
 
 ### Scopes
 
 The concrete problem this is supposed to solve is the maintenance of *scopes* when implementing programming languages in Eqlog.
-A scope captures the set of variables that are accessible at a given AST node and possibly its type.
+A scope captures the set of variables that are accessible at a given AST node and possibly their types.
 You could represent scopes like so:
 ```eql
 func var_type(node: ASTNode, var: Identifier) -> Type;

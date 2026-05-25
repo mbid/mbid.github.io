@@ -7,6 +7,9 @@
   <title>Dependent types for Datalog</title>
   <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
   <link rel="stylesheet" href="/style.css" />
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  type="text/javascript"></script>
 </head>
 <body>
 <nav>
@@ -15,7 +18,8 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">Dependent types for Datalog</h1>
-<p class="date">September 29, 2024</p>
+<p class="date">Published September 29, 2024 &middot; Updated May 25,
+2026</p>
 </header>
 <p><em>This is a high-level description of a Datalog extension that
 would allow instantiating multiple models of one Datalog program in a
@@ -24,7 +28,7 @@ elements in the ambient Datalog program, and types of the instantiated
 Datalog program are dependent on these elements.</em></p>
 <p><em>The main purpose of this language feature is to make it possible
 to compose small self-contained Datalog programs into larger programs,
-similarly to how classes in object oriented languages enable multiple
+similarly to how classes in object-oriented languages enable multiple
 instantiations of part of a program and its associated data. A second
 benefit is that it enables the Datalog compiler to detect more
 programming errors. Finally, dependent models allow informing the
@@ -47,7 +51,7 @@ similar <a href="https://github.com/egraphs-good/egglog">Egglog</a>
 engine, let me try to briefly summarize. Eqlog implements an extension
 of Datalog with support for (partial) functions and equality. And while
 dependent models probably make sense without equality or functions,
-dependent models interact non-trivally with equality, so I decided to
+dependent models interact non-trivially with equality, so I decided to
 write directly about dependent models in Eqlog.</p>
 <p>Types, functions and predicates in Eqlog are declared as follows:</p>
 <pre class="eql"><code>type A;
@@ -92,12 +96,12 @@ rule {
     then f(x)!;
 }</code></pre>
 <p>The exclamation mark operator makes Eqlog Turing complete. To prevent
-Eqlog programmers (so: me) from inadvertedly introducing new elements in
-rules, leading to non-termination, Eqlog enforces <em>surjectivity</em>
-restrictions in rule definitions: Unless the exclamation mark operator
-is used, <code>then</code> statements can only mention elements that
-have been introduced earlier in the same rule by an <code>if</code>
-statement or via the exclamation mark operator.</p>
+Eqlog programmers (so: me) from inadvertently introducing new elements
+in rules, leading to non-termination, Eqlog enforces
+<em>surjectivity</em> restrictions in rule definitions: Unless the
+exclamation mark operator is used, <code>then</code> statements can only
+mention elements that have been introduced earlier in the same rule by
+an <code>if</code> statement or via the exclamation mark operator.</p>
 <p>The Eqlog compiler does not generate standalone executables. Instead,
 the generated code is meant to be imported into a host program written
 in Rust. This generated code provides a data structure to represent the
@@ -234,8 +238,8 @@ Eqlog program for future instantiation:</p>
 <p>Each <code>model</code> definition introduces a type (here:
 <code>CFG</code>) whose elements represent separate instances of the
 Eqlog program in the model definition body. Similarly to classes in
-object oriented orientation, we’ll refer to the definitions in the body
-as <em>members</em> (here:
+object-oriented languages, we’ll refer to the definitions in the body as
+<em>members</em> (here:
 <code>Node, edge, reachable, entry_node</code>).</p>
 <p>Members are only accessible via an element of the model type.
 Whenever an expression <code>t</code> has model type, we expect a way to
@@ -387,7 +391,7 @@ get group morphisms.</p>
 <p>The point of having a built-in notion of morphism is that the Datalog
 engine can implement those morphisms efficiently via <em>shallow</em>
 instead of deep copies of tables in the domain instance. For example, if
-there’s a morphisms <code>f : x -&gt; y</code> and no other rules
+there’s a morphism <code>f : x -&gt; y</code> and no other rules
 asserting facts about the codomain instance <code>y</code>, then tables
 in <code>y</code> can be represented simply as pointers to the tables of
 <code>x</code>. And if we use <a
@@ -399,7 +403,7 @@ among <code>x</code> and <code>y</code> even if the tables in
 <p>The concrete problem this is supposed to solve is the maintenance of
 <em>scopes</em> when implementing programming languages in Eqlog. A
 scope captures the set of variables that are accessible at a given AST
-node and possibly its type. You could represent scopes like so:</p>
+node and possibly their types. You could represent scopes like so:</p>
 <pre class="eql"><code>func var_type(node: ASTNode, var: Identifier) -&gt; Type;</code></pre>
 <p>The problem with this is that the program has to deal with a large
 number of AST nodes, and so the table representing <code>var_type</code>
@@ -436,14 +440,14 @@ rule {
 }</code></pre>
 <p>But this would mean that whenever a new variable is introduced, we
 take a deep copy of the current scope and insert the new variable into
-it. For a sequence of <span class="math inline"><em>n</em></span>
-statements that each introduce a new variable, this would result in
-<span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span> memory
-usage.</p>
+it. For a sequence of <span class="math inline">\(n\)</span> statements
+that each introduce a new variable, this would result in <span
+class="math inline">\(\mathcal{O}(n^2)\)</span> memory usage.</p>
 <p>With morphisms, we could express that one scope is an extension of
 another. If the compiler implements morphisms via shallow copies, then
 we’d cut the memory required for storing scope tables down to <span
-class="math inline">𝒪(<em>n</em>⋅log(<em>n</em>))</span>, which is
-probably the best you can hope for in a language without mutation.</p>
+class="math inline">\(\mathcal{O}(n \cdot \mathrm{log}(n))\)</span>,
+which is probably the best you can hope for in a language without
+mutation.</p>
 </body>
 </html>
