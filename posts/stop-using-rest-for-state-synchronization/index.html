@@ -15,7 +15,8 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">Stop using REST for state synchronization</h1>
-<p class="date">September 22, 2024</p>
+<p class="date">Published September 22, 2024 &middot; Updated May 25,
+2026</p>
 </header>
 <p><em><strong>tl;dr</strong>: Most apps need state
 </em>synchronization<em>, not state </em>transfer<em>. We should replace
@@ -23,14 +24,14 @@ REST and friends with proper state synchronization protocols where
 appropriate.</em></p>
 <p>Apart from getting into van life in Europe and working on the <a
 href="../type-checking-with-eqlog-parsing">Eqlog</a> Datalog engine,
-I’ve also spent some time of my sabbatical building various webapps. The
-tech stack I used was React + Typescript for the frontend and a REST
+I’ve also spent some time of my sabbatical building various web apps.
+The tech stack I used was React + TypeScript for the frontend and a REST
 server implemented with Rust and the Axum library as backend. Rust might
 be somewhat unusual, but I think otherwise this is a very typical
 setup.</p>
 <p>What struck me is how incredibly cumbersome, repetitive and brittle
 this programming model is, and I think much of this is due to using REST
-as interface between the client and the server. REST is a state
+as an interface between the client and the server. REST is a state
 <em>transfer</em> protocol, but we usually want to <em>synchronize</em>
 a piece of state between the client and the server. This mismatch means
 that we usually implement ad-hoc state synchronization on top of REST,
@@ -38,7 +39,7 @@ and it turns out that this is not entirely trivial and actually
 incredibly cumbersome to get right.</p>
 <hr />
 <p>It’s probably easiest to explain what I mean with an example that’s
-part of most webapps in some variant: An input element that allows the
+part of most web apps in some variant: An input element that allows the
 user to edit a piece of text that is saved to the backend database.
 Using REST we can model this as a path, say <code>/api/foo</code>, that
 supports GET and POST methods to fetch or replace the text by a given
@@ -159,10 +160,10 @@ since it usually doesn’t occur too often.</p>
 <p>But even when our backend receives and processes the two requests in
 the same order that they were sent in, our logic for displaying the
 spinner is wrong: Note that we set <code>showSpinner = true</code>
-before kicking of a POST request, and we set
+before kicking off a POST request, and we set
 <code>showSpinner = false</code> when we receive the reply. The problem
 is that when we set <code>showSpinner = false</code> at the end of a
-request, we don’t take into account that other request might still be
+request, we don’t take into account that another request might still be
 in-flight. This results in us hiding the spinner when we receive the
 first response already even though the second request is still in
 progress.</p>
@@ -198,8 +199,8 @@ they are at the moment.</p>
 that they seem to be optimizing for a situation where clients disconnect
 for extended periods (“local first”). But even for the very common
 situation where the involved parties are just a single client and the
-server over a reasonable internet connection (i.e., a normal webapp), so
-that state divergence occurs only for durations on the order of
+server over a reasonable internet connection (i.e., a normal web app),
+so that state divergence occurs only for durations on the order of
 milliseconds or perhaps seconds, having a proper state synchronization
 mechanism would be incredibly useful.</p>
 <p>In any case, I hope state synchronization technology will eventually

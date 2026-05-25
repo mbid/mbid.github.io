@@ -15,7 +15,8 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">Type Checking with Eqlog: Types</h1>
-<p class="date">August 05, 2023</p>
+<p class="date">Published August 05, 2023 &middot; Updated May 25,
+2026</p>
 </header>
 <p>This is the third post in a series on implementing a type checker
 with the <a href="https://github.com/eqlog/eqlog">Eqlog</a> Datalog
@@ -63,9 +64,9 @@ inference, semantic types should have the following properties:</p>
 <li>There should be at most one <code>Type</code> element that
 represents <code>boolean</code>; similarly for <code>string</code>,
 <code>number</code> and so forth.</li>
-<li>Various AST nodes should have associated <code>Type</code> element,
-e.g. <code>TypeNode</code>, <code>ExprNode</code> (the type of an
-expression) and <code>FunctionNode</code> (the type of a function
+<li>Various AST nodes should have an associated <code>Type</code>
+element, e.g. <code>TypeNode</code>, <code>ExprNode</code> (the type of
+an expression) and <code>FunctionNode</code> (the type of a function
 literal).</li>
 <li>Every variable binding should have an associated <code>Type</code>
 element.</li>
@@ -321,10 +322,10 @@ type, and that the <code>void</code> type is different from all function
 types. Injectivity is only relevant for type constructors with arguments
 (so no type constants such as <code>number</code>). For our toy
 language, injectivity thus only applies to function types, where it says
-that if two functions types are equal, then they must have the same
+that if two function types are equal, then they must have the same
 domain types and the same codomain types.</p>
 <p>Evaluation of our Eqlog program can currently not violate these
-properties, but this will change in the next posts due to typing
+properties, but this will change in later posts due to typing
 constraints on expression or variables. For example, we will enforce
 that the type of a variable that is used as condition for an
 <code>if</code> statement must be of type <code>boolean</code>, and that
@@ -363,7 +364,7 @@ argument.</p>
 eventually have the need to assert that some type <code>kappa</code> is
 a function type, i.e., that there should <em>exist</em>
 <code>domain</code> and <code>codomain</code> such that
-<code>kappa = FunctionType(domain, kappa)</code>. However, Eqlog does
+<code>kappa = FunctionType(domain, codomain)</code>. However, Eqlog does
 intentionally not support existential quantification, since <a
 href="https://www.mbid.me/eqlog-semantics/">this would make Eqlog
 evaluation semantically ill-behaved</a>. To work around this, we
@@ -397,8 +398,8 @@ lists are equal, then they should contain the same types in the same
 order. Our Eqlog program equates type lists with different lengths only
 if the input source code contains a variable number mismatch, e.g. a
 call of a function with the wrong number of arguments, so we want to
-report a type error in this case. We can enforce these condition on type
-lists like so:</p>
+report a type error in this case. We can enforce these conditions on
+type lists like so:</p>
 <pre class="eqlog"><code>Axiom NilTypeList() = ConsTypeList(_, _) =&gt; ConflictingTypes();
 Axiom
     ConsTypeList(head_0, tail_0) = ConsTypeList(head_1, tail_1)

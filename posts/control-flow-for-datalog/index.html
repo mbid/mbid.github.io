@@ -7,6 +7,9 @@
   <title>Control flow for Datalog</title>
   <link rel="alternate" type="application/rss+xml" title="mbid.me" href="../rss.xml" />
   <link rel="stylesheet" href="/style.css" />
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  type="text/javascript"></script>
 </head>
 <body>
 <nav>
@@ -15,7 +18,8 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">Control flow for Datalog</h1>
-<p class="date">November 01, 2023</p>
+<p class="date">Published November 01, 2023 &middot; Updated May 25,
+2026</p>
 </header>
 <p>This post outlines some ideas for control flow features that I would
 like to add to the <a href="https://github.com/eqlog/eqlog">Eqlog</a>
@@ -65,7 +69,7 @@ certain sets of implications. As an example, consider the following
 implications taken from the <a
 href="https://www.mbid.me/posts/type-checking-with-eqlog-parsing/">Hindley-Milner
 type checker</a> I mentioned above, which has to do with instantiating
-types of variables with polymorphic type. The definition of the
+types of variables with a polymorphic type. The definitions of the
 predicates and functions in these implications are not relevant here,
 it’s the general shape of those implications that I want to draw
 attention to:</p>
@@ -85,28 +89,28 @@ Axiom
     ;</code></pre>
 <p>Taken together, these two implications assert the following:</p>
 <ol type="A">
-<li>If
-<code>VariableExprNode(expr, var) &amp; VarTypeInExpr(var, expr) = PolyType(_)</code>
-holds,</li>
-<li>then <code>ExprInstantiation(expr)</code> is defined. We’ll refer to
-this element by <code>instance</code> henceforth.</li>
-<li>Furthermore, if <code>ctx = ExprTypeContext(expr)</code>,</li>
-<li>then <code>InstantiationTarget(instance) = ctx</code>.</li>
+<li><p>If</p>
+<pre><code>VariableExprNode(expr, var) &amp; VarTypeInExpr(var, expr) = PolyType(_)</code></pre>
+<p>holds,</p></li>
+<li><p>then <code>ExprInstantiation(expr)</code> is defined. We’ll refer
+to this element by <code>instance</code> henceforth.</p></li>
+<li><p>Furthermore, if
+<code>ctx = ExprTypeContext(expr)</code>,</p></li>
+<li><p>then <code>InstantiationTarget(instance) = ctx</code>.</p></li>
 </ol>
 <p>Abstracting away from the concrete formulas, these two implications
 are of the form</p>
 <pre><code>A =&gt; B        A &amp; B &amp; C =&gt; D</code></pre>
-<p>for formulas <span
-class="math inline"><em>A</em>, <em>B</em>, <em>C</em></span> and <span
-class="math inline"><em>D</em></span>. With Eqlog’s current syntax,
-we’re forced to state <span class="math inline"><em>A</em></span> and
-<span class="math inline"><em>B</em></span> twice, in each implication.
-That’s the first problem we’re going to tackle: Allow going back and
-forth between specifying premises and conclusions, so that implications
-can be specified similarly to the list above, without duplication.
-Another way to look at this is that Eqlog should understand something to
-the effect of the English “furthermore” as used in <span
-class="math inline"><em>C</em></span>.</p>
+<p>for formulas <span class="math inline">\(A, B, C\)</span> and <span
+class="math inline">\(D\)</span>. With Eqlog’s current syntax, we’re
+forced to state <span class="math inline">\(A\)</span> and <span
+class="math inline">\(B\)</span> twice, in each implication. That’s the
+first problem we’re going to tackle: Allow going back and forth between
+specifying premises and conclusions, so that implications can be
+specified similarly to the list above, without duplication. Another way
+to look at this is that Eqlog should understand something to the effect
+of the English “furthermore” as used in <span
+class="math inline">\(C\)</span>.</p>
 <p>Unfortunately, I couldn’t come up with a natural way of extending
 Eqlog’s original syntax to accommodate for this. But since Eqlog
 programs are supposed to be embedded into Rust projects, it would
@@ -144,43 +148,42 @@ be freely interleaved.</p></li>
 implications, one for each <code>then</code> statement in the rule: The
 implication corresponding to a statement
 <code>then &lt;atom_k&gt;</code> occurring as <span
-class="math inline"><em>k</em></span>th statement in a rule is as
-follows: If
+class="math inline">\(k\)</span>th statement in a rule is as follows: If
 <code>&lt;atom_1&gt;, &lt;atom_2&gt;, ..., &lt;atom_{k - 1}&gt;</code>
 are the atoms of statements before statement <span
-class="math inline"><em>k</em></span> (regardless of whether they’re
+class="math inline">\(k\)</span> (regardless of whether they’re
 <code>if</code> or <code>then</code> statements!), then the implication
 is given by</p>
 <pre><code>&lt;atom_1&gt; &amp; ... &amp; &lt;atom_{k - 1}&gt; =&gt; &lt;atom_k&gt;;</code></pre></li>
 </ul>
 <p>A naive Rust implementation of the example rule above might look like
 this:</p>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// if variable_expr_node(expr, var);</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (expr<span class="op">,</span> var) <span class="kw">in</span> iter_variable_expr_node() <span class="op">{</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// if var_type_in_expr(var, expr) = poly_type(_);</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (var0<span class="op">,</span> expr0<span class="op">,</span> res0) <span class="kw">in</span> iter_poly_type() <span class="op">{</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> var0 <span class="op">!=</span> var <span class="op">||</span> expr <span class="op">!=</span> expr0 <span class="op">{</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span><span class="op">;</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// then instance := expr_instantiation(expr)!;</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> instance <span class="op">=</span> <span class="cf">match</span> expr_instantiation(expr) <span class="op">{</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>            <span class="cn">Some</span>(instance) <span class="op">=&gt;</span> instance<span class="op">,</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            <span class="cn">None</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                <span class="kw">let</span> instance <span class="op">=</span> new_instantiation()<span class="op">;</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                insert_expr_instantation(expr<span class="op">,</span> instance)<span class="op">;</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                instance</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// if ctx = expr_type_context(expr);</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="cn">Some</span>(ctx) <span class="op">=</span> expr_type_context(expr) <span class="op">{</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>            <span class="co">// then instantiation_target(instance) = ctx;</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            insert_instantiation_target(instance<span class="op">,</span> ctx)<span class="op">;</span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// if variable_expr_node(expr, var);</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (expr<span class="op">,</span> var) <span class="kw">in</span> iter_variable_expr_node() <span class="op">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// if var_type_in_expr(var, expr) = poly_type(_);</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (var0<span class="op">,</span> expr0<span class="op">,</span> res0) <span class="kw">in</span> iter_poly_type() <span class="op">{</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> var0 <span class="op">!=</span> var <span class="op">||</span> expr <span class="op">!=</span> expr0 <span class="op">{</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span><span class="op">;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// then instance := expr_instantiation(expr)!;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> instance <span class="op">=</span> <span class="cf">match</span> expr_instantiation(expr) <span class="op">{</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>            <span class="cn">Some</span>(instance) <span class="op">=&gt;</span> instance<span class="op">,</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>            <span class="cn">None</span> <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                <span class="kw">let</span> instance <span class="op">=</span> new_instantiation()<span class="op">;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                insert_expr_instantiation(expr<span class="op">,</span> instance)<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                instance</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// if ctx = expr_type_context(expr);</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="cn">Some</span>(ctx) <span class="op">=</span> expr_type_context(expr) <span class="op">{</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            <span class="co">// then instantiation_target(instance) = ctx;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            insert_instantiation_target(instance<span class="op">,</span> ctx)<span class="op">;</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Thus, we don’t actually have to emit the equivalent of separate
 nested loops for each <code>then</code> statement and can instead reuse
 outer loops.</p>
@@ -232,9 +235,9 @@ Each block is a list of statements, and can recursively contain other
 <code>fork</code> statements.</li>
 <li>Semantically, usage of the <code>fork</code> statement in a rule can
 be desugared by duplicating the rule <span
-class="math inline"><em>n</em></span> times, once for each block of the
+class="math inline">\(n\)</span> times, once for each block of the
 <code>fork</code> statement. In the <span
-class="math inline"><em>i</em></span>th copy of the rule, the
+class="math inline">\(i\)</span>th copy of the rule, the
 <code>fork</code> statement is replaced by
 <code>&lt;block_i&gt;</code>.</li>
 <li>In particular, <code>fork</code> statements need not necessarily
@@ -268,26 +271,26 @@ problems much easier to deal with.</p>
 <p>One such problem class are algorithms that have to traverse abstract
 syntax tree (AST) nodes. For example, here’s how we might define a type
 of AST nodes representing (a subset of) boolean expressions in Rust:</p>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> BoolExpr <span class="op">{</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    True()<span class="op">,</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    False()<span class="op">,</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    Or(<span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;,</span> <span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;</span>)<span class="op">,</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    And(<span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;,</span> <span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;</span>)<span class="op">,</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> BoolExpr <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    True()<span class="op">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    False()<span class="op">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    Or(<span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;,</span> <span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;</span>)<span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    And(<span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;,</span> <span class="dt">Box</span><span class="op">&lt;</span>BoolExpr<span class="op">&gt;</span>)<span class="op">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The main benefit of sum types is that they enable destructuring
 pattern matching. Continuing with the <code>BoolExpr</code> example,
 here’s a Rust function that evaluates a <code>BoolExpr</code>:</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> eval(e<span class="op">:</span> <span class="op">&amp;</span>BoolExpr) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">use</span> <span class="pp">BoolExpr::</span><span class="op">*;</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> e <span class="op">{</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        True() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        False() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">false</span> <span class="op">}</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        Or(lhs<span class="op">,</span> rhs) <span class="op">=&gt;</span> <span class="op">{</span> eval(lhs) <span class="op">||</span> eval(rhs) <span class="op">}</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        And(lhs<span class="op">,</span> rhs) <span class="op">=&gt;</span> <span class="op">{</span> eval(lhs) <span class="op">&amp;&amp;</span> eval(rhs) <span class="op">}</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> eval(e<span class="op">:</span> <span class="op">&amp;</span>BoolExpr) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">use</span> <span class="pp">BoolExpr::</span><span class="op">*;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> e <span class="op">{</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        True() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        False() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">false</span> <span class="op">}</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        Or(lhs<span class="op">,</span> rhs) <span class="op">=&gt;</span> <span class="op">{</span> eval(lhs) <span class="op">||</span> eval(rhs) <span class="op">}</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        And(lhs<span class="op">,</span> rhs) <span class="op">=&gt;</span> <span class="op">{</span> eval(lhs) <span class="op">&amp;&amp;</span> eval(rhs) <span class="op">}</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Crucially, the Rust compiler checks statically that there is a match
 arm for every possible value of <code>e</code>. If we forget one of the
 constructors of <code>BoolExpr</code>, for example
@@ -332,8 +335,8 @@ rule and_eval {
 }</code></pre>
 <p>Note that nothing prevents us from removing or forgetting to add a
 rule governing <code>evals_to_true</code>, say the <code>or_eval</code>
-rule. What we’d need to catch such an error an is an equivalent of
-Rust’s exhaustive match statement in Eqlog, hence sum types.</p>
+rule. What we’d need to catch such an error is an equivalent of Rust’s
+exhaustive match statement in Eqlog, hence sum types.</p>
 <p>So here’s what sum types could look like in Eqlog:</p>
 <pre class="eql"><code>enum BoolExpr {
     True(),
@@ -421,11 +424,12 @@ defined on some element. For example, the
 <p>When Eqlog infers during evaluation that a function should be defined
 on some arguments, it creates a new element (that is, Eqlog chooses a
 previously unused integer ID to represent the element), and records it
-as result of applying that function. But what if the result type of the
-function was declared as an <code>enum</code>? We now have an element of
-an enum type that is not given by one of the constructors.</p>
+as the result of applying that function. But what if the result type of
+the function was declared as an <code>enum</code>? We now have an
+element of an enum type that is not given by one of the
+constructors.</p>
 <p>One option here is to prevent such situations from arising in the
-first place using a static compile time check. For example, we could
+first place using a static compile-time check. For example, we could
 require that every new element of an enum type that is introduced by a
 rule is later in that rule equated with the result of applying a
 constructor. Such a check cannot also consider arbitrary applications of
@@ -519,8 +523,8 @@ for <code>foo</code> lets us deduce <code>First() = Second()</code>.
 Thus, we sometimes infer equalities in a type even if no rule explicitly
 enforces that equality. So what would be needed here is that we forbid
 rules from equating elements of enum types and all types for which there
-exists (transitively) a function into an enum type. That would usage of
-<code>enum</code> types in many instances though.</p>
+exists (transitively) a function into an enum type. That would rule out
+using <code>enum</code> types in many instances though.</p>
 <p>From what I can tell, the most straightforward option for now is to
 just not enforce injectivity of constructors. Obfuscated in category
 theoretic language, this would mean that Eqlog’s <code>enum</code> types
@@ -532,15 +536,15 @@ declarations that would enable a check that constructors must be
 injective.</p>
 <h3 id="wildcards">Wildcards</h3>
 <p>Rust and other languages typically support wildcard patterns
-<code>_</code> in match arms statements:</p>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> is_literal(e<span class="op">:</span> BoolExpr) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> e <span class="op">{</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        True() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>        False() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        _ <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">false</span> <span class="op">}</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<code>_</code> in match arm statements:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> is_literal(e<span class="op">:</span> BoolExpr) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> e <span class="op">{</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        True() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>        False() <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">true</span> <span class="op">}</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>        _ <span class="op">=&gt;</span> <span class="op">{</span> <span class="cn">false</span> <span class="op">}</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Wildcard patterns apply when all other arms have <em>not</em>
 matched. That’s a negation, and Datalog’s fixed point semantics are
 incompatible with arbitrary negations. To see why, consider this

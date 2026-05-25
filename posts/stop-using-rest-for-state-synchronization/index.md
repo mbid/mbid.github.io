@@ -1,23 +1,24 @@
 ---
 title: "Stop using REST for state synchronization"
 date: "September 22, 2024"
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
 ***tl;dr**: Most apps need state *synchronization*, not state *transfer*.
 We should replace REST and friends with proper state synchronization protocols where appropriate.*
 
-Apart from getting into van life in Europe and working on the [Eqlog](../type-checking-with-eqlog-parsing) Datalog engine, I've also spent some time of my sabbatical building various webapps.
-The tech stack I used was React + Typescript for the frontend and a REST server implemented with Rust and the Axum library as backend.
+Apart from getting into van life in Europe and working on the [Eqlog](../type-checking-with-eqlog-parsing) Datalog engine, I've also spent some time of my sabbatical building various web apps.
+The tech stack I used was React + TypeScript for the frontend and a REST server implemented with Rust and the Axum library as backend.
 Rust might be somewhat unusual, but I think otherwise this is a very typical setup.
 
-What struck me is how incredibly cumbersome, repetitive and brittle this programming model is, and I think much of this is due to using REST as interface between the client and the server.
+What struck me is how incredibly cumbersome, repetitive and brittle this programming model is, and I think much of this is due to using REST as an interface between the client and the server.
 REST is a state *transfer* protocol, but we usually want to *synchronize* a piece of state between the client and the server.
 This mismatch means that we usually implement ad-hoc state synchronization on top of REST, and it turns out that this is not entirely trivial and actually incredibly cumbersome to get right.
 
 ---
 
-It's probably easiest to explain what I mean with an example that's part of most webapps in some variant:
+It's probably easiest to explain what I mean with an example that's part of most web apps in some variant:
 An input element that allows the user to edit a piece of text that is saved to the backend database.
 Using REST we can model this as a path, say `/api/foo`, that supports GET and POST methods to fetch or replace the text by a given value (perhaps also DELETE and PUT if you want to complicate things).
 A React component that allows users to edit this piece of text will probably display a text input element, GET the initial value when the component is created and POST a new value when the text input loses focus.
@@ -113,8 +114,8 @@ The downside here is that we've now slowed down communication with the server.
 Depending on how critical the app is, it might also be OK to just ignore the problem since it usually doesn't occur too often.
 
 But even when our backend receives and processes the two requests in the same order that they were sent in, our logic for displaying the spinner is wrong:
-Note that we set `showSpinner = true` before kicking of a POST request, and we set `showSpinner = false` when we receive the reply.
-The problem is that when we set `showSpinner = false` at the end of a request, we don't take into account that other request might still be in-flight.
+Note that we set `showSpinner = true` before kicking off a POST request, and we set `showSpinner = false` when we receive the reply.
+The problem is that when we set `showSpinner = false` at the end of a request, we don't take into account that another request might still be in-flight.
 This results in us hiding the spinner when we receive the first response already even though the second request is still in progress.
 
 We can fix the spinner logic by replacing the `showSpinner` flag by a `requestCount` integer, which we increment before and decrement after requests.
@@ -135,6 +136,6 @@ Most of their approaches appear to be based on [CRDTs](https://en.wikipedia.org/
 Since I haven't seriously tested those tools, I can't say how mature they are at the moment.
 
 Something that worries me about some of the CRDT work I've seen is that they seem to be optimizing for a situation where clients disconnect for extended periods ("local first").
-But even for the very common situation where the involved parties are just a single client and the server over a reasonable internet connection (i.e., a normal webapp), so that state divergence occurs only for durations on the order of milliseconds or perhaps seconds, having a proper state synchronization mechanism would be incredibly useful.
+But even for the very common situation where the involved parties are just a single client and the server over a reasonable internet connection (i.e., a normal web app), so that state divergence occurs only for durations on the order of milliseconds or perhaps seconds, having a proper state synchronization mechanism would be incredibly useful.
 
 In any case, I hope state synchronization technology will eventually mature to the point where it's common enough that I don't have to build bug-ridden ad-hoc state synchronization on top of REST over and over again.

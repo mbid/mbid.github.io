@@ -1,6 +1,7 @@
 ---
 title: "Type Checking with Eqlog: Typing"
 date: August 06, 2023
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
@@ -23,7 +24,7 @@ In the previous post on the `Type` sort we introduced the following:
 - Variable bindings associate types to variables in the current scope.
 - Our Eqlog program populates the `ConflictingTypes` predicate if we equate types that cannot be equal, for example if `BooleanType() = NumberType()`.
 - Total functions that associate `Type` elements to various AST nodes, in particular the `ExprType : ExprNode -> Type` and `FunctionNodeType : FunctionNode -> Type` functions.
-  As of now, there are no laws these functions:
+  As of now, there are no laws for these functions:
   The output of these functions is always an opaque `Type` element.
 
 Our main task for this post is to impose constraints on the `ExprType` and `FunctionNodeType` functions.
@@ -86,7 +87,7 @@ The most complex axiom governing `ExprType` is the rule for function application
 If `AppExprNode(expr, func, args)` holds, then `expr` is an expression of the form `func(args)`.
 In this situation `func` must be a function type with domain and codomain matching the types of `args` and `expr`.
 Here it comes in handy that we've encoded injectivity of `FunctionType` by adding inverse functions `DomainType` and `CodomainType`:
-If either of those functions is defined on a type `kappa`, then also the other function is defined, and `kappa = FunctionType(DomainType(kappa), CodomainType(kappa))`. 
+If either of those functions is defined on a type `kappa`, then the other function is also defined, and `kappa = FunctionType(DomainType(kappa), CodomainType(kappa))`.
 We can thus encode typing constraints arising from function application as follows:
 ```eqlog
 Axiom
@@ -135,7 +136,7 @@ Axiom
     ;
 ```
 Recall from the last post that `SemanticArgTypes : ArgListNode -> TypeList` is given by mapping the `SemanticOptType` function on the type annotations of each argument.
-In that post we also added a rule to equate the `SemanticOptType` of a argument variable declaration with the `VarTypeInArgList` for that variable:
+In that post we also added a rule to equate the `SemanticOptType` of an argument variable declaration with the `VarTypeInArgList` for that variable:
 ```eqlog
 // Every function argument introduces a variable.
 Axiom
@@ -205,7 +206,7 @@ and the axiom for return statements without expressions is similar.
 
 We also need axioms that propagate `ReturnsType` through statement nodes:
 ```eqlog
-// If the tail of a statement list that can return a type, then the full
+// If the tail of a statement list can return a type, then the full
 // statement list can also return that type.
 Axiom
     ConsStmtListNode(stmts, _, tail)
@@ -294,7 +295,7 @@ Axiom
 ## Undetermined types
 
 Our type checker is now almost complete:
-In case there are conflicting typing constraints on an expression or function, then the `ConflictingTypes` is populated.
+In case there are conflicting typing constraints on an expression or function, then the `ConflictingTypes` predicate is populated.
 However, we have not considered *undetermined* types yet.
 Keeping in mind that our language does not have generics yet, which types should `x` and `id` have in the following program?
 ```typescript
@@ -334,7 +335,7 @@ fn has_undetermined_type(p: &Program) -> bool {
 }
 ```
 
-This concludes the implementation of our first version our type checker.
+This concludes the implementation of our first version of our type checker.
 Thanks for following along!
 But the series is not done yet:
 The next post will introduce generics, and we'll implement Hindley-Milner type inference in Eqlog.

@@ -15,7 +15,8 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">Type Checking with Eqlog: Typing</h1>
-<p class="date">August 06, 2023</p>
+<p class="date">Published August 06, 2023 &middot; Updated May 25,
+2026</p>
 </header>
 <p>This is the fourth post in a series on implementing a type checker
 with the <a href="https://github.com/eqlog/eqlog">Eqlog</a> Datalog
@@ -53,7 +54,7 @@ predicate if we equate types that cannot be equal, for example if
 <li>Total functions that associate <code>Type</code> elements to various
 AST nodes, in particular the <code>ExprType : ExprNode -&gt; Type</code>
 and <code>FunctionNodeType : FunctionNode -&gt; Type</code> functions.
-As of now, there are no laws these functions: The output of these
+As of now, there are no laws for these functions: The output of these
 functions is always an opaque <code>Type</code> element.</li>
 </ul>
 <p>Our main task for this post is to impose constraints on the
@@ -123,7 +124,7 @@ function type with domain and codomain matching the types of
 we’ve encoded injectivity of <code>FunctionType</code> by adding inverse
 functions <code>DomainType</code> and <code>CodomainType</code>: If
 either of those functions is defined on a type <code>kappa</code>, then
-also the other function is defined, and
+the other function is also defined, and
 <code>kappa = FunctionType(DomainType(kappa), CodomainType(kappa))</code>.
 We can thus encode typing constraints arising from function application
 as follows:</p>
@@ -170,7 +171,7 @@ arguments:</p>
 <code>SemanticArgTypes : ArgListNode -&gt; TypeList</code> is given by
 mapping the <code>SemanticOptType</code> function on the type
 annotations of each argument. In that post we also added a rule to
-equate the <code>SemanticOptType</code> of a argument variable
+equate the <code>SemanticOptType</code> of an argument variable
 declaration with the <code>VarTypeInArgList</code> for that
 variable:</p>
 <pre class="eqlog"><code>// Every function argument introduces a variable.
@@ -242,7 +243,7 @@ with expressions is</p>
 similar.</p>
 <p>We also need axioms that propagate <code>ReturnsType</code> through
 statement nodes:</p>
-<pre class="eqlog"><code>// If the tail of a statement list that can return a type, then the full
+<pre class="eqlog"><code>// If the tail of a statement list can return a type, then the full
 // statement list can also return that type.
 Axiom
     ConsStmtListNode(stmts, _, tail)
@@ -325,8 +326,8 @@ function if control can flow past its body:</p>
 <h2 id="undetermined-types">Undetermined types</h2>
 <p>Our type checker is now almost complete: In case there are
 conflicting typing constraints on an expression or function, then the
-<code>ConflictingTypes</code> is populated. However, we have not
-considered <em>undetermined</em> types yet. Keeping in mind that our
+<code>ConflictingTypes</code> predicate is populated. However, we have
+not considered <em>undetermined</em> types yet. Keeping in mind that our
 language does not have generics yet, which types should <code>x</code>
 and <code>id</code> have in the following program?</p>
 <div class="sourceCode" id="cb21"><pre
@@ -358,7 +359,7 @@ Axiom
 class="sourceCode rust"><code class="sourceCode rust"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> has_undetermined_type(p<span class="op">:</span> <span class="op">&amp;</span>Program) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    p<span class="op">.</span>iter_type()<span class="op">.</span>any(<span class="op">|</span>sigma<span class="op">|</span> <span class="op">!</span>p<span class="op">.</span>determined_type(sigma))</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This concludes the implementation of our first version our type
+<p>This concludes the implementation of our first version of our type
 checker. Thanks for following along! But the series is not done yet: The
 next post will introduce generics, and we’ll implement Hindley-Milner
 type inference in Eqlog. With generics, the function <code>id</code>

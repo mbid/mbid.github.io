@@ -1,6 +1,7 @@
 ---
 title: "Type Checking with Eqlog: Variable Binding"
 date: "August 01, 2023"
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
@@ -43,7 +44,7 @@ Axiom Edge(x, y) & Edge(y, z) => Edge(x, z);
 ```
 During evaluation, Eqlog repeatedly matches the premise of each axiom on data in the model and then adds the conclusion.
 Evaluation stops when nothing changes anymore, i.e., when all conclusions already hold.
-In case of the above transitive closure program above, Eqlog will enumerate all pairs of entries `(a, b)` and `(b, c)` in the `Edge` relation and then insert the tuple `(a, c)` into `Edge`.
+In the case of the transitive closure program above, Eqlog will enumerate all pairs of entries `(a, b)` and `(b, c)` in the `Edge` relation and then insert the tuple `(a, c)` into `Edge`.
 Evaluation stops when all tuples `(a, c)` found this way are already in `Edge`, i.e., when the edge relation is transitive.
 
 As for our goal of detecting variable binding errors, we add for each relevant AST node `X` a predicate `VarInX : Var * X` to represent whether a variable is in scope for a given node:
@@ -75,7 +76,7 @@ Axiom
     VarInStmts(var, tail)
     ;
 
-// If a variable is in scope for an if statemennt, then it is also in scope for
+// If a variable is in scope for an if statement, then it is also in scope for
 // the branching condition and the two branches.
 Axiom
     ConsStmtListNode(stmts, head, _)

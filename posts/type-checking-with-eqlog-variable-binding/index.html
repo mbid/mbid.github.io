@@ -15,7 +15,8 @@
 </nav>
 <header id="title-block-header">
 <h1 class="title">Type Checking with Eqlog: Variable Binding</h1>
-<p class="date">August 01, 2023</p>
+<p class="date">Published August 01, 2023 &middot; Updated May 25,
+2026</p>
 </header>
 <p>This is the second post in a series on implementing a type checker in
 <a href="https://github.com/eqlog/eqlog">Eqlog</a>. This post deals with
@@ -63,9 +64,9 @@ Predicate Edge : Vertex * Vertex;
 Axiom Edge(x, y) &amp; Edge(y, z) =&gt; Edge(x, z);</code></pre>
 <p>During evaluation, Eqlog repeatedly matches the premise of each axiom
 on data in the model and then adds the conclusion. Evaluation stops when
-nothing changes anymore, i.e., when all conclusions already hold. In
-case of the above transitive closure program above, Eqlog will enumerate
-all pairs of entries <code>(a, b)</code> and <code>(b, c)</code> in the
+nothing changes anymore, i.e., when all conclusions already hold. In the
+case of the transitive closure program above, Eqlog will enumerate all
+pairs of entries <code>(a, b)</code> and <code>(b, c)</code> in the
 <code>Edge</code> relation and then insert the tuple <code>(a, c)</code>
 into <code>Edge</code>. Evaluation stops when all tuples
 <code>(a, c)</code> found this way are already in <code>Edge</code>,
@@ -104,7 +105,7 @@ Axiom
     VarInStmts(var, tail)
     ;
 
-// If a variable is in scope for an if statemennt, then it is also in scope for
+// If a variable is in scope for an if statement, then it is also in scope for
 // the branching condition and the two branches.
 Axiom
     ConsStmtListNode(stmts, head, _)

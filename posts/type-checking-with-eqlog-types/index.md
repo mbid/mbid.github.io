@@ -1,6 +1,7 @@
 ---
 title: "Type Checking with Eqlog: Types"
 date: August 05, 2023
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
@@ -33,7 +34,7 @@ Instead, we introduce a new sort `Type` to represent *semantic* types.
 In order to be useful for type checking and inference, semantic types should have the following properties:
 
 1. There should be at most one `Type` element that represents `boolean`; similarly for `string`, `number` and so forth.
-2. Various AST nodes should have associated `Type` element, e.g. `TypeNode`, `ExprNode` (the type of an expression) and `FunctionNode` (the type of a function literal).
+2. Various AST nodes should have an associated `Type` element, e.g. `TypeNode`, `ExprNode` (the type of an expression) and `FunctionNode` (the type of a function literal).
 3. Every variable binding should have an associated `Type` element.
 
 All of these requirements are *functional* in nature:
@@ -258,9 +259,9 @@ In most type systems, type constructors have *disjoint ranges*, and each type co
 The disjoint range property means that types obtained using different type constructors do not agree.
 In our case, this means for example that the `boolean` type is different from the `string` type, and that the `void` type is different from all function types.
 Injectivity is only relevant for type constructors with arguments (so no type constants such as `number`).
-For our toy language, injectivity thus only applies to function types, where it says that if two functions types are equal, then they must have the same domain types and the same codomain types.
+For our toy language, injectivity thus only applies to function types, where it says that if two function types are equal, then they must have the same domain types and the same codomain types.
 
-Evaluation of our Eqlog program can currently not violate these properties, but this will change in the next posts due to typing constraints on expression or variables.
+Evaluation of our Eqlog program can currently not violate these properties, but this will change in later posts due to typing constraints on expression or variables.
 For example, we will enforce that the type of a variable that is used as condition for an `if` statement must be of type `boolean`, and that it must also be of type `string` if it is initialized with a string literal.
 We enforce these constraints by imposing equalities on the `ExprType` of expressions, which by the functionality axioms can lead to a violation of the disjoint range or injectivity properties.
 These violations only happen for ill-typed programs, so our type checker should report a type error in these situations.
@@ -293,7 +294,7 @@ Axiom
 Instead, we'll go with an approach that will help us also later:
 Axiomatizing inverse functions to `FunctionType` in each argument.
 
-When we collect constraints on the types of expressions, we'll eventually have the need to assert that some type `kappa` is a function type, i.e., that there should *exist* `domain` and `codomain` such that `kappa = FunctionType(domain, kappa)`.
+When we collect constraints on the types of expressions, we'll eventually have the need to assert that some type `kappa` is a function type, i.e., that there should *exist* `domain` and `codomain` such that `kappa = FunctionType(domain, codomain)`.
 However, Eqlog does intentionally not support existential quantification, since [this would make Eqlog evaluation semantically ill-behaved](https://www.mbid.me/eqlog-semantics/).
 To work around this, we introduce functions `DomainTypes : Type -> TypeList` and `CodomainType : Type -> Type` as inverse functions for the two arguments of `FunctionType`:
 ```eqlog
@@ -318,7 +319,7 @@ Since functions are injective if and only if they have an inverse function on th
 Due to injectivity of `FunctionType : TypeList * Type -> Type`, it can happen that we equate `TypeList` elements during evaluation.
 If type lists are equal, then they should contain the same types in the same order.
 Our Eqlog program equates type lists with different lengths only if the input source code contains a variable number mismatch, e.g. a call of a function with the wrong number of arguments, so we want to report a type error in this case.
-We can enforce these condition on type lists like so:
+We can enforce these conditions on type lists like so:
 ```eqlog
 Axiom NilTypeList() = ConsTypeList(_, _) => ConflictingTypes();
 Axiom

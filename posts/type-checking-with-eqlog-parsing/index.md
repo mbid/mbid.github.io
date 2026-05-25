@@ -1,6 +1,7 @@
 ---
 title: "Type Checking with Eqlog: Parsing"
 date: "July 23, 2023"
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
@@ -13,7 +14,7 @@ However, there's not a lot of work on using Datalog for type checking (though se
 Eqlog implements an extension of Datalog that allows it to infer equalities among elements during evaluation.
 For example, you cannot directly encode the anti-symmetry axiom $x \le y \land y \le x \implies x = y$ in standard Datalog because of the equality in the conclusion, but this is trivial in Eqlog.
 
-The ability to reason about equality will be critical when get to type unification.
+The ability to reason about equality will be critical when we get to type unification.
 Lack of native support for equality is probably the reason why type checking using Datalog isn't a well-known technique even though Datalog is quite popular in the programming languages space.
 
 I intend for each post in this series to introduce one aspect of the type checker.
@@ -174,7 +175,7 @@ struct Program {
     // ...
 }
 ```
-In later posts we will see that a `Program` object maintains also indices into its relations and union-find data structures to keep track of equality among elements, but these are not relevant for now.
+In later posts we will see that a `Program` object also maintains indices into its relations and union-find data structures to keep track of equality among elements, but these are not relevant for now.
 
 The associated functions of the `Program` type we need for this post are as follows:
 

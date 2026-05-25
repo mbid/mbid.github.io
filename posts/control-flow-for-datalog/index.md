@@ -1,6 +1,7 @@
 ---
 title: "Control flow for Datalog"
 date: "November 01, 2023"
+updated: "May 25, 2026"
 lang: "en_US"
 ---
 
@@ -33,8 +34,8 @@ Both premise and conclusion are given by conjunctions of *clauses* or *atoms*.
 Eqlog evaluates such an implication by repeatedly enumerating matches of the premise, and then adding data corresponding to the conclusion.
 
 I don't want to change Eqlog's fundamental execution model, but I would like for it to be less verbose and less error-prone to specify certain sets of implications.
-As an example, consider the following implications taken from the [Hindley-Milner type checker](https://www.mbid.me/posts/type-checking-with-eqlog-parsing/) I mentioned above, which has to do with instantiating types of variables with polymorphic type.
-The definition of the predicates and functions in these implications are not relevant here, it's the general shape of those implications that I want to draw attention to:
+As an example, consider the following implications taken from the [Hindley-Milner type checker](https://www.mbid.me/posts/type-checking-with-eqlog-parsing/) I mentioned above, which has to do with instantiating types of variables with a polymorphic type.
+The definitions of the predicates and functions in these implications are not relevant here, it's the general shape of those implications that I want to draw attention to:
 ```
 Axiom
     VariableExprNode(expr, var)
@@ -125,7 +126,7 @@ for (expr, var) in iter_variable_expr_node() {
             Some(instance) => instance,
             None => {
                 let instance = new_instantiation();
-                insert_expr_instantation(expr, instance);
+                insert_expr_instantiation(expr, instance);
                 instance
             }
         };
@@ -266,7 +267,7 @@ rule and_eval {
 }
 ```
 Note that nothing prevents us from removing or forgetting to add a rule governing `evals_to_true`, say the `or_eval` rule.
-What we'd need to catch such an error an is an equivalent of Rust's exhaustive match statement in Eqlog, hence sum types.
+What we'd need to catch such an error is an equivalent of Rust's exhaustive match statement in Eqlog, hence sum types.
 
 So here's what sum types could look like in Eqlog:
 ```eql
@@ -351,11 +352,11 @@ rule expr_instantiation_target {
     ...
 }
 ```
-When Eqlog infers during evaluation that a function should be defined on some arguments, it creates a new element (that is, Eqlog chooses a previously unused integer ID to represent the element), and records it as result of applying that function.
+When Eqlog infers during evaluation that a function should be defined on some arguments, it creates a new element (that is, Eqlog chooses a previously unused integer ID to represent the element), and records it as the result of applying that function.
 But what if the result type of the function was declared as an `enum`?
 We now have an element of an enum type that is not given by one of the constructors.
 
-One option here is to prevent such situations from arising in the first place using a static compile time check.
+One option here is to prevent such situations from arising in the first place using a static compile-time check.
 For example, we could require that every new element of an enum type that is introduced by a rule is later in that rule equated with the result of applying a constructor.
 Such a check cannot also consider arbitrary applications of other rules as well though, since that would mean that the check does not necessarily terminate.
 Thus, some generality would be lost.
@@ -425,7 +426,7 @@ and suppose there is a function `foo(A) -> B` such that `foo(a0) = First()` and 
 Now, if we infer that `a0 = a1` holds, then the functionality axiom for `foo` lets us deduce `First() = Second()`.
 Thus, we sometimes infer equalities in a type even if no rule explicitly enforces that equality.
 So what would be needed here is that we forbid rules from equating elements of enum types and all types for which there exists (transitively) a function into an enum type.
-That would usage of `enum` types in many instances though.
+That would rule out using `enum` types in many instances though.
 
 From what I can tell, the most straightforward option for now is to just not enforce injectivity of constructors.
 Obfuscated in category theoretic language, this would mean that Eqlog's `enum` types are [*amalgamated sum* or *pushout*](https://en.wikipedia.org/wiki/Pushout_(category_theory)) types.
@@ -433,7 +434,7 @@ As before, it could make sense for Eqlog to support an optional annotation on `e
 
 ### Wildcards
 
-Rust and other languages typically support wildcard patterns `_` in match arms statements:
+Rust and other languages typically support wildcard patterns `_` in match arm statements:
 ```rust
 fn is_literal(e: BoolExpr) -> bool {
     match e {

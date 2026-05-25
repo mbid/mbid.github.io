@@ -1,0 +1,10 @@
+Fix blog typos and show update dates
+
+Correct spelling and grammar issues across blog posts and regenerate the
+published HTML.
+
+Render optional updated metadata on individual post pages.
+
+Keep the post index ordered by original publication date.
+
+Clarify the discussion of restrictions on enum types.
